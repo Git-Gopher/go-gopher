@@ -21,6 +21,7 @@ func (c *CommitDetector) Run(commit *object.Commit) error {
 	if detected {
 		c.found++
 	}
+
 	return nil
 }
 
@@ -41,6 +42,7 @@ func NewLineLengthCommitDetect() CommitDetect {
 		if len(commit.Message) > 10 {
 			return false, nil
 		}
+
 		return true, nil
 	}
 }
