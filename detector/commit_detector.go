@@ -2,7 +2,16 @@ package detector
 
 import "github.com/go-git/go-git/v5/plumbing/object"
 
-type CommitDetect func(commit *object.Commit) (bool, error)
+type Commit struct {
+	Commit *object.Commit // remove future
+
+	Parent  string
+	Hash    string
+	Message string
+	Content string
+}
+
+type CommitDetect func(commit *Commit) (bool, error)
 
 type CommitDetector struct {
 	violated int
@@ -12,7 +21,7 @@ type CommitDetector struct {
 	detect CommitDetect
 }
 
-func (c *CommitDetector) Run(commit *object.Commit) error {
+func (c *CommitDetector) Run(commit *Commit) error {
 	c.total++
 	detected, err := c.detect(commit)
 	if err != nil {
@@ -38,7 +47,7 @@ func NewCommitDetector(detect CommitDetect) *CommitDetector {
 }
 
 func NewLineLengthCommitDetect() CommitDetect {
-	return func(commit *object.Commit) (bool, error) {
+	return func(commit *Commit) (bool, error) {
 		if len(commit.Message) > 10 {
 			return false, nil
 		}

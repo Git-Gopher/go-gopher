@@ -3,12 +3,10 @@ package detector
 import (
 	"reflect"
 	"testing"
-
-	"github.com/go-git/go-git/v5/plumbing/object"
 )
 
 func MockCommitDetect() CommitDetect {
-	return func(commit *object.Commit) (bool, error) {
+	return func(commit *Commit) (bool, error) {
 		return commit.Message == "true", nil
 	}
 }
@@ -17,7 +15,7 @@ func TestCommitDetector_Run(t *testing.T) {
 	t.Run("found", func(t *testing.T) {
 		commitDetector := NewCommitDetector(MockCommitDetect())
 
-		fakeCommit := &object.Commit{
+		fakeCommit := &Commit{
 			Message: "true",
 		}
 
@@ -42,7 +40,7 @@ func TestCommitDetector_Run(t *testing.T) {
 	t.Run("not found", func(t *testing.T) {
 		commitDetector := NewCommitDetector(MockCommitDetect())
 
-		fakeCommit := &object.Commit{
+		fakeCommit := &Commit{
 			Message: "false",
 		}
 
@@ -68,12 +66,12 @@ func TestCommitDetector_Run(t *testing.T) {
 func TestNewLineCommitDetect(t *testing.T) {
 	tests := []struct {
 		name    string
-		commit  *object.Commit
+		commit  *Commit
 		wantErr bool
 		want    bool
 	}{
-		{"less 10", &object.Commit{Message: "asdf"}, false, true},
-		{"over 10", &object.Commit{Message: "1234567890123"}, false, false},
+		{"less 10", &Commit{Message: "asdf"}, false, true},
+		{"over 10", &Commit{Message: "1234567890123"}, false, false},
 	}
 	newLineLengthCommitDetect := NewLineLengthCommitDetect()
 	for _, tc := range tests {
