@@ -1,11 +1,9 @@
 name: lint
 on:
   push:
-    tags:
-      - v*
-    branches:
-      - main
-  pull_request: [main]
+    branches: main
+  pull_request:
+    branches: main
 permissions:
   contents: read
 jobs:

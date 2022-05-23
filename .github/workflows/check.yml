@@ -1,11 +1,10 @@
 name: check
 on:
   push:
-    tags:
-      - v*
-    branches:
-      - main
-  pull_request: [main]
+    branches: main
+  pull_request:
+    branches: main
+
 jobs:
   check:
     runs-on: ubuntu-latest
