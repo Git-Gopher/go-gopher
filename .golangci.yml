@@ -11,6 +11,16 @@ linters-settings:
         - github.com/pkg/errors:
             recommendations:
               - errors
+  revive:
+    rules:
+      - name: package-comments
+        disabled: true
+      - name: exported
+        disabled: true
+  wsl:
+    allow-cuddle-declarations: true
+  stylecheck:
+    checks: ["-ST1003", "-ST1016", "-ST1020", "-ST1021", "-ST1022"]
 
 linters:
   enable:
@@ -74,12 +84,10 @@ linters:
     - whitespace # Tool for detection of leading and trailing whitespace
     - containedctx # containedctx is a linter that detects struct contained context.Context field
     - cyclop # checks function and package cyclomatic complexity
-    - exhaustivestruct # Checks if all struct's fields are initialized
     - forbidigo # Forbids identifiers
     - funlen # Tool for detection of long functions
     - gocyclo # Computes and checks the cyclomatic complexity of functions
     - godot # Check if comments end in a period
-    - gomnd # An analyzer to detect magic numbers.
     - ifshort # Checks that your code uses short syntax for if-statements whenever possible
     - ireturn # Accept Interfaces, Return Concrete Types
     - lll # Reports long lines
@@ -89,16 +97,19 @@ linters:
     - nestif # Reports deeply nested if statements
     - nlreturn # nlreturn checks for a new line before return and branch statements to increase code clarity
     - nolintlint # Reports ill-formed or insufficient nolint directives
-    - paralleltest # paralleltest detects missing usage of t.Parallel() method in your Go test
     - prealloc # Finds slice declarations that could potentially be preallocated
     - promlinter # Check Prometheus metrics naming via promlint
     - rowserrcheck # checks whether Err of rows is checked successfully
     - sqlclosecheck # Checks that sql.Rows and sql.Stmt are closed.
-    - testpackage # linter that makes you use a separate _test package
     - thelper # thelper detects golang test helpers without t.Helper() call and checks the consistency of test helpers
-    - varnamelen # checks that the length of a variable's name matches its scope
     - wrapcheck # Checks that errors returned from external packages are wrapped
+  disable:
+    - exhaustivestruct # Checks if all struct's fields are initialized
     - wsl # Whitespace Linter - Forces you to use empty lines!
+    - gomnd # An analyzer to detect magic numbers.
+    - testpackage # linter that makes you use a separate _test package
+    - paralleltest # paralleltest detects missing usage of t.Parallel() method in your Go test
+    - varnamelen # checks that the length of a variable's name matches its scope
 
 issues:
   exclude-use-default: false
