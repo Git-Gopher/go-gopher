@@ -73,19 +73,20 @@ func TestNewLineCommitDetect(t *testing.T) {
 		want    bool
 	}{
 		{"less 10", &object.Commit{Message: "asdf"}, false, true},
-		{"over 10", &object.Commit{Message: "1234567890123"}, true, false},
+		{"over 10", &object.Commit{Message: "1234567890123"}, false, false},
 	}
 	newLineLengthCommitDetect := NewLineLengthCommitDetect()
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			got, err := newLineLengthCommitDetect(tt.commit)
-			if (err != nil) != tt.wantErr {
-				t.Errorf("NewLineCommitDetect() error = %v, wantErr %v", err, tt.wantErr)
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			got, err := newLineLengthCommitDetect(tc.commit)
+			if (err != nil) != tc.wantErr {
+				t.Errorf("NewLineCommitDetect() error = %v, wantErr %v", err, tc.wantErr)
+
 				return
 			}
 
-			if !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("NewLineCommitDetect() = %v, want %v", got, tt.want)
+			if !reflect.DeepEqual(got, tc.want) {
+				t.Errorf("NewLineCommitDetect() = %v, want %v", got, tc.want)
 			}
 		})
 	}
