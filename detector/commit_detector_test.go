@@ -70,13 +70,8 @@ func TestNewLineCommitDetect(t *testing.T) {
 		wantErr bool
 		want    bool
 	}{
-<<<<<<< HEAD
 		{"less 10", &Commit{Message: "asdf"}, false, true},
 		{"over 10", &Commit{Message: "1234567890123"}, false, false},
-=======
-		{"less 10", &object.Commit{Message: "asdf"}, false, true},
-		{"over 10", &object.Commit{Message: "1234567890123"}, false, false},
->>>>>>> db72aa3e1feb3882d08996bd45e9e93304101451
 	}
 	newLineLengthCommitDetect := NewLineLengthCommitDetect()
 	for _, tc := range tests {
