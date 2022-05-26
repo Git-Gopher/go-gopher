@@ -1,17 +1,8 @@
 package detector
 
-import "github.com/go-git/go-git/v5/plumbing/object"
+import "github.com/Git-Gopher/go-gopher/model"
 
-type Commit struct {
-	Commit *object.Commit // remove future
-
-	Parent  string
-	Hash    string
-	Message string
-	Content string
-}
-
-type CommitDetect func(commit *Commit) (bool, error)
+type CommitDetect func(commit *model.Commit) (bool, error)
 
 type CommitDetector struct {
 	violated int
@@ -21,7 +12,8 @@ type CommitDetector struct {
 	detect CommitDetect
 }
 
-func (c *CommitDetector) Run(commit *Commit) error {
+// XXX: Run needs to be moved up to the detector inteface and made generic on the object it recieves, or we can just set it to be the entire git tree so that we don't have to think about it
+func (c *CommitDetector) Run(commit *model.Commit) error {
 	c.total++
 	detected, err := c.detect(commit)
 	if err != nil {
@@ -47,7 +39,7 @@ func NewCommitDetector(detect CommitDetect) *CommitDetector {
 }
 
 func NewLineLengthCommitDetect() CommitDetect {
-	return func(commit *Commit) (bool, error) {
+	return func(commit *model.Commit) (bool, error) {
 		if len(commit.Message) > 10 {
 			return false, nil
 		}
