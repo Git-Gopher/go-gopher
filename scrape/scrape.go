@@ -2,19 +2,16 @@ package scrape
 
 import (
 	"context"
+	"errors"
 	"log"
 	"os"
-
-	"errors"
 
 	"github.com/joho/godotenv"
 	"github.com/shurcooL/githubv4"
 	"golang.org/x/oauth2"
 )
 
-var (
-	ErrBasicQuery = errors.New("Failed to make basic query")
-)
+var ErrBasicQuery = errors.New("Failed to make basic query")
 
 type Scraper struct {
 	Client *githubv4.Client
@@ -25,7 +22,11 @@ func NewScraper(remote string) Scraper {
 	// XXX: extract this out for tests and logic, tests should be using a setup, should be
 	// fine for running the application because main entry point sets this up beforehand
 	if err := godotenv.Load("../.env"); err != nil {
-		log.Fatal("Error loading .env file")
+		log.Println("Error loading .env file")
+	}
+
+	if os.Getenv("GITHUB_GRAPHQL_TOKEN") == "" {
+		log.Fatalln("Error loading env GITHUB_GRAPHQL_TOKEN")
 	}
 
 	src := oauth2.StaticTokenSource(
@@ -50,7 +51,7 @@ type UserQuery struct {
 }
 
 func (s *Scraper) ScrapeUsers() (*UserQuery, error) {
-	var userQuery = new(UserQuery)
+	userQuery := new(UserQuery)
 	if err := s.Client.Query(context.Background(), userQuery, nil); err != nil {
 		return nil, ErrBasicQuery
 	}

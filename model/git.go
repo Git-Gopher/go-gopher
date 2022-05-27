@@ -9,9 +9,7 @@ import (
 	"github.com/go-git/go-git/v5/plumbing/object"
 )
 
-var (
-	ErrCommitEmpty = errors.New("Commit empty")
-)
+var ErrCommitEmpty = errors.New("Commit empty")
 
 type Hash [20]byte
 

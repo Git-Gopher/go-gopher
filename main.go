@@ -13,7 +13,11 @@ import (
 
 func main() {
 	if err := godotenv.Load(); err != nil {
-		log.Fatal("Error loading .env file")
+		log.Println("Error loading .env file")
+	}
+
+	if os.Getenv("GITHUB_GRAPHQL_TOKEN") == "" {
+		log.Fatalln("Error loading env GITHUB_GRAPHQL_TOKEN")
 	}
 
 	app := cli.NewApp()
@@ -45,7 +49,6 @@ func main() {
 				fmt.Println(cIter)
 
 				return nil
-
 			},
 		},
 	}

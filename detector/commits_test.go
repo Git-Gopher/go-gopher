@@ -19,7 +19,7 @@ func FetchRepository(t *testing.T, remote string) *git.Repository {
 	t.Helper()
 
 	if err := godotenv.Load("../.env"); err != nil {
-		log.Fatal("Error loading .env file")
+		log.Println("Error loading .env file")
 	}
 
 	token := os.Getenv("GITHUB_GRAPHQL_TOKEN")
@@ -117,7 +117,7 @@ func TestTwoParentsCommitDetectGoGit(t *testing.T) {
 		t.Errorf("TestTwoParentsCommitDetectGoGit() worktree = %v", err)
 	}
 
-	file, err = fs.OpenFile("main.go", os.O_RDWR|os.O_CREATE, 0755)
+	file, err = fs.OpenFile("main.go", os.O_RDWR|os.O_CREATE, 0o755)
 	if err != nil {
 		t.Errorf("TestTwoParentsCommitDetectGoGit() open file main.go = %v", err)
 	}
