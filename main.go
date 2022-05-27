@@ -16,8 +16,8 @@ func main() {
 		log.Println("Error loading .env file")
 	}
 
-	if os.Getenv("GITHUB_GRAPHQL_TOKEN") == "" {
-		log.Fatalln("Error loading env GITHUB_GRAPHQL_TOKEN")
+	if os.Getenv("GITHUB_TOKEN") == "" {
+		log.Fatalln("Error loading env GITHUB_TOKEN")
 	}
 
 	app := cli.NewApp()

@@ -25,12 +25,12 @@ func NewScraper(remote string) Scraper {
 		log.Println("Error loading .env file")
 	}
 
-	if os.Getenv("GITHUB_GRAPHQL_TOKEN") == "" {
-		log.Fatalln("Error loading env GITHUB_GRAPHQL_TOKEN")
+	if os.Getenv("GITHUB_TOKEN") == "" {
+		log.Fatalln("Error loading env GITHUB_TOKEN")
 	}
 
 	src := oauth2.StaticTokenSource(
-		&oauth2.Token{AccessToken: os.Getenv("GITHUB_GRAPHQL_TOKEN")},
+		&oauth2.Token{AccessToken: os.Getenv("GITHUB_TOKEN")},
 	)
 	httpClient := oauth2.NewClient(context.Background(), src)
 

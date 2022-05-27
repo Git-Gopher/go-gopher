@@ -22,7 +22,7 @@ func FetchRepository(t *testing.T, remote string) *git.Repository {
 		log.Println("Error loading .env file")
 	}
 
-	token := os.Getenv("GITHUB_GRAPHQL_TOKEN")
+	token := os.Getenv("GITHUB_TOKEN")
 	if token == "" {
 		t.Errorf("Empty token")
 	}
