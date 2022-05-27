@@ -10,3 +10,17 @@ type Commit struct {
 	Message string
 	Content string
 }
+
+type Branch struct {
+}
+
+// TODO: fill this out
+type GitModel struct {
+	Commits []Commit
+}
+
+// At the end of the day I should be able to pass in the model from go-git (or even a url) and create our modifiied git model
+func NewGitModel() *GitModel {
+
+	return nil
+}

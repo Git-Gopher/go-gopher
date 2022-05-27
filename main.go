@@ -6,7 +6,6 @@ import (
 	"os"
 
 	"github.com/go-git/go-git/v5"
-	"github.com/go-git/go-git/v5/plumbing/object"
 	"github.com/go-git/go-git/v5/storage/memory"
 	"github.com/joho/godotenv"
 	"github.com/urfave/cli/v2"
@@ -21,34 +20,30 @@ func main() {
 	app.EnableBashCompletion = true
 	app.Commands = []*cli.Command{
 		{
-			Name:  "analyze",
-			Usage: "detect a workflow for a given git project url",
+			Name:    "analyze",
+			Aliases: []string{"a"},
+			Usage:   "detect a workflow for a given git project url",
 			Action: func(c *cli.Context) error {
 				url := c.Args().Get(0)
 
 				// Default to project repository
 				if url == "" {
-					url = "https://github.com/Git-Gopher/go-gopher"
+					url = "https://github.com/jgm/pandoc"
 				}
 
-				r, err := git.Clone(memory.NewStorage(), nil, &git.CloneOptions{
+				// TODO: handle auth from envfiles, ideally use the same authtoken for the github graphql stuff
+				r, _ := git.Clone(memory.NewStorage(), nil, &git.CloneOptions{
 					URL: url,
 				})
 
-				fmt.Println(err)
 				// ... retrieves the branch pointed by HEAD
-				ref, err := r.Head()
+				ref, _ := r.Head()
 				fmt.Println(ref)
 
 				// ... retrieves the commit history
-				cIter, err := r.Log(&git.LogOptions{From: ref.Hash()})
+				cIter, _ := r.Log(&git.LogOptions{From: ref.Hash()})
 				fmt.Println(cIter)
 
-				// ... just iterates over the commits, printing it
-				err = cIter.ForEach(func(c *object.Commit) error {
-					fmt.Println(c)
-					return nil
-				})
 				return nil
 
 			},
