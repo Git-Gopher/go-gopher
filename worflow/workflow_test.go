@@ -6,6 +6,7 @@ import (
 	"github.com/Git-Gopher/go-gopher/model"
 )
 
+// TODO: Complete this test with all workflows.
 func TestWorkflow(t *testing.T) {
 	tests := []struct {
 		name     string
@@ -14,7 +15,7 @@ func TestWorkflow(t *testing.T) {
 		wantErr  bool
 		want     bool
 	}{
-		{"Github Flow", &GithubFlowWorkflow, nil, false, true},
+		{"Github Flow", GithubFlowWorkflow(), nil, false, true},
 	}
 
 	for _, tc := range tests {
@@ -22,7 +23,7 @@ func TestWorkflow(t *testing.T) {
 			// Create a model
 
 			// Analyze the model
-			tc.workflow.Analyze(nil)
+			// tc.workflow.Analyze(nil)
 
 			// Expected results
 		})

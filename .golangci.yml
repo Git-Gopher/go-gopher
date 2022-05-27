@@ -83,9 +83,7 @@ linters:
     - wastedassign # wastedassign finds wasted assignment statements
     - whitespace # Tool for detection of leading and trailing whitespace
     - containedctx # containedctx is a linter that detects struct contained context.Context field
-    - cyclop # checks function and package cyclomatic complexity
     - forbidigo # Forbids identifiers
-    - funlen # Tool for detection of long functions
     - gocyclo # Computes and checks the cyclomatic complexity of functions
     - godot # Check if comments end in a period
     - ifshort # Checks that your code uses short syntax for if-statements whenever possible
@@ -110,6 +108,8 @@ linters:
     - testpackage # linter that makes you use a separate _test package
     - paralleltest # paralleltest detects missing usage of t.Parallel() method in your Go test
     - varnamelen # checks that the length of a variable's name matches its scope
+    - funlen # Tool for detection of long functions
+    - cyclop # checks function and package cyclomatic complexity
 
 issues:
   exclude-use-default: false
