@@ -52,7 +52,8 @@ func NewLineLengthCommitDetect() CommitDetect {
 	}
 }
 
-// All commits on the main branch for github flow should be merged in, meaning that they have two parents(the main branch and the feature branch)
+// All commits on the main branch for github flow should be merged in,
+// meaning that they have two parents(the main branch and the feature branch).
 func TwoParentsCommitDetect() CommitDetect {
 	return func(commit *model.Commit) (bool, error) {
 		if len(commit.ParentHashes) >= 2 {

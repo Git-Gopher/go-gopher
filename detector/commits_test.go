@@ -1,7 +1,6 @@
 package detector
 
 import (
-	"fmt"
 	"log"
 	"os"
 	"testing"
@@ -68,7 +67,7 @@ func TestTwoParentsCommitDetect(t *testing.T) {
 	}
 }
 
-// TODO: Split go-git things into a suite of test friendly functions
+// TODO: Split go-git things into a suite of test friendly functions.
 func TestTwoParentsCommitDetectGoGit(t *testing.T) {
 	// Setup go git repo with the configuration that we want (two parents one commit)
 	fs := memfs.New()
@@ -166,5 +165,5 @@ func TestTwoParentsCommitDetectGoGit(t *testing.T) {
 		t.Errorf("TestTwoParentsCommitDetectGoGit() run = %v", err)
 	}
 
-	fmt.Println(detector.Result())
+	log.Println(detector.Result())
 }

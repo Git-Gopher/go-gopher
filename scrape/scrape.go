@@ -42,7 +42,7 @@ func NewScraper(remote string) Scraper {
 	}
 }
 
-// TODO: put this inline? Or leave it outside so that we have a nice preview of what we are getting
+// TODO: put this inline? Or leave it outside so that we have a nice preview of what we are getting.
 type UserQuery struct {
 	Viewer struct {
 		Login     githubv4.String

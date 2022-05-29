@@ -26,6 +26,7 @@ func NewSignature(o *object.Signature) *Signature {
 	if o == nil {
 		return nil
 	}
+
 	return &Signature{
 		Name:  o.Name,
 		Email: o.Email,
@@ -36,17 +37,16 @@ func NewSignature(o *object.Signature) *Signature {
 type Commit struct {
 	// Hash of the commit object.
 	Hash Hash
+	// TreeHash is the hash of the root tree of the commit.
+	TreeHash Hash
+	// ParentHashes are the hashes of the parent commits of the commit.
+	ParentHashes []Hash
 	// Author is the original author of the commit.
 	Author Signature
 	// Committer is the one performing the commit, might be different from Author.
 	Committer Signature
 	// Message is the commit message, contains arbitrary text.
 	Message string
-	// TreeHash is the hash of the root tree of the commit.
-	TreeHash Hash
-	// ParentHashes are the hashes of the parent commits of the commit.
-	ParentHashes []Hash
-
 	// TODO: Import go-git types
 	Content string
 }
@@ -75,13 +75,12 @@ type GitModel struct {
 	Commits []Commit
 }
 
-// At the end of the day I should be able to pass in the model from go-git (or even a url) and create our modifiied git model
 func NewGitModel(repo *git.Repository) (*GitModel, error) {
 	gitModel := new(GitModel)
 
 	cIter, err := repo.CommitObjects()
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("Failed to retrieve commits from repository: %w", err)
 	}
 
 	err = cIter.ForEach(func(c *object.Commit) error {
@@ -94,7 +93,7 @@ func NewGitModel(repo *git.Repository) (*GitModel, error) {
 		return nil
 	})
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("Failed to graft commits to model: %w", err)
 	}
 
 	return gitModel, nil

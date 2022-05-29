@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"log"
 	"os"
 
@@ -35,26 +34,21 @@ func main() {
 					url = "https://github.com/jgm/pandoc"
 				}
 
-				// TODO: handle auth from envfiles, ideally use the same authtoken for the github graphql stuff
 				r, _ := git.Clone(memory.NewStorage(), nil, &git.CloneOptions{
 					URL: url,
 				})
 
 				// ... retrieves the branch pointed by HEAD
 				ref, _ := r.Head()
-				fmt.Println(ref)
 
-				// ... retrieves the commit history
-				cIter, _ := r.Log(&git.LogOptions{From: ref.Hash()})
-				fmt.Println(cIter)
+				log.Println(ref)
 
 				return nil
 			},
 		},
 	}
 
-	err := app.Run(os.Args)
-	if err != nil {
+	if err := app.Run(os.Args); err != nil {
 		log.Fatal(err)
 	}
 }
