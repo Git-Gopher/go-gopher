@@ -47,7 +47,6 @@ linters:
     - gocognit # Computes and checks the cognitive complexity of functions
     - goconst # Finds repeated strings that could be replaced by a constant
     - gocritic # The most opinionated Go source code linter
-    - godox # Tool for detection of FIXME, TODO and other comment keywords
     - goerr113 # Golang linter to check the errors handling expressions
     - gofmt # Gofmt checks whether code was gofmt-ed. By default this tool runs with -s option to check for code simplification
     - gofumpt # Gofumpt checks whether code was gofumpt-ed.
@@ -83,9 +82,7 @@ linters:
     - wastedassign # wastedassign finds wasted assignment statements
     - whitespace # Tool for detection of leading and trailing whitespace
     - containedctx # containedctx is a linter that detects struct contained context.Context field
-    - cyclop # checks function and package cyclomatic complexity
     - forbidigo # Forbids identifiers
-    - funlen # Tool for detection of long functions
     - gocyclo # Computes and checks the cyclomatic complexity of functions
     - godot # Check if comments end in a period
     - ifshort # Checks that your code uses short syntax for if-statements whenever possible
@@ -110,6 +107,10 @@ linters:
     - testpackage # linter that makes you use a separate _test package
     - paralleltest # paralleltest detects missing usage of t.Parallel() method in your Go test
     - varnamelen # checks that the length of a variable's name matches its scope
+    - funlen # Tool for detection of long functions
+    - cyclop # checks function and package cyclomatic complexity
+    # TODO: I understand the irony in this comment. These should be warnings so that they still show up
+    - godox # Tool for detection of FIXME, TODO and other comment keywords
 
 issues:
   exclude-use-default: false

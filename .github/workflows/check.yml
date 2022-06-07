@@ -5,6 +5,9 @@ on:
   pull_request:
     branches: main
 
+env:
+  GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
+
 jobs:
   check:
     runs-on: ubuntu-latest
@@ -21,4 +24,4 @@ jobs:
       - name: Run go vet
         run: go vet ./...
       - name: Run tests
-        run: go test -race -vet=off ./...
+        run: make test
