@@ -1,4 +1,4 @@
-run:
+run: build
 	go run .
 
 build:

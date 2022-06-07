@@ -4,11 +4,13 @@ import (
 	"log"
 	"os"
 	"testing"
+	"time"
 
 	"github.com/Git-Gopher/go-gopher/model"
 	"github.com/go-git/go-billy/v5/memfs"
 	"github.com/go-git/go-git/v5"
 	"github.com/go-git/go-git/v5/plumbing"
+	"github.com/go-git/go-git/v5/plumbing/object"
 	"github.com/go-git/go-git/v5/plumbing/transport/http"
 	"github.com/go-git/go-git/v5/storage/memory"
 	"github.com/joho/godotenv"
@@ -106,7 +108,8 @@ func TestTwoParentsCommitDetectGoGit(t *testing.T) {
 		t.Errorf("TestTwoParentsCommitDetectGoGit() add = %v", err)
 	}
 	// Run commit -m $message
-	firstHash, err := w.Commit("first commit", &git.CommitOptions{})
+	author := &object.Signature{Name: "test", Email: "test@test.com", When: time.Now()}
+	firstHash, err := w.Commit("first commit", &git.CommitOptions{Author: author})
 	if err != nil {
 		t.Errorf("TestTwoParentsCommitDetectGoGit() commit = %v", err)
 	}
@@ -138,7 +141,7 @@ func TestTwoParentsCommitDetectGoGit(t *testing.T) {
 		t.Errorf("TestTwoParentsCommitDetectGoGit() open file main.go = %v", err)
 	}
 	// Run commit -m $message
-	editHash, err := w.Commit("edit main.go", &git.CommitOptions{})
+	editHash, err := w.Commit("edit main.go", &git.CommitOptions{Author: author})
 	if err != nil {
 		t.Errorf("TestTwoParentsCommitDetectGoGit() commit = %v", err)
 	}
@@ -149,6 +152,7 @@ func TestTwoParentsCommitDetectGoGit(t *testing.T) {
 	}
 	if _, err = w.Commit("merge", &git.CommitOptions{
 		Parents: []plumbing.Hash{firstHash, editHash},
+		Author:  author,
 	}); err != nil {
 		t.Errorf("TestTwoParentsCommitDetectGoGit() merge = %v", err)
 	}
