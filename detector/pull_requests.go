@@ -1,8 +1,11 @@
 package detector
 
-import "github.com/Git-Gopher/go-gopher/model"
+import (
+	"github.com/Git-Gopher/go-gopher/model/github"
+	"github.com/Git-Gopher/go-gopher/model/local"
+)
 
-type PullRequestDetect func(pullRequest *model.PullRequest) (bool, error)
+type PullRequestDetect func(pullRequest *github.PullRequest) (bool, error)
 
 // XXX: violated, found, total should be contained within a struct and then added to this instead as a composite struct
 type PullRequestDetector struct {
@@ -27,13 +30,13 @@ func NewPullRequestDetector(detect PullRequestDetect) *PullRequestDetector {
 }
 
 // TODO: We should change this to the enriched model
-func (cd *PullRequestDetector) Run(model *model.GitModel) error {
+func (cd *PullRequestDetector) Run(model *local.GitModel) error {
 	return nil
 }
 
 // Github Workflow: Pull requests must have at least one associated issue.
 func NewPullRequestIssueDetector() PullRequestDetect {
-	return func(pullRequest *model.PullRequest) (bool, error) {
+	return func(pullRequest *github.PullRequest) (bool, error) {
 		if len(pullRequest.Issues) == 0 {
 			return false, nil
 		}

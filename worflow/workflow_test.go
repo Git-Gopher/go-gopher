@@ -3,7 +3,7 @@ package workflow
 import (
 	"testing"
 
-	"github.com/Git-Gopher/go-gopher/model"
+	"github.com/Git-Gopher/go-gopher/model/local"
 )
 
 // TODO: Complete this test with all workflows.
@@ -11,7 +11,7 @@ func TestWorkflow(t *testing.T) {
 	tests := []struct {
 		name     string
 		workflow *Workflow
-		model    *model.GitModel
+		model    *local.GitModel
 		wantErr  bool
 		want     bool
 	}{

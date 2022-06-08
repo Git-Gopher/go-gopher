@@ -6,6 +6,7 @@ import (
 	"log"
 	"os"
 
+	"github.com/Git-Gopher/go-gopher/model/github"
 	"github.com/joho/godotenv"
 	"github.com/shurcooL/githubv4"
 	"golang.org/x/oauth2"
@@ -61,7 +62,7 @@ func (s *Scraper) ScrapeUsers() (*UserQuery, error) {
 	return userQuery, nil
 }
 
-// TODO: Pagnation: fetch entire history.
+// TODO: Pagnation: fetch entire history. Also handle nested pagination
 type PullRequestQuery struct {
 	Repository struct {
 		PullRequests struct {
@@ -74,21 +75,57 @@ type PullRequestQuery struct {
 							Id string
 						}
 					}
-				} `graphql:"closingIssuesReferences(first: 10)"`
+				} `graphql:"closingIssuesReferences(first: $first, after: $after)"`
 			}
-		} `graphql:"pullRequests(first: 10)"`
+			PageInfo struct {
+				StartCursor string
+				HasNextPage bool
+				EndCursor   string
+			}
+		} `graphql:"pullRequests(first: 100)"`
 	} `graphql:"repository(owner: $owner, name: $name)"`
 }
 
-func (s *Scraper) ScrapePullRequests(owner, name string) (*PullRequestQuery, error) {
-	pullRequestQuery := new(PullRequestQuery)
-	variables := map[string]interface{}{
-		"owner": githubv4.String(owner),
-		"name":  githubv4.String(name),
-	}
-	if err := s.Client.Query(context.Background(), pullRequestQuery, variables); err != nil {
-		return nil, ErrPullRequestQuery
+func (s *Scraper) ScrapePullRequests(owner, name string) ([]*github.PullRequest, error) {
+	// Limited to maximum of 100
+	var first = 100
+	var after = ""
+	var hasNextPage = true
+	var pullRequests []*github.PullRequest
+
+	for hasNextPage {
+
+		pullRequestQuery := new(PullRequestQuery)
+		variables := map[string]interface{}{
+			"first": githubv4.Int(first),
+			"after": githubv4.String(after),
+			"owner": githubv4.String(owner),
+			"name":  githubv4.String(name),
+		}
+
+		if err := s.Client.Query(context.Background(), pullRequestQuery, variables); err != nil {
+			return nil, ErrPullRequestQuery
+		}
+
+		// Convert to model
+		for _, prq := range pullRequestQuery.Repository.PullRequests.Nodes {
+			var issues []*github.Issue
+			for _, issue := range prq.ClosingIssuesReferences.Edges {
+				issues = append(issues, &github.Issue{Id: issue.Node.Id})
+			}
+			pullRequests = append(pullRequests, &github.PullRequest{Title: prq.Title, Body: prq.Body, Issues: issues})
+		}
+
+		if pullRequestQuery.Repository.PullRequests.PageInfo.HasNextPage {
+			after = pullRequestQuery.Repository.PullRequests.PageInfo.EndCursor
+		} else {
+			hasNextPage = false
+		}
 	}
 
-	return pullRequestQuery, nil
+	return pullRequests, nil
 }
+
+// Fetch all records, handling pagnation
+// func (s *Scraper) queryAll(ctx context.Context, query interface{}, map[string]interface{}) {
+// }

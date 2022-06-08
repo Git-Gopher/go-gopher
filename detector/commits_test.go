@@ -6,7 +6,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/Git-Gopher/go-gopher/model"
+	"github.com/Git-Gopher/go-gopher/model/local"
 	"github.com/go-git/go-billy/v5/memfs"
 	"github.com/go-git/go-git/v5"
 	"github.com/go-git/go-git/v5/plumbing"
@@ -54,7 +54,7 @@ func TestTwoParentsCommitDetect(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			// Create the model
-			model, err := model.NewGitModel(r)
+			model, err := local.NewGitModel(r)
 			if err != nil {
 				t.Errorf("TestTwoParentsCommitDetect() create model = %v", err)
 			}
@@ -158,7 +158,7 @@ func TestTwoParentsCommitDetectGoGit(t *testing.T) {
 	}
 
 	// create the model
-	model, err := model.NewGitModel(r)
+	model, err := local.NewGitModel(r)
 	if err != nil {
 		t.Errorf("TestTwoParentsCommitDetectGoGit() model = %v", err)
 	}

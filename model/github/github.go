@@ -1,4 +1,4 @@
-package model
+package github
 
 import (
 	"github.com/Git-Gopher/go-gopher/scrape"
