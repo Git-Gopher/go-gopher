@@ -11,7 +11,10 @@ import (
 	"golang.org/x/oauth2"
 )
 
-var ErrBasicQuery = errors.New("Failed to make basic query")
+var (
+	ErrUserQuery        = errors.New("Failed to make user query")
+	ErrPullRequestQuery = errors.New("Failed to make pull request query")
+)
 
 type Scraper struct {
 	Client *githubv4.Client
@@ -19,8 +22,6 @@ type Scraper struct {
 }
 
 func NewScraper(remote string) Scraper {
-	// XXX: extract this out for tests and logic, tests should be using a setup, should be
-	// fine for running the application because main entry point sets this up beforehand
 	if err := godotenv.Load("../.env"); err != nil {
 		log.Println("Error loading .env file")
 	}
@@ -47,14 +48,47 @@ type UserQuery struct {
 	Viewer struct {
 		Login     githubv4.String
 		AvatarUrl githubv4.String
+		Email     githubv4.String
 	}
 }
 
 func (s *Scraper) ScrapeUsers() (*UserQuery, error) {
 	userQuery := new(UserQuery)
 	if err := s.Client.Query(context.Background(), userQuery, nil); err != nil {
-		return nil, ErrBasicQuery
+		return nil, ErrUserQuery
 	}
 
 	return userQuery, nil
+}
+
+// TODO: Pagnation: fetch entire history.
+type PullRequestQuery struct {
+	Repository struct {
+		PullRequests struct {
+			Nodes []struct {
+				Title                   string
+				Body                    string
+				ClosingIssuesReferences struct {
+					Edges []struct {
+						Node struct {
+							Id string
+						}
+					}
+				} `graphql:"closingIssuesReferences(first: 10)"`
+			}
+		} `graphql:"pullRequests(first: 10)"`
+	} `graphql:"repository(owner: $owner, name: $name)"`
+}
+
+func (s *Scraper) ScrapePullRequests(owner, name string) (*PullRequestQuery, error) {
+	pullRequestQuery := new(PullRequestQuery)
+	variables := map[string]interface{}{
+		"owner": githubv4.String(owner),
+		"name":  githubv4.String(name),
+	}
+	if err := s.Client.Query(context.Background(), pullRequestQuery, variables); err != nil {
+		return nil, ErrPullRequestQuery
+	}
+
+	return pullRequestQuery, nil
 }

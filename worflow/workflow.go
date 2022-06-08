@@ -12,6 +12,7 @@ func GithubFlowWorkflow() *Workflow {
 		Name: "Github Flow",
 		WeightedDetectors: []WeightedDetector{
 			{Weight: 2, Detector: detector.NewCommitDetector(detector.TwoParentsCommitDetect())},
+			{Weight: 1, Detector: detector.NewPullRequestDetector(detector.NewPullRequestIssueDetector())},
 		},
 	}
 }

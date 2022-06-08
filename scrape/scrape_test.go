@@ -14,3 +14,14 @@ func TestScraper_ScrapeUsers(t *testing.T) {
 
 	t.Log(users)
 }
+
+func TestScraper_ScrapePullRequests(t *testing.T) {
+	// XXX: This test can change from underneath us if we decide to edit it
+	s := NewScraper("https://github.com/Git-Gopher/github-two-parents-merged")
+	pullRequests, err := s.ScrapePullRequests("octocat", "Hello-World")
+	if err != nil {
+		t.Errorf("Could not scrape pull requests: %v", err)
+	}
+
+	t.Log(pullRequests)
+}

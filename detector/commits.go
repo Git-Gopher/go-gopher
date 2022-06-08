@@ -14,6 +14,7 @@ type CommitDetector struct {
 	detect CommitDetect
 }
 
+// TODO: We should change this to the enriched model
 func (cd *CommitDetector) Run(model *model.GitModel) error {
 	for _, c := range model.Commits {
 		c := c
@@ -30,15 +31,16 @@ func (cd *CommitDetector) Run(model *model.GitModel) error {
 	return nil
 }
 
-func (c *CommitDetector) Result() (int, int, int) {
-	return c.violated, c.found, c.total
+func (cd *CommitDetector) Result() (int, int, int) {
+	return cd.violated, cd.found, cd.total
 }
 
 func NewCommitDetector(detect CommitDetect) *CommitDetector {
 	return &CommitDetector{
-		total:  0,
-		found:  0,
-		detect: detect,
+		violated: 0,
+		found:    0,
+		total:    0,
+		detect:   detect,
 	}
 }
 

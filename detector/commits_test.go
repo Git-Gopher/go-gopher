@@ -53,7 +53,7 @@ func TestTwoParentsCommitDetect(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			// create the model
+			// Create the model
 			model, err := model.NewGitModel(r)
 			if err != nil {
 				t.Errorf("TestTwoParentsCommitDetect() create model = %v", err)
