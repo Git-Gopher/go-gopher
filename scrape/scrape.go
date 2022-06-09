@@ -6,7 +6,6 @@ import (
 	"log"
 	"os"
 
-	"github.com/Git-Gopher/go-gopher/model/github"
 	"github.com/joho/godotenv"
 	"github.com/shurcooL/githubv4"
 	"golang.org/x/oauth2"
@@ -45,16 +44,19 @@ func NewScraper(remote string) Scraper {
 }
 
 // TODO: put this inline? Or leave it outside so that we have a nice preview of what we are getting.
-type UserQuery struct {
-	Viewer struct {
-		Login     githubv4.String
-		AvatarUrl githubv4.String
-		Email     githubv4.String
-	}
+
+type user struct {
+	Login     githubv4.String
+	AvatarUrl githubv4.String
+	Email     githubv4.String
 }
 
-func (s *Scraper) ScrapeUsers() (*UserQuery, error) {
-	userQuery := new(UserQuery)
+type userQuery struct {
+	Viewer user
+}
+
+func (s *Scraper) ScrapeUsers() (*userQuery, error) {
+	userQuery := new(userQuery)
 	if err := s.Client.Query(context.Background(), userQuery, nil); err != nil {
 		return nil, ErrUserQuery
 	}
@@ -62,70 +64,58 @@ func (s *Scraper) ScrapeUsers() (*UserQuery, error) {
 	return userQuery, nil
 }
 
-// TODO: Pagnation: fetch entire history. Also handle nested pagination
-type PullRequestQuery struct {
+type issue struct {
+	Id    string
+	Title string
+	Body  string
+}
+
+type pullRequest struct {
+	Id                      string
+	Title                   string
+	Body                    string
+	ClosingIssuesReferences struct {
+		Edges []struct {
+			Node issue
+		}
+	} `graphql:"closingIssuesReferences(first: $first)"`
+}
+
+// TODO: Pagination: fetch entire closing issue reference history and handle nested pagination
+type pullRequestQuery struct {
 	Repository struct {
 		PullRequests struct {
-			Nodes []struct {
-				Title                   string
-				Body                    string
-				ClosingIssuesReferences struct {
-					Edges []struct {
-						Node struct {
-							Id string
-						}
-					}
-				} `graphql:"closingIssuesReferences(first: $first, after: $after)"`
-			}
+			Nodes    []pullRequest
 			PageInfo struct {
-				StartCursor string
 				HasNextPage bool
-				EndCursor   string
+				EndCursor   githubv4.String
 			}
-		} `graphql:"pullRequests(first: 100)"`
+		} `graphql:"pullRequests(first: $first, after: $cursor)"`
 	} `graphql:"repository(owner: $owner, name: $name)"`
 }
 
-func (s *Scraper) ScrapePullRequests(owner, name string) ([]*github.PullRequest, error) {
-	// Limited to maximum of 100
-	var first = 100
-	var after = ""
-	var hasNextPage = true
-	var pullRequests []*github.PullRequest
+func (s *Scraper) ScrapePullRequests(owner, name string) ([]pullRequest, error) {
+	var allPrs []pullRequest
+	variables := map[string]interface{}{
+		"first":  githubv4.Int(100), // Limited to maximum 100
+		"cursor": (*githubv4.String)(nil),
+		"owner":  githubv4.String(owner),
+		"name":   githubv4.String(name),
+	}
 
-	for hasNextPage {
-
-		pullRequestQuery := new(PullRequestQuery)
-		variables := map[string]interface{}{
-			"first": githubv4.Int(first),
-			"after": githubv4.String(after),
-			"owner": githubv4.String(owner),
-			"name":  githubv4.String(name),
-		}
-
-		if err := s.Client.Query(context.Background(), pullRequestQuery, variables); err != nil {
+	for {
+		prs := new(pullRequestQuery)
+		if err := s.Client.Query(context.Background(), prs, variables); err != nil {
+			// fmt.Printf("err: %v\n", err)
 			return nil, ErrPullRequestQuery
 		}
 
-		// Convert to model
-		for _, prq := range pullRequestQuery.Repository.PullRequests.Nodes {
-			var issues []*github.Issue
-			for _, issue := range prq.ClosingIssuesReferences.Edges {
-				issues = append(issues, &github.Issue{Id: issue.Node.Id})
-			}
-			pullRequests = append(pullRequests, &github.PullRequest{Title: prq.Title, Body: prq.Body, Issues: issues})
+		allPrs = append(allPrs, prs.Repository.PullRequests.Nodes...)
+		if !prs.Repository.PullRequests.PageInfo.HasNextPage {
+			break
 		}
-
-		if pullRequestQuery.Repository.PullRequests.PageInfo.HasNextPage {
-			after = pullRequestQuery.Repository.PullRequests.PageInfo.EndCursor
-		} else {
-			hasNextPage = false
-		}
+		variables["cursor"] = githubv4.NewString(prs.Repository.PullRequests.PageInfo.EndCursor)
 	}
 
-	return pullRequests, nil
+	return allPrs, nil
 }
-
-// Fetch all records, handling pagnation
-// func (s *Scraper) queryAll(ctx context.Context, query interface{}, map[string]interface{}) {
-// }

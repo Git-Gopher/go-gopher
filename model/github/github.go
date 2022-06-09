@@ -1,6 +1,8 @@
 package github
 
 import (
+	"fmt"
+
 	"github.com/Git-Gopher/go-gopher/scrape"
 	"github.com/shurcooL/githubv4"
 )
@@ -17,6 +19,7 @@ type Issue struct {
 	Author *Author
 }
 type PullRequest struct {
+	Id     string
 	Body   string
 	Title  string
 	Issues []Issue
@@ -29,7 +32,7 @@ type GithubModel struct {
 }
 
 // TODO: Issues, Author. Also handling the same issue multiple times, should we fetch it multiple
-//times or put in memory and search? The former is more memory efficient and is a 'better solution'
+// times or put in memory and search? The former is more memory efficient and is a 'better solution'
 // where we can use pointers within our structs, the second is easier in terms of managing complexity
 // but also might add complexity in constructing objects multiple times?
 func ScrapeGithubModel(remote, owner, name string) (*GithubModel, error) {
@@ -37,17 +40,17 @@ func ScrapeGithubModel(remote, owner, name string) (*GithubModel, error) {
 	sprs, err := s.ScrapePullRequests(owner, name)
 
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("Failed create github model from scraped %w", err)
 	}
 
-	// Map Scraped PRs to Model PRs, should this be done on the scrape side or better to keep agnostic?
+	// Map scraped PRs to Model PRs
 	var prs []PullRequest
-	for _, spr := range sprs.Repository.PullRequests.Nodes {
+	for _, spr := range sprs {
 		var issues []Issue
-		for _, sissues := range spr.ClosingIssuesReferences.Edges {
-			issues = append(issues, Issue{Id: sissues.Node.Id})
+		for _, si := range spr.ClosingIssuesReferences.Edges {
+			issues = append(issues, Issue{Id: si.Node.Id, Title: si.Node.Title, Body: si.Node.Body})
 		}
-		prs = append(prs, PullRequest{Body: spr.Body, Title: spr.Title, Issues: issues})
+		prs = append(prs, PullRequest{Id: spr.Id, Body: spr.Body, Title: spr.Title, Issues: issues})
 	}
 
 	return &GithubModel{
