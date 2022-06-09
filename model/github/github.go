@@ -35,10 +35,9 @@ type GithubModel struct {
 // times or put in memory and search? The former is more memory efficient and is a 'better solution'
 // where we can use pointers within our structs, the second is easier in terms of managing complexity
 // but also might add complexity in constructing objects multiple times?
-func ScrapeGithubModel(remote, owner, name string) (*GithubModel, error) {
-	s := scrape.NewScraper(remote)
+func ScrapeGithubModel(owner, name string) (*GithubModel, error) {
+	s := scrape.NewScraper()
 	sprs, err := s.ScrapePullRequests(owner, name)
-
 	if err != nil {
 		return nil, fmt.Errorf("Failed create github model from scraped %w", err)
 	}

@@ -3,10 +3,8 @@ package scrape
 import (
 	"context"
 	"errors"
-	"log"
 	"os"
 
-	"github.com/joho/godotenv"
 	"github.com/shurcooL/githubv4"
 	"golang.org/x/oauth2"
 )
@@ -18,18 +16,9 @@ var (
 
 type Scraper struct {
 	Client *githubv4.Client
-	Remote string
 }
 
-func NewScraper(remote string) Scraper {
-	if err := godotenv.Load("../.env"); err != nil {
-		log.Println("Error loading .env file")
-	}
-
-	if os.Getenv("GITHUB_TOKEN") == "" {
-		log.Fatalln("Error loading env GITHUB_TOKEN")
-	}
-
+func NewScraper() Scraper {
 	src := oauth2.StaticTokenSource(
 		&oauth2.Token{AccessToken: os.Getenv("GITHUB_TOKEN")},
 	)
@@ -39,7 +28,6 @@ func NewScraper(remote string) Scraper {
 
 	return Scraper{
 		client,
-		remote,
 	}
 }
 
