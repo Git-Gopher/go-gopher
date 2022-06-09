@@ -42,7 +42,6 @@ func TestScrapeGithubModel(t *testing.T) {
 			model, err := ScrapeGithubModel(tt.args.owner, tt.args.name)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("ScrapeGithubModel() error = %v, wantErr %v", err, tt.wantErr)
-				return
 			}
 			fmt.Printf("model: %v\n", model)
 

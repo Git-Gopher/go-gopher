@@ -1,0 +1,6 @@
+name: "Analyze Workflow"
+description: "Analyze and give feedback on the type of git workflow used"
+
+branding:
+  icon: "alert-triangle"
+  color: "blue"
