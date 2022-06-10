@@ -8,6 +8,7 @@ import (
 	"github.com/joho/godotenv"
 )
 
+// TODO: Move this to test utils?
 func environment() {
 	if err := godotenv.Load("../.env"); err != nil {
 		log.Println("Error loading .env file")
