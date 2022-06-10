@@ -30,12 +30,28 @@ func NewPullRequestDetector(detect PullRequestDetect) *PullRequestDetector {
 }
 
 // TODO: We should change this to the enriched model
-func (cd *PullRequestDetector) Run(model *local.GitModel) error {
+func (pd *PullRequestDetector) Run(model *local.GitModel) error {
+	return nil
+}
+
+func (pd *PullRequestDetector) Run2(model *github.GithubModel) error {
+	for _, pr := range model.PullRequests {
+		pr := pr
+		detected, err := pd.detect(&pr)
+		pd.total++
+		if err != nil {
+			return err
+		}
+		if detected {
+			pd.found++
+		}
+
+	}
 	return nil
 }
 
 // Github Workflow: Pull requests must have at least one associated issue.
-func NewPullRequestIssueDetector() PullRequestDetect {
+func PullRequestIssueDetector() PullRequestDetect {
 	return func(pullRequest *github.PullRequest) (bool, error) {
 		if len(pullRequest.Issues) == 0 {
 			return false, nil

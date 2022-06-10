@@ -1,6 +1,7 @@
 package detector
 
 import (
+	"github.com/Git-Gopher/go-gopher/model/github"
 	"github.com/Git-Gopher/go-gopher/model/local"
 )
 
@@ -28,6 +29,10 @@ func (cd *CommitDetector) Run(model *local.GitModel) error {
 		}
 	}
 
+	return nil
+}
+
+func (cd *CommitDetector) Run2(model *github.GithubModel) error {
 	return nil
 }
 
