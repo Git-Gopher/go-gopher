@@ -1,4 +1,4 @@
-name: check
+name: git-gopher
 on:
   push:
     branches: main
@@ -9,5 +9,5 @@ jobs:
   check:
     runs-on: ubuntu-latest
     steps:
-    - name: Analyze Workflow
-      uses: Git-Gopher/go-gopher-action@latest
+      - name: Analyze Workflow
+        uses: Git-Gopher/go-gopher-action@0.0.4
