@@ -43,7 +43,7 @@ func ScrapeGithubModel(owner, name string) (*GithubModel, error) {
 	}
 
 	// Map scraped PRs to Model PRs
-	var prs []PullRequest
+	prs := make([]PullRequest, 0, len(sprs))
 	for _, spr := range sprs {
 		var issues []Issue
 		for _, si := range spr.ClosingIssuesReferences.Edges {
