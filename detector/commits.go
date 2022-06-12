@@ -15,7 +15,7 @@ type CommitDetector struct {
 	detect CommitDetect
 }
 
-// TODO: We should change this to the enriched model
+// TODO: We should change this to the enriched model.
 func (cd *CommitDetector) Run(model *local.GitModel) error {
 	for _, c := range model.Commits {
 		c := c

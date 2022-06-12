@@ -1,16 +1,11 @@
 package enriched
 
-import (
-	"github.com/Git-Gopher/go-gopher/model/github"
-	"github.com/Git-Gopher/go-gopher/model/local"
-)
-
 type EnrichedModel struct{}
 
-func NewEnrichedModel(local *local.GitModel, github *github.GithubModel) (*EnrichedModel, error) {
-	return nil, nil
-}
+// func NewEnrichedModel(local *local.GitModel, github *github.GithubModel) (*EnrichedModel, error) {
+// 	return nil, nil
+// }
 
-// Create an enriched model by pulling down the repo and scraping
+// Create an enriched model by pulling down the repo and scraping.
 func CreateEnrichedModel(remote string) {
 }

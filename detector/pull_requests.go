@@ -7,7 +7,7 @@ import (
 
 type PullRequestDetect func(pullRequest *github.PullRequest) (bool, error)
 
-// XXX: violated, found, total should be contained within a struct and then added to this instead as a composite struct
+// XXX: violated, found, total should be contained within a struct and then added to this instead as a composite struct.
 type PullRequestDetector struct {
 	violated int
 	found    int
@@ -29,7 +29,7 @@ func NewPullRequestDetector(detect PullRequestDetect) *PullRequestDetector {
 	}
 }
 
-// TODO: We should change this to the enriched model
+// TODO: We should change this to the enriched model.
 func (pd *PullRequestDetector) Run(model *local.GitModel) error {
 	return nil
 }
@@ -45,8 +45,8 @@ func (pd *PullRequestDetector) Run2(model *github.GithubModel) error {
 		if detected {
 			pd.found++
 		}
-
 	}
+
 	return nil
 }
 

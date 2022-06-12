@@ -69,7 +69,7 @@ type pullRequest struct {
 	} `graphql:"closingIssuesReferences(first: $first)"`
 }
 
-// TODO: Pagination: fetch entire closing issue reference history and handle nested pagination
+// TODO: Pagination: fetch entire closing issue reference history and handle nested pagination.
 type pullRequestQuery struct {
 	Repository struct {
 		PullRequests struct {
