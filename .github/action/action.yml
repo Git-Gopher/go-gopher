@@ -1,0 +1,14 @@
+name: "Analyze Workflow"
+description: "Analyze and give feedback on the type of git workflow used"
+inputs:
+  token:
+    description: Used to fetch repository information from graphql
+    default: ${{ github.token }}
+runs:
+  using: 'docker'
+  image: 'Dockerfile'
+  args: 
+    - ${{ github.repository }}
+branding:
+  icon: "alert-triangle"
+  color: "blue"
