@@ -11,3 +11,5 @@ jobs:
     steps:
       - name: Analyze Workflow
         uses: Git-Gopher/go-gopher-action@0.0.4
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
