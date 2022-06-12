@@ -1,0 +1,13 @@
+name: check
+on:
+  push:
+    branches: main
+  pull_request:
+    branches: main
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Analyze Workflow
+      uses: Git-Gopher/go-gopher-action@0.0.1
