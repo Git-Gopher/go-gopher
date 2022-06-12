@@ -4,7 +4,7 @@ import (
 	"fmt"
 
 	"github.com/Git-Gopher/go-gopher/detector"
-	"github.com/Git-Gopher/go-gopher/model"
+	"github.com/Git-Gopher/go-gopher/model/local"
 )
 
 func GithubFlowWorkflow() *Workflow {
@@ -12,6 +12,7 @@ func GithubFlowWorkflow() *Workflow {
 		Name: "Github Flow",
 		WeightedDetectors: []WeightedDetector{
 			{Weight: 2, Detector: detector.NewCommitDetector(detector.TwoParentsCommitDetect())},
+			{Weight: 1, Detector: detector.NewPullRequestDetector(detector.PullRequestIssueDetector())},
 		},
 	}
 }
@@ -27,7 +28,7 @@ type Workflow struct {
 }
 
 // TODO: Use weight here.
-func (w *Workflow) Analyze(model *model.GitModel) (violated int, count int, total int, err error) {
+func (w *Workflow) Analyze(model *local.GitModel) (violated int, count int, total int, err error) {
 	for _, wd := range w.WeightedDetectors {
 		if err := wd.Detector.Run(model); err != nil {
 			// XXX: Change this to acceptable behavior

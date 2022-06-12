@@ -29,11 +29,6 @@ func main() {
 			Action: func(c *cli.Context) error {
 				url := c.Args().Get(0)
 
-				// Default to project repository
-				if url == "" {
-					url = "https://github.com/jgm/pandoc"
-				}
-
 				r, _ := git.Clone(memory.NewStorage(), nil, &git.CloneOptions{
 					URL: url,
 				})
@@ -42,6 +37,11 @@ func main() {
 				ref, _ := r.Head()
 
 				log.Println(ref)
+
+				// TODO:
+				// From the url create a enriched model...
+				// Pass model into workflow...
+				// Workflow outputs advice to console (warnings)...
 
 				return nil
 			},

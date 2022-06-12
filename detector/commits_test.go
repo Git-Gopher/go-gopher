@@ -6,7 +6,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/Git-Gopher/go-gopher/model"
+	"github.com/Git-Gopher/go-gopher/model/local"
 	"github.com/go-git/go-billy/v5/memfs"
 	"github.com/go-git/go-git/v5"
 	"github.com/go-git/go-git/v5/plumbing"
@@ -16,7 +16,7 @@ import (
 	"github.com/joho/godotenv"
 )
 
-func FetchRepository(t *testing.T, remote string) *git.Repository {
+func fetchRepository(t *testing.T, remote, branch string) *git.Repository {
 	t.Helper()
 
 	if err := godotenv.Load("../.env"); err != nil {
@@ -33,7 +33,8 @@ func FetchRepository(t *testing.T, remote string) *git.Repository {
 			Username: "non-empty",
 			Password: token,
 		},
-		URL: remote,
+		URL:           remote,
+		ReferenceName: plumbing.NewBranchReferenceName(branch),
 	})
 	if err != nil {
 		t.Errorf("%v", err)
@@ -44,7 +45,7 @@ func FetchRepository(t *testing.T, remote string) *git.Repository {
 }
 
 func TestTwoParentsCommitDetect(t *testing.T) {
-	r := FetchRepository(t, "https://github.com/Git-Gopher/github-two-parents-merged")
+	r := fetchRepository(t, "https://github.com/Git-Gopher/tests", "test/two-parents-merged/0")
 	tests := []struct {
 		name string
 		want CommitDetect
@@ -53,8 +54,8 @@ func TestTwoParentsCommitDetect(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			// create the model
-			model, err := model.NewGitModel(r)
+			// Create the model
+			model, err := local.NewGitModel(r)
 			if err != nil {
 				t.Errorf("TestTwoParentsCommitDetect() create model = %v", err)
 			}
@@ -158,7 +159,7 @@ func TestTwoParentsCommitDetectGoGit(t *testing.T) {
 	}
 
 	// create the model
-	model, err := model.NewGitModel(r)
+	model, err := local.NewGitModel(r)
 	if err != nil {
 		t.Errorf("TestTwoParentsCommitDetectGoGit() model = %v", err)
 	}
