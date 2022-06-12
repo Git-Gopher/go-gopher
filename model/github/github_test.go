@@ -2,23 +2,12 @@ package github
 
 import (
 	"fmt"
-	"log"
-	"os"
 	"testing"
 
-	"github.com/joho/godotenv"
+	"github.com/Git-Gopher/go-gopher/utils"
 )
 
 // TODO: Move this to test utils?
-func environment() {
-	if err := godotenv.Load("../../.env"); err != nil {
-		log.Println("Error loading .env file")
-	}
-
-	if os.Getenv("GITHUB_TOKEN") == "" {
-		log.Fatalln("Error loading env GITHUB_TOKEN")
-	}
-}
 
 func TestScrapeGithubModel(t *testing.T) {
 	type args struct {
@@ -38,7 +27,7 @@ func TestScrapeGithubModel(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			environment()
+			utils.Environment("../../.env")
 			model, err := ScrapeGithubModel(tt.args.owner, tt.args.name)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("ScrapeGithubModel() error = %v, wantErr %v", err, tt.wantErr)

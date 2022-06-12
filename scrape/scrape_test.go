@@ -1,26 +1,14 @@
 package scrape
 
 import (
-	"log"
-	"os"
 	"testing"
 
-	"github.com/joho/godotenv"
+	"github.com/Git-Gopher/go-gopher/utils"
 )
-
-func environment() {
-	if err := godotenv.Load("../.env"); err != nil {
-		log.Println("Error loading .env file")
-	}
-
-	if os.Getenv("GITHUB_TOKEN") == "" {
-		log.Fatalln("Error loading env GITHUB_TOKEN")
-	}
-}
 
 func TestScraper_ScrapeUsers(t *testing.T) {
 	// XXX: This test can change from underneath us if we decide to edit it
-	environment()
+	utils.Environment("../.env")
 	s := NewScraper()
 	users, err := s.ScrapeUsers()
 	if err != nil {
@@ -35,7 +23,7 @@ func TestScraper_ScrapeUsers(t *testing.T) {
 }
 
 func TestScraper_ScrapePullRequests(t *testing.T) {
-	environment()
+	utils.Environment("../.env")
 	s := NewScraper()
 	prs, err := s.ScrapePullRequests("Git-Gopher", "tests")
 	if err != nil {
