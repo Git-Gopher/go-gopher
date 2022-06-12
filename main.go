@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"log"
 	"os"
 
@@ -30,24 +29,24 @@ func main() {
 
 				r, err := git.PlainOpen(workspace)
 				if err != nil {
-					fmt.Printf("cannot read repo: %v\n", err)
+					log.Printf("cannot read repo: %v\n", err)
 					os.Exit(1)
 				}
 
 				repo, err := local.NewGitModel(r)
 				if err != nil {
-					fmt.Printf("Could not create GitModel: %v\n", err)
+					log.Printf("Could not create GitModel: %v\n", err)
 					os.Exit(1)
 				}
 				ghwf := workflow.GithubFlowWorkflow()
 				violated, count, total, err := ghwf.Analyze(repo)
 				if err != nil {
-					fmt.Printf("Failed to analyze: %v\n", err)
+					log.Printf("Failed to analyze: %v\n", err)
 					os.Exit(1)
 				}
-				fmt.Printf("violated: %d\n", violated)
-				fmt.Printf("count: %d\n", count)
-				fmt.Printf("total: %d\n", total)
+				log.Printf("violated: %d\n", violated)
+				log.Printf("count: %d\n", count)
+				log.Printf("total: %d\n", total)
 
 				return nil
 			},
@@ -72,16 +71,16 @@ func main() {
 				// From the url create a enriched model...
 				repo, err := local.NewGitModel(r)
 				if err != nil {
-					fmt.Printf("err: %v\n", err)
+					log.Printf("err: %v\n", err)
 				}
 				ghwf := workflow.GithubFlowWorkflow()
 				violated, count, total, err := ghwf.Analyze(repo)
 				if err != nil {
-					fmt.Printf("err: %v\n", err)
+					log.Printf("err: %v\n", err)
 				}
-				fmt.Printf("violated: %d\n", violated)
-				fmt.Printf("count: %d\n", count)
-				fmt.Printf("total: %d\n", total)
+				log.Printf("violated: %d\n", violated)
+				log.Printf("count: %d\n", count)
+				log.Printf("total: %d\n", total)
 
 				return nil
 			},
