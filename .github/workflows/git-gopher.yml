@@ -1,0 +1,17 @@
+name: git-gopher
+on:
+  push:
+    branches: main
+  pull_request:
+    branches: main
+
+jobs:
+  git-gopher:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+      - name: Analyze Workflow
+        uses: Git-Gopher/go-gopher-action@0.0.4
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
