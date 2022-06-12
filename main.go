@@ -4,26 +4,55 @@ import (
 	"log"
 	"os"
 
+	"github.com/Git-Gopher/go-gopher/model/local"
+	"github.com/Git-Gopher/go-gopher/utils"
+	workflow "github.com/Git-Gopher/go-gopher/worflow"
 	"github.com/go-git/go-git/v5"
 	"github.com/go-git/go-git/v5/storage/memory"
-	"github.com/joho/godotenv"
 	"github.com/urfave/cli/v2"
 )
 
 func main() {
-	if err := godotenv.Load(); err != nil {
-		log.Println("Error loading .env file")
-	}
-
-	if os.Getenv("GITHUB_TOKEN") == "" {
-		log.Fatalln("Error loading env GITHUB_TOKEN")
-	}
-
+	utils.Environment(".env")
 	app := cli.NewApp()
 	app.EnableBashCompletion = true
 	app.Commands = []*cli.Command{
 		{
-			Name:    "analyze",
+			Name:    "action",
+			Aliases: []string{"a"},
+			Usage:   "detect a workflow for current root",
+			Action: func(c *cli.Context) error {
+				// repository := os.Getenv("GITHUB_REPOSITORY")
+				workspace := os.Getenv("GITHUB_WORKSPACE")
+				// sha := os.Getenv("GITHUB_SHA") // commit sha triggered
+				// ref := os.Getenv("GITHUB_REF") // branch ref triggered
+
+				r, err := git.PlainOpen(workspace)
+				if err != nil {
+					log.Printf("cannot read repo: %v\n", err)
+					os.Exit(1)
+				}
+
+				repo, err := local.NewGitModel(r)
+				if err != nil {
+					log.Printf("Could not create GitModel: %v\n", err)
+					os.Exit(1)
+				}
+				ghwf := workflow.GithubFlowWorkflow()
+				violated, count, total, err := ghwf.Analyze(repo)
+				if err != nil {
+					log.Printf("Failed to analyze: %v\n", err)
+					os.Exit(1)
+				}
+				log.Printf("violated: %d\n", violated)
+				log.Printf("count: %d\n", count)
+				log.Printf("total: %d\n", total)
+
+				return nil
+			},
+		},
+		{
+			Name:    "memory",
 			Aliases: []string{"a"},
 			Usage:   "detect a workflow for a given git project url",
 			Action: func(c *cli.Context) error {
@@ -40,8 +69,18 @@ func main() {
 
 				// TODO:
 				// From the url create a enriched model...
-				// Pass model into workflow...
-				// Workflow outputs advice to console (warnings)...
+				repo, err := local.NewGitModel(r)
+				if err != nil {
+					log.Printf("err: %v\n", err)
+				}
+				ghwf := workflow.GithubFlowWorkflow()
+				violated, count, total, err := ghwf.Analyze(repo)
+				if err != nil {
+					log.Printf("err: %v\n", err)
+				}
+				log.Printf("violated: %d\n", violated)
+				log.Printf("count: %d\n", count)
+				log.Printf("total: %d\n", total)
 
 				return nil
 			},
