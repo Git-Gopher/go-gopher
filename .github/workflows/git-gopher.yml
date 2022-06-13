@@ -12,6 +12,6 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v3
       - name: Analyze Workflow
-        uses: Git-Gopher/go-gopher-action@0.0.4
+        uses: Git-Gopher/go-gopher-action@latest
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
