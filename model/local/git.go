@@ -13,6 +13,10 @@ var ErrCommitEmpty = errors.New("Commit empty")
 
 type Hash [20]byte
 
+func (h Hash) ToByte() []byte {
+	return h[:]
+}
+
 type Signature struct {
 	// Name represents a person name. It is an arbitrary string.
 	Name string
