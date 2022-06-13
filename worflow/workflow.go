@@ -29,7 +29,11 @@ type Workflow struct {
 }
 
 // TODO: Use weight here.
-func (w *Workflow) Analyze(model *local.GitModel) (violated int, count int, total int, violations []violation.Violation, err error) {
+func (w *Workflow) Analyze(model *local.GitModel) (violated int,
+	count int,
+	total int,
+	violations []violation.Violation, err error,
+) {
 	for _, wd := range w.WeightedDetectors {
 		if err := wd.Detector.Run(model); err != nil {
 			// XXX: Change this to acceptable behavior

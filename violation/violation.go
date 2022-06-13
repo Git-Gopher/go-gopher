@@ -11,23 +11,24 @@ type Violation interface {
 	Name() string                // required: Internal name of the violation.
 	Message() string             // required: Warning message.
 	Suggestion() (string, error) // required: Suggests a remedy for the violation.
-	Display() string             // required: Formal display line of the violation which combines all data of the violation, should be displayed to the user.
+	Display() string             // required: Formal display line of the violation
 	FileLocation() (string, error)
 	LineLocation() (int, error)
 }
 
-// display struct implements the Display method part of Violation using Violation
+// display struct implements the Display method part of Violation using Violation.
 type display struct {
 	v Violation
 }
 
-// Display implements Violation
+// Display implements Violation.
 func (d *display) Display() string {
-	var format string = "%s: %s.\n\t%s"
+	var format string = "%s: %s"
 	suggestion, err := d.v.Suggestion()
 	if err != nil {
 		return fmt.Sprintf(format, d.v.Name(), d.v.Message())
 	}
-	format = format + "\n\t%s"
+	format += "\n\t%s"
+
 	return fmt.Sprintf(format, d.v.Name(), d.v.Message(), suggestion)
 }

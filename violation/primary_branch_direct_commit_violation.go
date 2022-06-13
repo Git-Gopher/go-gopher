@@ -6,7 +6,7 @@ func NewPrimaryBranchDirectCommitViolation(
 	primaryBranch string,
 	commitHash string,
 	parentHashes []string,
-) Violation {
+) *PrimaryBranchDirectCommitViolation {
 	violation := &PrimaryBranchDirectCommitViolation{
 		display:       nil,
 		parentHashes:  parentHashes,
@@ -19,7 +19,7 @@ func NewPrimaryBranchDirectCommitViolation(
 }
 
 // PrimaryBranchDirectCommitViolation is violation when a commit is done directly to primary branch without merging
-// from feature branches
+// from feature branches.
 type PrimaryBranchDirectCommitViolation struct {
 	*display
 	parentHashes  []string
@@ -27,28 +27,29 @@ type PrimaryBranchDirectCommitViolation struct {
 	commitHash    string
 }
 
-// FileLocation implements Violation
+// FileLocation implements Violation.
 func (*PrimaryBranchDirectCommitViolation) FileLocation() (string, error) {
 	return "", ErrViolationMethodNotExist
 }
 
-// LineLocation implements Violation
+// LineLocation implements Violation.
 func (*PrimaryBranchDirectCommitViolation) LineLocation() (int, error) {
 	return 0, ErrViolationMethodNotExist
 }
 
-// Message implements Violation
+// Message implements Violation.
 func (p *PrimaryBranchDirectCommitViolation) Message() string {
 	format := "Commit \"%s\" has been directly committed to the primary branch \"%s\""
-	return fmt.Sprint(format, p.commitHash, p.primaryBranch)
+
+	return fmt.Sprintf(format, p.commitHash, p.primaryBranch)
 }
 
-// Name implements Violation
+// Name implements Violation.
 func (*PrimaryBranchDirectCommitViolation) Name() string {
 	return "PrimaryBranchDirectCommitViolation"
 }
 
-// Suggestion implements Violation
+// Suggestion implements Violation.
 func (p *PrimaryBranchDirectCommitViolation) Suggestion() (string, error) {
 	return fmt.Sprintf("All commits should be merged in to the branch \"%s\" ", p.primaryBranch), nil
 }

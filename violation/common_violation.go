@@ -1,8 +1,9 @@
 package violation
 
-func NewCommonViolation(message string) Violation {
+func NewCommonViolation(message string) *CommonViolation {
 	common := &CommonViolation{display: nil, message: message}
 	common.display = &display{common}
+
 	return common
 }
 
