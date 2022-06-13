@@ -5,6 +5,7 @@ import (
 
 	"github.com/Git-Gopher/go-gopher/detector"
 	"github.com/Git-Gopher/go-gopher/model/local"
+	"github.com/Git-Gopher/go-gopher/violation"
 )
 
 func GithubFlowWorkflow() *Workflow {
@@ -28,17 +29,22 @@ type Workflow struct {
 }
 
 // TODO: Use weight here.
-func (w *Workflow) Analyze(model *local.GitModel) (violated int, count int, total int, err error) {
+func (w *Workflow) Analyze(model *local.GitModel) (violated int,
+	count int,
+	total int,
+	violations []violation.Violation, err error,
+) {
 	for _, wd := range w.WeightedDetectors {
 		if err := wd.Detector.Run(model); err != nil {
 			// XXX: Change this to acceptable behavior
 
-			return 0, 0, 0, fmt.Errorf("Failed to analyze workflow: %w", err)
+			return 0, 0, 0, nil, fmt.Errorf("Failed to analyze workflow: %w", err)
 		}
-		v, c, t := wd.Detector.Result()
+		v, c, t, vs := wd.Detector.Result()
 		violated += v
 		count += c
 		total += t
+		violations = append(violations, vs...)
 	}
 
 	return

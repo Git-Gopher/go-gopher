@@ -39,7 +39,7 @@ func main() {
 					os.Exit(1)
 				}
 				ghwf := workflow.GithubFlowWorkflow()
-				violated, count, total, err := ghwf.Analyze(repo)
+				violated, count, total, violations, err := ghwf.Analyze(repo)
 				if err != nil {
 					log.Printf("Failed to analyze: %v\n", err)
 					os.Exit(1)
@@ -47,6 +47,10 @@ func main() {
 				log.Printf("violated: %d\n", violated)
 				log.Printf("count: %d\n", count)
 				log.Printf("total: %d\n", total)
+				log.Printf("\n###### Violations ######\n")
+				for _, violation := range violations {
+					log.Println(violation.Message())
+				}
 
 				return nil
 			},
@@ -74,13 +78,17 @@ func main() {
 					log.Printf("err: %v\n", err)
 				}
 				ghwf := workflow.GithubFlowWorkflow()
-				violated, count, total, err := ghwf.Analyze(repo)
+				violated, count, total, violations, err := ghwf.Analyze(repo)
 				if err != nil {
 					log.Printf("err: %v\n", err)
 				}
 				log.Printf("violated: %d\n", violated)
 				log.Printf("count: %d\n", count)
 				log.Printf("total: %d\n", total)
+				log.Printf("\n###### Violations ######\n")
+				for _, violation := range violations {
+					log.Println(violation.Message())
+				}
 
 				return nil
 			},
