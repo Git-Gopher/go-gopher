@@ -22,3 +22,15 @@ jobs:
         with:
           push: true
           tags: gitgopher/gitgopher:latest
+
+  # Test that the image is working
+  git-gopher:
+    needs: docker
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+      - name: Analyze Workflow
+        uses: Git-Gopher/go-gopher-action@latest
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
