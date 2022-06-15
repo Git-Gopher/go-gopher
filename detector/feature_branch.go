@@ -101,7 +101,6 @@ func (bs *FeatureBranchDetector) checkNext(c *CommitGraph) *CommitGraph {
 	))
 
 	return bs.checkNext(c.ParentCommits[0])
-
 }
 
 // Check if the commit is made as the start of the branch

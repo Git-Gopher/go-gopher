@@ -18,6 +18,7 @@ type Issue struct {
 	Title  string
 	Author *Author
 }
+
 type PullRequest struct {
 	Id     string
 	Body   string
