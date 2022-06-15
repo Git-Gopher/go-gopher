@@ -17,7 +17,7 @@ type CrissCrossBranchInfo struct {
 
 // BranchMatrixModel is an array of branch matrix.
 // the matrix consists of all branches * all branches.
-// e.g. A*B, A*C, B*C if branches A, B, C exist
+// e.g. A*B, A*C, B*C if branches A, B, C exist.
 type BranchMatrixModel struct {
 	A, B              *CrissCrossBranchInfo
 	CrissCrossCommits []string
@@ -57,6 +57,7 @@ func (cc *BranchMatrixDetector) Run(branchMatrix []BranchMatrixModel) error {
 			cc.found++
 		}
 	}
+
 	return nil
 }
 
@@ -77,6 +78,7 @@ func NewCrissCrossMergeDetect() BranchMatrixDetect {
 		if len(branchMatrix.CrissCrossCommits) >= 2 {
 			return true, nil, nil
 		}
+
 		return false, nil, nil
 	}
 }

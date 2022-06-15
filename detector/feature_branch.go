@@ -12,7 +12,7 @@ var (
 	ErrFeatureBranchNoCommonAncestor = errors.New("feature branch no common ancestor found")
 )
 
-// TODO: move to models
+// TODO: move to models.
 type CommitGraph struct {
 	Hash          string
 	ParentCommits []*CommitGraph
@@ -104,7 +104,7 @@ func (bs *FeatureBranchDetector) checkNext(c *CommitGraph) *CommitGraph {
 }
 
 // Check if the commit is made as the start of the branch
-// if not return last commit with two parent and associated violations
+// if not return last commit with two parent and associated violations.
 func (bs *FeatureBranchDetector) checkEnd(
 	c *CommitGraph,
 	v []violation.Violation,

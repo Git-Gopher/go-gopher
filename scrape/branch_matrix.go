@@ -13,7 +13,7 @@ type CrissCrossBranchInfo struct {
 
 // BranchMatrixModel is an array of branch matrix.
 // the matrix consists of all branches * all branches.
-// e.g. A*B, A*C, B*C if branches A, B, C exist
+// e.g. A*B, A*C, B*C if branches A, B, C exist.
 type BranchMatrixModel struct {
 	A, B              *CrissCrossBranchInfo
 	CrissCrossCommits []string
