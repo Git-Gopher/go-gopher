@@ -1,6 +1,11 @@
 package detector
 
-import "errors"
+import (
+	"errors"
+	"math"
+
+	"github.com/Git-Gopher/go-gopher/violation"
+)
 
 var (
 	ErrFeatureBranchModelNil         = errors.New("feature branch model is nil")
@@ -14,12 +19,8 @@ type CommitGraph struct {
 }
 
 type FeatureBranchModel struct {
-	Default  string // default branch name
-	Branches []struct {
-		Name   string       // branch name
-		Remote string       // branch remote name
-		Head   *CommitGraph // head commit of the branch
-	}
+	BranchName string
+	Head       *CommitGraph
 }
 
 type FeatureBranchDetect func(branches *FeatureBranchModel) (bool, error)
@@ -27,9 +28,12 @@ type FeatureBranchDetect func(branches *FeatureBranchModel) (bool, error)
 // FeatureBranchDetector is a detector that detects multiple remote branches (not deleted).
 // And check if the branch is a feature branch or a main/develop branch.
 type FeatureBranchDetector struct {
-	violated int // non feature branches aka develop/release etc. (does not account default branch)
-	found    int // total feature branches
-	total    int // total branches
+	violated   int // non feature branches aka develop/release etc. (does not account default branch)
+	found      int // total feature branches
+	total      int // total branches
+	violations []violation.Violation
+
+	primaryBranch string
 
 	detect FeatureBranchDetect
 }
@@ -39,78 +43,94 @@ func (bs *FeatureBranchDetector) Run(model *FeatureBranchModel) error {
 		return ErrFeatureBranchModelNil
 	}
 
-	// make sure default branch is always first branch
-	// we assume that the default branch likely the main/master branch
-	if model.Default != model.Branches[0].Name {
-		for i, b := range model.Branches {
-			if b.Name == model.Default {
-				model.Branches[0], model.Branches[i] = model.Branches[i], model.Branches[0]
+	bs.violated = 0
+	bs.found = 0
+	bs.total = 0
+	bs.violations = make([]violation.Violation, 0)
 
-				break
-			}
-		}
-	}
-
-	scanBranches := model.Branches
-
-	commitHistory := make(map[*CommitGraph]struct{})
-
-	// Runs BFS on the branches
-	for len(scanBranches) != 0 {
-		for i, branch := range scanBranches {
-			// No more commits
-			if branch.Head == nil {
-				scanBranches = append(scanBranches[:i], scanBranches[i+1:]...)
-				if branch.Name != model.Default {
-					// if branch is not default branch, then it is not a feature branch
-					bs.violated++
-				}
-
-				continue
-			}
-
-			// Check if we have already visited this commit
-			if _, ok := commitHistory[branch.Head]; ok {
-				// Remove scan branch from the list
-				scanBranches = append(scanBranches[:i], scanBranches[i+1:]...)
-
-				continue
-			}
-
-			// Run if commit has multiple parents and recursively find the common ancestor of the parents
-			if len(branch.Head.ParentCommits) > 1 {
-				var recursiveCommit func(commits []*CommitGraph) (*CommitGraph, error)
-				recursiveCommit = func(commits []*CommitGraph) (*CommitGraph, error) {
-					for _, commit := range commits {
-						if _, ok := commitHistory[commit]; ok {
-							return commit, nil
-						}
-						commitHistory[commit] = struct{}{}
-
-						if len(commit.ParentCommits) > 1 {
-							return recursiveCommit(commit.ParentCommits)
-						}
-					}
-					// No commit that repeats
-					return nil, ErrFeatureBranchNoCommonAncestor // should never happen
-				}
-
-				nextCommit, err := recursiveCommit(branch.Head.ParentCommits)
-				if err != nil {
-					return err // should never happen
-				}
-
-				branch.Head = nextCommit // set nextCommit as the head of the branch
-				scanBranches[i] = branch
-
-				continue
-			}
-
-			// Branch has only one parent
-			commitHistory[branch.Head] = struct{}{}
-			scanBranches[i] = branch
-		}
-	}
+	bs.primaryBranch = model.BranchName
 
 	return nil
+}
+
+func (bs *FeatureBranchDetector) checkNext(c *CommitGraph) *CommitGraph {
+	if c == nil {
+		return nil
+	}
+
+	// if it has multiple parents
+	if len(c.ParentCommits) > 1 {
+		for _, child := range c.ParentCommits {
+			if len(child.ParentCommits) > 1 {
+				// skip other branch
+				return bs.checkNext(child)
+			}
+		}
+
+		// if both parents have one commit
+		// assumes the shorter branch to be the violation
+		lenViolations := math.MaxInt
+		var violations []violation.Violation
+		var nextCommit *CommitGraph
+
+		for _, child := range c.ParentCommits {
+			next, v := bs.checkEnd(child, []violation.Violation{})
+			if next == nil {
+				// no more commits to check
+				bs.violations = append(bs.violations, v...)
+
+				return nil
+			}
+			if len(v) < lenViolations {
+				lenViolations = len(v)
+				violations = v
+				nextCommit = next
+			}
+		}
+
+		bs.violations = append(bs.violations, violations...)
+
+		return bs.checkNext(nextCommit)
+	}
+
+	// only one parent (violation)
+	bs.violations = append(bs.violations, violation.NewPrimaryBranchDirectCommitViolation(
+		bs.primaryBranch,
+		c.Hash,
+		[]string{c.ParentCommits[0].Hash},
+	))
+
+	return bs.checkNext(c.ParentCommits[0])
+
+}
+
+// Check if the commit is made as the start of the branch
+// if not return last commit with two parent and associated violations
+func (bs *FeatureBranchDetector) checkEnd(
+	c *CommitGraph,
+	v []violation.Violation,
+) (*CommitGraph, []violation.Violation) {
+	if c == nil {
+		return nil, v
+	}
+
+	// No more commits to recursive check
+	if len(c.ParentCommits) == 0 {
+		// All violations are removed as the start of the branch
+		return nil, []violation.Violation{}
+	}
+
+	// The parent has two commits
+	if len(c.ParentCommits) > 1 {
+		return c, v
+	}
+
+	// The parent has one commit
+	v = append(v, violation.NewPrimaryBranchDirectCommitViolation(
+		bs.primaryBranch,
+		c.Hash,
+		[]string{c.ParentCommits[0].Hash},
+	))
+
+	return bs.checkEnd(c, v)
 }
