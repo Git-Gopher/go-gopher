@@ -60,10 +60,13 @@ func (bs *FeatureBranchDetector) checkNext(c *CommitGraph) *CommitGraph {
 		return nil
 	}
 
+	bs.total += 1
+
 	// if it has multiple parents
 	if len(c.ParentCommits) > 1 {
 		for _, child := range c.ParentCommits {
 			if len(child.ParentCommits) > 1 {
+				bs.found += 1
 				// skip other branch
 				return bs.checkNext(child)
 			}
@@ -134,4 +137,8 @@ func (bs *FeatureBranchDetector) checkEnd(
 	))
 
 	return bs.checkEnd(c, v)
+}
+
+func (bs *FeatureBranchDetector) Result() (int, int, int, []violation.Violation) {
+	return bs.violated, bs.found, bs.total, bs.violations
 }
