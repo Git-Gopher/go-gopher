@@ -50,6 +50,8 @@ func (bs *FeatureBranchDetector) Run(model *FeatureBranchModel) error {
 
 	bs.primaryBranch = model.BranchName
 
+	bs.checkNext(model.Head)
+
 	return nil
 }
 
