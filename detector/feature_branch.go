@@ -23,8 +23,6 @@ type FeatureBranchModel struct {
 	Head       *CommitGraph
 }
 
-type FeatureBranchDetect func(branches *FeatureBranchModel) (bool, error)
-
 // FeatureBranchDetector is a detector that detects multiple remote branches (not deleted).
 // And check if the branch is a feature branch or a main/develop branch.
 type FeatureBranchDetector struct {
@@ -34,8 +32,6 @@ type FeatureBranchDetector struct {
 	violations []violation.Violation
 
 	primaryBranch string
-
-	detect FeatureBranchDetect
 }
 
 func (bs *FeatureBranchDetector) Run(model *FeatureBranchModel) error {
