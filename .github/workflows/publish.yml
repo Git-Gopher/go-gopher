@@ -32,6 +32,11 @@ jobs:
         uses: actions/checkout@v3
         with:
           fetch-depth: 0
+      - name: Use Cache
+      - uses: actions/cache@v3
+        with:
+          path: cache.json
+          key: ${{ github.base_ref }}
       - name: Analyze Workflow
         uses: Git-Gopher/go-gopher-action@latest
         env:

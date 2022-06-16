@@ -4,6 +4,7 @@ import (
 	"log"
 	"os"
 
+	"github.com/Git-Gopher/go-gopher/cache"
 	"github.com/Git-Gopher/go-gopher/model/local"
 	"github.com/Git-Gopher/go-gopher/utils"
 	workflow "github.com/Git-Gopher/go-gopher/worflow"
@@ -24,25 +25,25 @@ func main() {
 			Action: func(c *cli.Context) error {
 				// repository := os.Getenv("GITHUB_REPOSITORY")
 				workspace := os.Getenv("GITHUB_WORKSPACE")
+				if workspace == "" {
+					log.Fatalf("GITHUB_WORKSPACE is not set")
+				}
 				// sha := os.Getenv("GITHUB_SHA") // commit sha triggered
 				// ref := os.Getenv("GITHUB_REF") // branch ref triggered
 
 				r, err := git.PlainOpen(workspace)
 				if err != nil {
-					log.Printf("cannot read repo: %v\n", err)
-					os.Exit(1)
+					log.Fatalf("cannot read repo: %v\n", err)
 				}
 
 				repo, err := local.NewGitModel(r)
 				if err != nil {
-					log.Printf("Could not create GitModel: %v\n", err)
-					os.Exit(1)
+					log.Fatalf("Could not create GitModel: %v\n", err)
 				}
 				ghwf := workflow.GithubFlowWorkflow()
 				violated, count, total, violations, err := ghwf.Analyze(repo)
 				if err != nil {
-					log.Printf("Failed to analyze: %v\n", err)
-					os.Exit(1)
+					log.Fatalf("Failed to analyze: %v\n", err)
 				}
 				log.Printf("violated: %d\n", violated)
 				log.Printf("count: %d\n", count)
@@ -51,6 +52,10 @@ func main() {
 				for _, violation := range violations {
 					log.Println(violation.Message())
 				}
+
+				// Create cache and write to disk
+				cache := cache.NewCache(repo)
+				cache.Write()
 
 				return nil
 			},
