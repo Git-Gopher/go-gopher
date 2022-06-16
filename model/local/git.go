@@ -77,6 +77,7 @@ func NewCommit(o *object.Commit) *Commit {
 
 type GitModel struct {
 	Commits []Commit
+	// Branches []Branch
 }
 
 func NewGitModel(repo *git.Repository) (*GitModel, error) {

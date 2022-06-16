@@ -63,17 +63,6 @@ func NewCommitDetector(detect CommitDetect) *CommitDetector {
 	}
 }
 
-// Example detector to check if the commit is greater than 10 characters.
-func NewLineLengthCommitDetect() CommitDetect {
-	return func(commit *local.Commit) (bool, violation.Violation, error) {
-		if len(commit.Message) > 10 {
-			return false, violation.NewCommonViolation("Commit message longer than 10"), nil
-		}
-
-		return true, nil, nil
-	}
-}
-
 // All commits on the main branch for github flow should be merged in,
 // meaning that they have two parents(the main branch and the feature branch).
 func TwoParentsCommitDetect() CommitDetect {
@@ -91,5 +80,15 @@ func TwoParentsCommitDetect() CommitDetect {
 
 		// TODO: Don't use hardcoded primary branch
 		return false, violation.NewPrimaryBranchDirectCommitViolation("main", commitHash, parentHashes), nil
+	}
+}
+
+// https://github.com/lithammer/fuzzysearch.
+// TODO: Fuzzy search words in the commit message.
+func DiffMatchesMessageDetect() CommitDetect {
+	// Do fuzzy searches on the diff using the nouns in the commit messages, we can also check the verbs
+	// (eg: "remove: Thing", then we search for Thing, and if it's been removed in the diff then we are good)
+	return func(commit *local.Commit) (bool, violation.Violation, error) {
+		return true, nil, nil
 	}
 }
