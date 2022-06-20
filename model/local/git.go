@@ -6,10 +6,14 @@ import (
 	"time"
 
 	"github.com/go-git/go-git/v5"
+	"github.com/go-git/go-git/v5/plumbing"
 	"github.com/go-git/go-git/v5/plumbing/object"
 )
 
-var ErrCommitEmpty = errors.New("Commit empty")
+var (
+	ErrCommitEmpty = errors.New("Commit empty")
+	ErrBranchEmpty = errors.New("Branch empty")
+)
 
 type Hash [20]byte
 
@@ -75,9 +79,26 @@ func NewCommit(o *object.Commit) *Commit {
 	}
 }
 
+type Branch struct {
+	// Hash of head commit
+	Head Hash
+	Name string
+}
+
+func NewBranch(o *plumbing.Reference) *Branch {
+	if o == nil {
+		return nil
+	}
+
+	return &Branch{
+		Head: Hash(o.Hash()),
+		Name: o.Name().Short(),
+	}
+}
+
 type GitModel struct {
-	Commits []Commit
-	// Branches []Branch
+	Commits  []Commit
+	Branches []Branch
 }
 
 func NewGitModel(repo *git.Repository) (*GitModel, error) {
@@ -99,6 +120,23 @@ func NewGitModel(repo *git.Repository) (*GitModel, error) {
 	})
 	if err != nil {
 		return nil, fmt.Errorf("Failed to graft commits to model: %w", err)
+	}
+
+	bIter, err := repo.Branches()
+	if err != nil {
+		return nil, fmt.Errorf("Failed to retrieve branches from repository: %w", err)
+	}
+	err = bIter.ForEach(func(b *plumbing.Reference) error {
+		if b == nil {
+			return fmt.Errorf("NewGitModel branch: %w", ErrBranchEmpty)
+		}
+		branch := NewBranch(b)
+		gitModel.Branches = append(gitModel.Branches, *branch)
+
+		return nil
+	})
+	if err != nil {
+		return nil, fmt.Errorf("Failed to graft branches to model: %w", err)
 	}
 
 	return gitModel, nil

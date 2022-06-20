@@ -96,7 +96,7 @@ func (w *Workflow) RunCacheDetectors(current *cache.Cache, caches []*cache.Cache
 		if err != nil {
 			return 0, 0, 0, nil, fmt.Errorf("Failed to read caches: %w", err)
 		}
-		if err := wd.Detector.Run(current, caches); err != nil {
+		if err = wd.Detector.Run(current, caches); err != nil {
 			return 0, 0, 0, nil, fmt.Errorf("Failed to analyze caches: %w", err)
 		}
 
