@@ -5,7 +5,11 @@ import (
 	"github.com/Git-Gopher/go-gopher/model/local"
 )
 
-type EnrichedModel struct{}
+type Commit struct{}
+
+type EnrichedModel struct {
+	Commits []Commit
+}
 
 // Create an enriched model by merging the local and GitHub model.
 func NewEnrichedModel(local local.GitModel, github github.GithubModel) (*EnrichedModel, error) {

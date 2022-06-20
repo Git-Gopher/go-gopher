@@ -1,11 +1,14 @@
 package main
 
 import (
+	"errors"
 	"log"
 	"os"
 
+	"github.com/Git-Gopher/go-gopher/cache"
 	"github.com/Git-Gopher/go-gopher/model/local"
 	"github.com/Git-Gopher/go-gopher/utils"
+	"github.com/Git-Gopher/go-gopher/violation"
 	workflow "github.com/Git-Gopher/go-gopher/worflow"
 	"github.com/go-git/go-git/v5"
 	"github.com/go-git/go-git/v5/storage/memory"
@@ -30,6 +33,7 @@ func main() {
 				// sha := os.Getenv("GITHUB_SHA") // commit sha triggered
 				// ref := os.Getenv("GITHUB_REF") // branch ref triggered
 
+				// Repo
 				r, err := git.PlainOpen(workspace)
 				if err != nil {
 					log.Fatalf("cannot read repo: %v\n", err)
@@ -39,37 +43,28 @@ func main() {
 				if err != nil {
 					log.Fatalf("Could not create GitModel: %v\n", err)
 				}
-				ghwf := workflow.GithubFlowWorkflow()
-				violated, count, total, violations, err := ghwf.Analyze(repo)
-				if err != nil {
-					log.Fatalf("Failed to analyze: %v\n", err)
+
+				// Cache
+				current := cache.NewCache(repo)
+				caches, err := cache.ReadCaches()
+				if errors.Is(err, os.ErrNotExist) {
+					log.Printf("Cache file does not exist: %v", err)
+					// Write a cache for current so that next run can use it
+					cache.WriteCaches([]*cache.Cache{current})
+				} else if err != nil {
+					log.Fatalf("Failed to load caches: %v", err)
+				} else {
+					ghwf := workflow.GithubFlowWorkflow()
+					violated, count, total, violations, err := ghwf.Analyze(repo, current, caches)
+					if err != nil {
+						log.Fatalf("Failed to analyze: %v\n", err)
+					}
+
+					render(violated, count, total, violations)
+					for _, violation := range violations {
+						log.Println(violation.Message())
+					}
 				}
-				log.Printf("violated: %d\n", violated)
-				log.Printf("count: %d\n", count)
-				log.Printf("total: %d\n", total)
-				log.Printf("\n###### Violations ######\n")
-				for _, violation := range violations {
-					log.Println(violation.Message())
-				}
-
-				// TODO: Move me to model. Manually create and run it here for now
-				// caches, err := cache.ReadCaches()
-				// if errors.Is(err, os.ErrNotExist) {
-				// 	log.Printf("Cache file does not exist: %v", err)
-				// 	cache.WriteCaches([]*cache.Cache{cache.NewCache(repo)})
-				// } else {
-
-				// 	modelCache := cache.NewCache(repo)
-				// 	dtr := detector.NewCommitCacheDetector(detector.ForcePushDetect())
-				// 	dtr.Run(modelCache, caches)
-
-				// 	log.Println(dtr.Result())
-
-				// 	caches = append(caches, modelCache)
-				// 	if err = cache.WriteCaches(caches); err != nil {
-				// 		log.Fatalf("Failed to rewrite cache: %v\n", err)
-				// 	}
-				// }
 
 				return nil
 			},
@@ -96,18 +91,24 @@ func main() {
 				if err != nil {
 					log.Printf("err: %v\n", err)
 				}
+
+				// Cache
+				current := cache.NewCache(repo)
+				caches, err := cache.ReadCaches()
+				if errors.Is(err, os.ErrNotExist) {
+					caches = nil
+					log.Printf("Cache file does not exist: %v", err)
+
+				} else {
+					log.Fatalf("Failed to load caches: %v", err)
+				}
+
 				ghwf := workflow.GithubFlowWorkflow()
-				violated, count, total, violations, err := ghwf.Analyze(repo)
+				violated, count, total, violations, err := ghwf.Analyze(repo, current, caches)
 				if err != nil {
 					log.Printf("err: %v\n", err)
 				}
-				log.Printf("violated: %d\n", violated)
-				log.Printf("count: %d\n", count)
-				log.Printf("total: %d\n", total)
-				log.Printf("\n###### Violations ######\n")
-				for _, violation := range violations {
-					log.Println(violation.Message())
-				}
+				render(violated, count, total, violations)
 
 				return nil
 			},
@@ -116,5 +117,15 @@ func main() {
 
 	if err := app.Run(os.Args); err != nil {
 		log.Fatal(err)
+	}
+}
+
+func render(v, c, t int, vs []violation.Violation) {
+	log.Printf("violated: %d\n", v)
+	log.Printf("count: %d\n", c)
+	log.Printf("total: %d\n", t)
+	log.Printf("\n###### Violations ######\n")
+	for _, violation := range vs {
+		log.Println(violation.Message())
 	}
 }
