@@ -4,7 +4,6 @@ import (
 	"log"
 	"os"
 
-	"github.com/Git-Gopher/go-gopher/cache"
 	"github.com/Git-Gopher/go-gopher/model/local"
 	"github.com/Git-Gopher/go-gopher/utils"
 	workflow "github.com/Git-Gopher/go-gopher/worflow"
@@ -53,9 +52,24 @@ func main() {
 					log.Println(violation.Message())
 				}
 
-				// Create cache and write to disk
-				cache := cache.NewCache(repo)
-				cache.Write()
+				// TODO: Move me to model. Manually create and run it here for now
+				// caches, err := cache.ReadCaches()
+				// if errors.Is(err, os.ErrNotExist) {
+				// 	log.Printf("Cache file does not exist: %v", err)
+				// 	cache.WriteCaches([]*cache.Cache{cache.NewCache(repo)})
+				// } else {
+
+				// 	modelCache := cache.NewCache(repo)
+				// 	dtr := detector.NewCommitCacheDetector(detector.ForcePushDetect())
+				// 	dtr.Run(modelCache, caches)
+
+				// 	log.Println(dtr.Result())
+
+				// 	caches = append(caches, modelCache)
+				// 	if err = cache.WriteCaches(caches); err != nil {
+				// 		log.Fatalf("Failed to rewrite cache: %v\n", err)
+				// 	}
+				// }
 
 				return nil
 			},

@@ -12,12 +12,13 @@ import (
 var ErrNotImplemented = fmt.Errorf("Not implemented")
 
 type Detector interface {
-	Result() (violated, count, total int, violations []violation.Violation)
 	// TODO: We should change this to the enriched model
 	Run(model *local.GitModel) error
 	Run2(model *github.GithubModel) error
+	Result() (violated, count, total int, violations []violation.Violation)
 }
 
 type CacheDetector interface {
-	Run(current cache.Cache, cache []cache.Cache)
+	Run(current *cache.Cache, cache []*cache.Cache) error
+	Result() (violated, count, total int, violations []violation.Violation)
 }
