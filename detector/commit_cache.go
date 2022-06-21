@@ -5,7 +5,6 @@ import (
 	"fmt"
 
 	"github.com/Git-Gopher/go-gopher/cache"
-	"github.com/Git-Gopher/go-gopher/model/github"
 	"github.com/Git-Gopher/go-gopher/violation"
 )
 
@@ -41,10 +40,6 @@ func (cd *CommitCacheDetector) Run(current *cache.Cache, cache []*cache.Cache) e
 		cd.total++
 	}
 
-	return nil
-}
-
-func (cd *CommitCacheDetector) Run2(model *github.GithubModel) error {
 	return nil
 }
 

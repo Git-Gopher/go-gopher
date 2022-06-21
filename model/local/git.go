@@ -59,39 +59,47 @@ type Commit struct {
 	Content string
 }
 
-func NewCommit(o *object.Commit) *Commit {
-	if o == nil {
+func NewCommit(c *object.Commit) *Commit {
+	if c == nil {
 		return nil
 	}
 
-	parentHashes := make([]Hash, len(o.ParentHashes))
-	for i, hash := range o.ParentHashes {
+	parentHashes := make([]Hash, len(c.ParentHashes))
+	for i, hash := range c.ParentHashes {
 		parentHashes[i] = Hash(hash)
 	}
 
 	return &Commit{
-		Hash:         Hash(o.Hash),
-		Author:       *NewSignature(&o.Author),
-		Committer:    *NewSignature(&o.Committer),
-		Message:      o.Message,
-		TreeHash:     Hash(o.TreeHash),
+		Hash:         Hash(c.Hash),
+		Author:       *NewSignature(&c.Author),
+		Committer:    *NewSignature(&c.Committer),
+		Message:      c.Message,
+		TreeHash:     Hash(c.TreeHash),
 		ParentHashes: parentHashes,
 	}
 }
 
+// TODO: Might be useful to add some of these to the Branch struct.
+// type MockBranchModel struct {
+// 	Ref           string
+// 	Remote        string
+// 	Hash          string
+// 	CommitsBehind int       // Number of commits behind the primary branch
+// 	LastChange    time.Time // Time of the head commit of the current branch
+// }.
 type Branch struct {
 	// Hash of head commit
-	Head Hash
+	Head Commit
 	Name string
 }
 
-func NewBranch(o *plumbing.Reference) *Branch {
+func NewBranch(o *plumbing.Reference, c *object.Commit) *Branch {
 	if o == nil {
 		return nil
 	}
 
 	return &Branch{
-		Head: Hash(o.Hash()),
+		Head: *NewCommit(c),
 		Name: o.Name().Short(),
 	}
 }
@@ -130,7 +138,12 @@ func NewGitModel(repo *git.Repository) (*GitModel, error) {
 		if b == nil {
 			return fmt.Errorf("NewGitModel branch: %w", ErrBranchEmpty)
 		}
-		branch := NewBranch(b)
+		c, err := repo.CommitObject(b.Hash())
+		if err != nil {
+			return fmt.Errorf("Failed to find head commit from branch: %w", err)
+		}
+
+		branch := NewBranch(b, c)
 		gitModel.Branches = append(gitModel.Branches, *branch)
 
 		return nil

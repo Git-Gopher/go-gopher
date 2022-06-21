@@ -1,21 +1,17 @@
 package detector
 
 import (
+	"fmt"
 	"time"
 
+	"github.com/Git-Gopher/go-gopher/model/github"
 	"github.com/Git-Gopher/go-gopher/model/local"
 	"github.com/Git-Gopher/go-gopher/violation"
 )
 
-type MockBranchModel struct {
-	Ref           string
-	Remote        string
-	Hash          string
-	CommitsBehind int       // Number of commits behind the primary branch
-	LastChange    time.Time // Time of the head commit of the current branch
-}
+var StaleBranchTime = time.Hour * 24 * 30
 
-type BranchDetect func(branches MockBranchModel) (bool, violation.Violation, error)
+type BranchDetect func(branch *local.Branch) (bool, violation.Violation, error)
 
 // BranchDetector is used to run a detector on each branch metadata.
 type BranchDetector struct {
@@ -28,12 +24,33 @@ type BranchDetector struct {
 }
 
 // TODO: We should change this to the enriched model.
-func (b *BranchDetector) Run(model *local.GitModel) error {
-	b.violated = 0
-	b.found = 0
-	b.total = 0
-	b.violations = make([]violation.Violation, 0)
+func (bd *BranchDetector) Run(model *local.GitModel) error {
+	bd.violated = 0
+	bd.found = 0
+	bd.total = 0
+	bd.violations = make([]violation.Violation, 0)
 
+	for _, b := range model.Branches {
+		detected, violation, err := bd.detect(&b)
+		if err != nil {
+			return fmt.Errorf("Error detecting stale branch: %v", err)
+		}
+		if err != nil {
+			return err
+		}
+		if detected {
+			bd.found++
+		}
+		if violation != nil {
+			bd.violations = append(bd.violations, violation)
+		}
+
+	}
+
+	return nil
+}
+
+func (db *BranchDetector) Run2(model *github.GithubModel) error {
 	return ErrNotImplemented
 }
 
@@ -48,5 +65,16 @@ func NewBranchDetector(detect BranchDetect) *BranchDetector {
 		total:      0,
 		violations: make([]violation.Violation, 0),
 		detect:     detect,
+	}
+}
+
+// GithubWorklow: Branches are considered stale after three months.
+func StaleBranchDetect() BranchDetect {
+	return func(branch *local.Branch) (bool, violation.Violation, error) {
+		if time.Since(branch.Head.Committer.When) > StaleBranchTime {
+			return true, violation.NewStaleBranchViolation(branch.Name, StaleBranchTime), nil
+		}
+
+		return false, nil, nil
 	}
 }
