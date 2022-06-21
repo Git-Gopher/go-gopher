@@ -4,6 +4,7 @@ import (
 	"github.com/Git-Gopher/go-gopher/model/github"
 	"github.com/Git-Gopher/go-gopher/model/local"
 	"github.com/Git-Gopher/go-gopher/violation"
+	"github.com/adrg/strutil"
 )
 
 // Branch name.
@@ -55,6 +56,8 @@ func NewBranchCompareDetector(detect BranchCompareDetect) *BranchCompareDetector
 }
 
 // TODO: Github Workflow: Branches must have consistent names.
+// Research: https://stackoverflow.com/questions/29476737/similarities-in-strings-for-name-matching
+// Methods: q-grams, longest common substring and longest common subsequence.
 func NewBranchNameConsistencyDetect() BranchCompareDetect {
 	return func(branches []MockBranchCompareModel) (bool, violation.Violation, error) {
 		// TODO: Do some algorithm to see if the branch names are consistent enough.
@@ -64,4 +67,16 @@ func NewBranchNameConsistencyDetect() BranchCompareDetect {
 
 		return true, nil, nil
 	}
+}
+
+func rankSimilar(input []string, metric strutil.StringMetric) []float64 {
+	results := make([]float64, len(input))
+	for i := 0; i < len(input); i++ {
+		for j := i + 1; j < len(input); j++ {
+			similarity := strutil.Similarity(input[i], input[j], metric)
+			results[i] += similarity
+			results[j] += similarity
+		}
+	}
+	return results
 }
