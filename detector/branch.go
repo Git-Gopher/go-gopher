@@ -44,6 +44,7 @@ func (bd *BranchDetector) Run(model *local.GitModel) error {
 		if violation != nil {
 			bd.violations = append(bd.violations, violation)
 		}
+		bd.total++
 
 	}
 
