@@ -48,27 +48,26 @@ func main() {
 				current := cache.NewCache(repo)
 				caches, err := cache.ReadCaches()
 
+				//nolint
 				if errors.Is(err, os.ErrNotExist) {
 					log.Printf("Cache file does not exist: %v", err)
 					// Write a cache for current so that next run can use it
 					if err = cache.WriteCaches([]*cache.Cache{current}); err != nil {
 						log.Fatalf("Could not write cache: %v\n", err)
 					}
-				}
-
-				if err != nil {
+				} else if err != nil {
 					log.Fatalf("Failed to load caches: %v", err)
-				}
+				} else {
+					ghwf := workflow.GithubFlowWorkflow()
+					violated, count, total, violations, err := ghwf.Analyze(repo, current, caches)
+					if err != nil {
+						log.Fatalf("Failed to analyze: %v\n", err)
+					}
 
-				ghwf := workflow.GithubFlowWorkflow()
-				violated, count, total, violations, err := ghwf.Analyze(repo, current, caches)
-				if err != nil {
-					log.Fatalf("Failed to analyze: %v\n", err)
-				}
-
-				render(violated, count, total, violations)
-				for _, violation := range violations {
-					log.Println(violation.Message())
+					render(violated, count, total, violations)
+					for _, violation := range violations {
+						log.Println(violation.Message())
+					}
 				}
 
 				return nil
