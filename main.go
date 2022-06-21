@@ -48,7 +48,6 @@ func main() {
 				current := cache.NewCache(repo)
 				caches, err := cache.ReadCaches()
 
-				//nolint
 				if errors.Is(err, os.ErrNotExist) {
 					log.Printf("Cache file does not exist: %v", err)
 					// Write a cache for current so that next run can use it
