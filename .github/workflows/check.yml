@@ -9,7 +9,7 @@ env:
   GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
 
 jobs:
-  check:
+  test:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
@@ -25,3 +25,16 @@ jobs:
         run: go vet ./...
       - name: Run tests
         run: make test
+
+  docker:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Build and export to Docker
+      uses: docker/build-push-action@v3
+      with:
+        context: .
+        load: true
+        tags: ${{ env.TEST_TAG }}
+    - name: Test
+      run: |
+        docker run --rm ${{ env.TEST_TAG }}

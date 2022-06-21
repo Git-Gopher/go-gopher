@@ -23,8 +23,8 @@ jobs:
           push: true
           tags: gitgopher/gitgopher:latest
 
-  # Test that the image is working
-  git-gopher:
+  # Test that action is working
+  action:
     needs: docker
     runs-on: ubuntu-latest
     steps:
