@@ -30,7 +30,7 @@ func (cd *CommitCacheDetector) Run(current *cache.Cache, cache []*cache.Cache) e
 	for _, c := range cache {
 		found, vlns, err := cd.detect(current, c)
 		if err != nil {
-			return fmt.Errorf("Error running cache detector: %v", err)
+			return fmt.Errorf("Error running cache detector: %w", err)
 		}
 
 		if found {

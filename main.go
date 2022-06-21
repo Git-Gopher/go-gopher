@@ -47,10 +47,14 @@ func main() {
 				// Cache
 				current := cache.NewCache(repo)
 				caches, err := cache.ReadCaches()
+
+				//nolint
 				if errors.Is(err, os.ErrNotExist) {
 					log.Printf("Cache file does not exist: %v", err)
 					// Write a cache for current so that next run can use it
-					cache.WriteCaches([]*cache.Cache{current})
+					if err = cache.WriteCaches([]*cache.Cache{current}); err != nil {
+						log.Fatalf("Could not write cache: %v\n", err)
+					}
 				} else if err != nil {
 					log.Fatalf("Failed to load caches: %v", err)
 				} else {
@@ -96,9 +100,7 @@ func main() {
 				current := cache.NewCache(repo)
 				caches, err := cache.ReadCaches()
 				if errors.Is(err, os.ErrNotExist) {
-					caches = nil
 					log.Printf("Cache file does not exist: %v", err)
-
 				} else {
 					log.Fatalf("Failed to load caches: %v", err)
 				}

@@ -9,8 +9,6 @@ import (
 	"github.com/Git-Gopher/go-gopher/violation"
 )
 
-var StaleBranchTime = time.Hour * 24 * 30
-
 type BranchDetect func(branch *local.Branch) (bool, violation.Violation, error)
 
 // BranchDetector is used to run a detector on each branch metadata.
@@ -31,9 +29,10 @@ func (bd *BranchDetector) Run(model *local.GitModel) error {
 	bd.violations = make([]violation.Violation, 0)
 
 	for _, b := range model.Branches {
+		b := b
 		detected, violation, err := bd.detect(&b)
 		if err != nil {
-			return fmt.Errorf("Error detecting stale branch: %v", err)
+			return fmt.Errorf("Error detecting stale branch: %w", err)
 		}
 		if err != nil {
 			return err
@@ -45,7 +44,6 @@ func (bd *BranchDetector) Run(model *local.GitModel) error {
 			bd.violations = append(bd.violations, violation)
 		}
 		bd.total++
-
 	}
 
 	return nil
@@ -71,6 +69,8 @@ func NewBranchDetector(detect BranchDetect) *BranchDetector {
 
 // GithubWorklow: Branches are considered stale after three months.
 func StaleBranchDetect() BranchDetect {
+	StaleBranchTime := time.Hour * 24 * 30
+
 	return func(branch *local.Branch) (bool, violation.Violation, error) {
 		if time.Since(branch.Head.Committer.When) > StaleBranchTime {
 			return true, violation.NewStaleBranchViolation(branch.Name, StaleBranchTime), nil

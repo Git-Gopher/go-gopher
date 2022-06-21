@@ -50,7 +50,7 @@ func (w *Workflow) Analyze(model *local.GitModel, current *cache.Cache, caches [
 	if err != nil {
 		return 0, 0, 0, nil, fmt.Errorf("Failed to analyze workflow: %w", err)
 	}
-	add(&violated, &count, &total, violations, v, c, t, vs, 1)
+	add(&violated, &count, &total, &violations, v, c, t, &vs, 1)
 
 	// Only run when we have a cache
 	if current != nil && caches != nil {
@@ -58,7 +58,7 @@ func (w *Workflow) Analyze(model *local.GitModel, current *cache.Cache, caches [
 		if err != nil {
 			return 0, 0, 0, nil, fmt.Errorf("Failed to analyze workflow: %w", err)
 		}
-		add(&violated, &count, &total, violations, v, c, t, vs, 1)
+		add(&violated, &count, &total, &violations, v, c, t, &vs, 1)
 	} else {
 		log.Println("No cache loaded, skipping cache detectors")
 	}
@@ -79,7 +79,7 @@ func (w *Workflow) RunWeightedDetectors(model *local.GitModel) (
 		}
 
 		v, c, t, vs := wd.Detector.Result()
-		add(&violated, &count, &total, violations, v, c, t, vs, wd.Weight)
+		add(&violated, &count, &total, &violations, v, c, t, &vs, wd.Weight)
 	}
 
 	return
@@ -87,25 +87,21 @@ func (w *Workflow) RunWeightedDetectors(model *local.GitModel) (
 
 // All cache detectors share the same current and cache, treated as readonly.
 func (w *Workflow) RunCacheDetectors(current *cache.Cache, caches []*cache.Cache) (
-	violated,
-	count,
-	total int,
-	violations []violation.Violation,
-	err error,
+	int,
+	int,
+	int,
+	[]violation.Violation,
+	error,
 ) {
+	violated, count, total := 0, 0, 0
+	violations := []violation.Violation{}
 	for _, wd := range w.WeightedCacheDetectors {
-		if err != nil {
-			return 0, 0, 0, nil, fmt.Errorf("Failed to read caches: %w", err)
-		}
-		if err = wd.Detector.Run(current, caches); err != nil {
+		if err := wd.Detector.Run(current, caches); err != nil {
 			return 0, 0, 0, nil, fmt.Errorf("Failed to analyze caches: %w", err)
 		}
 
 		v, c, t, vs := wd.Detector.Result()
-		violated += v * wd.Weight
-		count += c * wd.Weight
-		total += t * wd.Weight
-		violations = append(violations, vs...)
+		add(&violated, &count, &total, &violations, v, c, t, &vs, wd.Weight)
 	}
 
 	// No violations means we can reset cache to current, otherwise append to cache
@@ -113,23 +109,24 @@ func (w *Workflow) RunCacheDetectors(current *cache.Cache, caches []*cache.Cache
 	if len(violations) == 0 {
 		nc = []*cache.Cache{current}
 	} else {
-		nc = append(caches, current)
+		nc = append(nc, caches...)
+		nc = append(nc, current)
 	}
-	if err = cache.WriteCaches(nc); err != nil {
+	if err := cache.WriteCaches(nc); err != nil {
 		return 0, 0, 0, nil, fmt.Errorf("Failed to write cache: %w", err)
 	}
 
-	return
+	return violated, count, total, violations, nil
 }
 
 // Add weighted result a detector to the shared result.
 func add(
-	violated, count, total *int, violations []violation.Violation,
-	v, c, t int, vs []violation.Violation,
+	violated, count, total *int, violations *[]violation.Violation,
+	v, c, t int, vs *[]violation.Violation,
 	weight int,
 ) {
 	*violated += v * weight
 	*count += c * weight
 	*total += t * weight
-	violations = append(violations, vs...)
+	*violations = append(*violations, *vs...)
 }

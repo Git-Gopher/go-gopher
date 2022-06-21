@@ -6,6 +6,7 @@ import (
 	"io/ioutil"
 	"os"
 	"path"
+	"path/filepath"
 	"time"
 
 	"github.com/Git-Gopher/go-gopher/model/local"
@@ -19,7 +20,7 @@ type Cache struct {
 	Created time.Time    `json:"time"`
 }
 
-// TODO: Use enriched model instead
+// TODO: Use enriched model instead.
 func NewCache(model *local.GitModel) *Cache {
 	hashes := make([]local.Hash, len(model.Commits))
 	for i, c := range model.Commits {
@@ -36,7 +37,7 @@ func NewCache(model *local.GitModel) *Cache {
 func ReadCaches() ([]*Cache, error) {
 	loc := Location()
 	cachePath := path.Join(loc, cacheFile)
-	file, err := os.Open(cachePath)
+	file, err := os.Open(filepath.Clean(cachePath))
 	if err != nil {
 		return nil, fmt.Errorf("Error opening cache file: %w", err)
 	}

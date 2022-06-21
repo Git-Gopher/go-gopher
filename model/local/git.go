@@ -138,7 +138,9 @@ func NewGitModel(repo *git.Repository) (*GitModel, error) {
 		if b == nil {
 			return fmt.Errorf("NewGitModel branch: %w", ErrBranchEmpty)
 		}
-		c, err := repo.CommitObject(b.Hash())
+
+		var c *object.Commit
+		c, err = repo.CommitObject(b.Hash())
 		if err != nil {
 			return fmt.Errorf("Failed to find head commit from branch: %w", err)
 		}
