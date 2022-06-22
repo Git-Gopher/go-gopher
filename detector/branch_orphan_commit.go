@@ -1,6 +1,7 @@
 package detector
 
 import (
+	"github.com/Git-Gopher/go-gopher/model/local"
 	"github.com/Git-Gopher/go-gopher/violation"
 )
 
@@ -10,7 +11,7 @@ import (
 // - If branch has fallen behind primary branch by a certain amount then it has been failed to be maintained.
 // Use CreateIndependentCommits.
 func NewOrphanCommitDetector() BranchDetect {
-	return func(branches MockBranchModel) (bool, violation.Violation, error) {
+	return func(branch *local.Branch) (bool, violation.Violation, error) {
 		// Run the detector on each branch and look for orphan commits
 
 		return false, nil, ErrNotImplemented
