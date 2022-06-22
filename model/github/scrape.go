@@ -202,6 +202,7 @@ func (s *Scraper) FetchPullRequests(owner, name string) ([]*PullRequest, error) 
 						}
 						PageInfo PageInfo
 					} `graphql:"closingIssuesReferences(first: $first)"`
+					// Comments
 					Comments struct {
 						Nodes []struct {
 							Id     string
@@ -213,6 +214,15 @@ func (s *Scraper) FetchPullRequests(owner, name string) ([]*PullRequest, error) 
 						}
 						PageInfo PageInfo
 					} `graphql:"comments(first: $first)"`
+					// XXX: Limitation of the GraphQL API, can't properly paginate reviewthreads, limiting to 100 for now.
+					ReviewThreads struct {
+						Nodes []struct {
+							Id         string
+							IsOutdated bool
+							IsResolved bool
+							Path       string
+						}
+					} `graphql:"reviewThreads(first: 100)"`
 				}
 				PageInfo PageInfo
 			} `graphql:"pullRequests(first: $first, after: $cursor)"`
@@ -242,6 +252,7 @@ func (s *Scraper) FetchPullRequests(owner, name string) ([]*PullRequest, error) 
 				Author:         (*Author)(&mpr.Author),
 				ClosingIssues:  nil,
 				Comments:       nil,
+				ReviewThreads:  nil,
 			}
 
 			// Closing issues
@@ -270,11 +281,11 @@ func (s *Scraper) FetchPullRequests(owner, name string) ([]*PullRequest, error) 
 
 			// Comments
 			var cs []*Comment = make([]*Comment, len(mpr.Comments.Nodes))
-			for i, ci := range mpr.Comments.Nodes {
+			for i, c := range mpr.Comments.Nodes {
 				cs[i] = &Comment{
-					Id:     ci.Id,
-					Body:   ci.Body,
-					Author: (*Author)(&ci.Author),
+					Id:     c.Id,
+					Body:   c.Body,
+					Author: (*Author)(&c.Author),
 				}
 			}
 
@@ -289,6 +300,21 @@ func (s *Scraper) FetchPullRequests(owner, name string) ([]*PullRequest, error) 
 			}
 
 			pr.Comments = cs
+
+			// Review threads
+			var rs []*ReviewThread = make([]*ReviewThread, len(mpr.ReviewThreads.Nodes))
+			for i, r := range mpr.ReviewThreads.Nodes {
+				rt := ReviewThread{
+					Id:         r.Id,
+					IsResolved: r.IsResolved,
+					IsOutdated: r.IsOutdated,
+					Path:       r.Path,
+				}
+
+				rs[i] = &rt
+			}
+
+			pr.ReviewThreads = rs
 
 			all = append(all, &pr)
 		}

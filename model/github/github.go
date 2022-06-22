@@ -20,6 +20,13 @@ type Comment struct {
 	Author *Author
 }
 
+type ReviewThread struct {
+	Id         string
+	IsResolved bool
+	IsOutdated bool
+	Path       string
+}
+
 type PullRequest struct {
 	Id             string
 	Number         int
@@ -29,6 +36,7 @@ type PullRequest struct {
 	Author         *Author
 	ClosingIssues  []*Issue
 	Comments       []*Comment
+	ReviewThreads  []*ReviewThread
 }
 
 type GithubModel struct {
