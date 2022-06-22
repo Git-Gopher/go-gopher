@@ -37,7 +37,7 @@ func (pd *PullRequestDetector) Run(model *local.GitModel) error {
 func (pd *PullRequestDetector) Run2(model *github.GithubModel) error {
 	for _, pr := range model.PullRequests {
 		pr := pr
-		detected, err := pd.detect(&pr)
+		detected, err := pd.detect(pr)
 		pd.total++
 		if err != nil {
 			return err
@@ -53,7 +53,7 @@ func (pd *PullRequestDetector) Run2(model *github.GithubModel) error {
 // Github Workflow: Pull requests must have at least one associated issue.
 func PullRequestIssueDetector() PullRequestDetect {
 	return func(pullRequest *github.PullRequest) (bool, error) {
-		if len(pullRequest.Issues) == 0 {
+		if len(pullRequest.ClosingIssues) == 0 {
 			return false, nil
 		}
 
