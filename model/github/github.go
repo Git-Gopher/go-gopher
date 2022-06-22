@@ -33,6 +33,7 @@ type PullRequest struct {
 	Title          string
 	Body           string
 	ReviewDecision string
+	Merged         bool
 	Author         *Author
 	ClosingIssues  []*Issue
 	Comments       []*Comment

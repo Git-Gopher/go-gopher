@@ -98,25 +98,6 @@ func (s *Scraper) FetchPullRequestClosingIssues(owner, name string, number int, 
 	return all, nil
 }
 
-// reviewThreads(first: 5) {
-//           nodes {
-//             id
-//             isResolved
-//             isOutdated
-//             comments(first: 10) {
-//               nodes {
-//                 id
-//                 url
-//                 body
-//               }
-//             }
-//           }
-//         }
-
-func (s *Scraper) FetchReviewThreadComments(owner, name string, id string, cursor string) ([]*Comment, error) {
-	return nil, nil
-}
-
 func (s *Scraper) FetchPullRequestComments(owner, name string, number int, cursor string) ([]*Comment, error) {
 	var q struct {
 		Repository struct {
@@ -184,6 +165,7 @@ func (s *Scraper) FetchPullRequests(owner, name string) ([]*PullRequest, error) 
 					Title          string
 					Body           string
 					ReviewDecision string
+					Merged         bool
 					// Author
 					Author struct {
 						Login     string
@@ -249,6 +231,7 @@ func (s *Scraper) FetchPullRequests(owner, name string) ([]*PullRequest, error) 
 				Title:          mpr.Title,
 				Body:           mpr.Body,
 				ReviewDecision: mpr.ReviewDecision,
+				Merged:         mpr.Merged,
 				Author:         (*Author)(&mpr.Author),
 				ClosingIssues:  nil,
 				Comments:       nil,

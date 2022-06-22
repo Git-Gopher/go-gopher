@@ -60,3 +60,37 @@ func PullRequestIssueDetector() PullRequestDetect {
 		return true, nil
 	}
 }
+
+func PullRequestApprovalDetector() PullRequestDetect {
+	return func(pullRequest *github.PullRequest) (bool, error) {
+		// Ignore unmerged pull requests.
+		if pullRequest.Merged {
+			return true, nil
+		}
+
+		// XXX: Create enum
+		if pullRequest.ReviewDecision != "APPROVED" {
+			return false, nil
+		}
+
+		return true, nil
+	}
+}
+
+// All reviews threads should be marked as resolved before merging.
+func PullRequestReviewThreadDetector() PullRequestDetect {
+	return func(pullRequest *github.PullRequest) (bool, error) {
+		// Ignore unmerged pull requests.
+		if pullRequest.Merged {
+			return true, nil
+		}
+
+		for _, thread := range pullRequest.ReviewThreads {
+			if !thread.IsResolved {
+				return false, nil
+			}
+		}
+
+		return true, nil
+	}
+}
