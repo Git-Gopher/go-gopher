@@ -8,10 +8,14 @@ type Author struct {
 }
 
 type Issue struct {
-	Id     string
-	Body   string
-	Title  string
-	Author *Author
+	Id          string
+	Number      int
+	Title       string
+	Body        string
+	State       string
+	StateReason string
+	Author      *Author
+	Comments    []*Comment
 }
 
 type Comment struct {
@@ -34,6 +38,8 @@ type PullRequest struct {
 	Body           string
 	ReviewDecision string
 	Merged         bool
+	MergedBy       *Author
+	Url            string
 	Author         *Author
 	ClosingIssues  []*Issue
 	Comments       []*Comment
@@ -54,13 +60,18 @@ func ScrapeGithubModel(owner, name string) (*GithubModel, error) {
 	s := NewScraper()
 	prs, err := s.FetchPullRequests(owner, name)
 	if err != nil {
-		return nil, fmt.Errorf("Failed to fetch pull requests for GitHub model: %v", err)
+		return nil, fmt.Errorf("Failed to fetch pull requests for GitHub model: %w", err)
+	}
+
+	issues, err := s.FetchIssues(owner, name)
+	if err != nil {
+		return nil, fmt.Errorf("Failed to fetch issues for GitHub model: %w", err)
 	}
 
 	thing := GithubModel{
 		Author:       nil,
 		PullRequests: prs,
-		Issues:       nil,
+		Issues:       issues,
 	}
 
 	return &thing, nil

@@ -3,6 +3,8 @@ package violation
 import (
 	"fmt"
 	"time"
+
+	"github.com/Git-Gopher/go-gopher/model/github"
 )
 
 func NewStaleBranchViolation(branch string, duration time.Duration) *StaleBranchViolation {
@@ -47,4 +49,9 @@ func (*StaleBranchViolation) LineLocation() (int, error) {
 func (sbv *StaleBranchViolation) Suggestion() (string, error) {
 	return fmt.Sprintf(`Consider deleting the branch, \"%s\" if it is unused delete it,
 		or continue to work use it by merging the primary branch into it`, sbv.branch), nil
+}
+
+// Author implements Violation.
+func (*StaleBranchViolation) Author() (*github.Author, error) {
+	return nil, ErrViolationMethodNotExist
 }

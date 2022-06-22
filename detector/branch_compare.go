@@ -59,7 +59,8 @@ func NewBranchNameConsistencyDetect() BranchCompareDetect {
 	return func(branches []MockBranchCompareModel) (bool, violation.Violation, error) {
 		// TODO: Do some algorithm to see if the branch names are consistent enough.
 		if len(branches) > 10 {
-			return false, violation.NewCommonViolation("Branch message longer than 10"), nil
+			// TODO: Author should be whoever created the branch
+			return false, violation.NewCommonViolation("Branch message longer than 10", nil), nil
 		}
 
 		return true, nil, nil

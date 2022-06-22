@@ -1,6 +1,10 @@
 package violation
 
-import "fmt"
+import (
+	"fmt"
+
+	"github.com/Git-Gopher/go-gopher/model/github"
+)
 
 func NewForcePushViolation(
 	lostCommits []string,
@@ -46,4 +50,9 @@ func (*ForcePushViolation) Name() string {
 // Suggestion implements Violation.
 func (f *ForcePushViolation) Suggestion() (string, error) {
 	return fmt.Sprintf("Restore the following commits to restore the work lost on the branch: \"%v\" ", f.lostCommits), nil
+}
+
+// Author implements Violation.
+func (f *ForcePushViolation) Author() (*github.Author, error) {
+	return nil, ErrViolationMethodNotExist
 }

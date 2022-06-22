@@ -1,6 +1,10 @@
 package violation
 
-import "fmt"
+import (
+	"fmt"
+
+	"github.com/Git-Gopher/go-gopher/model/github"
+)
 
 func NewPrimaryBranchDirectCommitViolation(
 	primaryBranch string,
@@ -52,4 +56,9 @@ func (*PrimaryBranchDirectCommitViolation) Name() string {
 // Suggestion implements Violation.
 func (p *PrimaryBranchDirectCommitViolation) Suggestion() (string, error) {
 	return fmt.Sprintf("All commits should be merged in to the branch \"%s\" ", p.primaryBranch), nil
+}
+
+// Author implements Violation.
+func (p *PrimaryBranchDirectCommitViolation) Author() (*github.Author, error) {
+	return nil, ErrViolationMethodNotExist
 }

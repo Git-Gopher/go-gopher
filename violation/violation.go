@@ -3,6 +3,8 @@ package violation
 import (
 	"errors"
 	"fmt"
+
+	"github.com/Git-Gopher/go-gopher/model/github"
 )
 
 var ErrViolationMethodNotExist = errors.New("Violation method not exist")
@@ -12,6 +14,8 @@ type Violation interface {
 	Message() string             // required: Warning message.
 	Suggestion() (string, error) // required: Suggests a remedy for the violation.
 	Display() string             // required: Formal display line of the violation
+	// XXX: Use enriched model instead.
+	Author() (*github.Author, error) // optional: User which caused the violation the
 	FileLocation() (string, error)
 	LineLocation() (int, error)
 }
