@@ -1,14 +1,18 @@
 package detector
 
 import (
+	"log"
+	"strings"
+
 	"github.com/Git-Gopher/go-gopher/model/github"
 	"github.com/Git-Gopher/go-gopher/model/local"
 	"github.com/Git-Gopher/go-gopher/violation"
 	"github.com/adrg/strutil"
+	"gopkg.in/vmarkovtsev/go-lcss.v1"
 )
 
 // Branch name.
-type BranchCompareDetect func(branches []MockBranchCompareModel) (bool, violation.Violation, error)
+type BranchCompareDetect func(branches []MockBranchCompareModel) (int, []violation.Violation, error)
 
 // XXX: Move into either local or github model.
 type MockBranchCompareModel struct {
@@ -55,17 +59,27 @@ func NewBranchCompareDetector(detect BranchCompareDetect) *BranchCompareDetector
 	}
 }
 
-// TODO: Github Workflow: Branches must have consistent names.
-// Research: https://stackoverflow.com/questions/29476737/similarities-in-strings-for-name-matching
-// Methods: q-grams, longest common substring and longest common subsequence.
-func NewBranchNameConsistencyDetect() BranchCompareDetect {
-	return func(branches []MockBranchCompareModel) (bool, violation.Violation, error) {
-		// TODO: Do some algorithm to see if the branch names are consistent enough.
-		if len(branches) > 10 {
-			return false, violation.NewCommonViolation("Branch message longer than 10"), nil
+var featureNames = [...]string{"feature", "feat"}
+
+func NewFeatureBranchNameDetect() BranchCompareDetect {
+	return func(branches []MockBranchCompareModel) (int, []violation.Violation, error) {
+		branchRefs := []string{}
+	b:
+		for _, branch := range branches {
+			for _, featureName := range featureNames {
+				if strings.Contains(branch.Ref, featureName) {
+					// contains featureNames part of branch
+					continue b
+				}
+			}
+			// does not contain featureNames
+			branchRefs = append(branchRefs, branch.Ref)
 		}
 
-		return true, nil, nil
+		// TODO: report using warning (not violation)
+		log.Println("branch without feature/feat:", branchRefs)
+
+		return 0, nil, nil
 	}
 }
 
@@ -79,4 +93,13 @@ func rankSimilar(input []string, metric strutil.StringMetric) []float64 {
 		}
 	}
 	return results
+}
+
+func longestSubstring(input []string) string {
+	b := make([][]byte, len(input))
+	for i, str := range input {
+		b[i] = []byte(str)
+	}
+
+	return string(lcss.LongestCommonSubstring(b...))
 }
