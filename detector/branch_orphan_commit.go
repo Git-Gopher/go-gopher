@@ -14,6 +14,6 @@ func NewOrphanCommitDetector() BranchDetect {
 	return func(branch *local.Branch) (bool, violation.Violation, error) {
 		// Run the detector on each branch and look for orphan commits
 
-		return false, nil, ErrNotImplemented
+		return false, nil, nil
 	}
 }
