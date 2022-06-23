@@ -59,11 +59,11 @@ func NewBranchCompareDetector(detect BranchCompareDetect) *BranchCompareDetector
 	}
 }
 
-var featureNames = [...]string{"feature", "feat"}
-
 func NewFeatureBranchNameDetect() BranchCompareDetect {
 	return func(branches []MockBranchCompareModel) (int, []violation.Violation, error) {
 		branchRefs := []string{}
+		featureNames := [...]string{"feature", "feat"}
+
 	b:
 		for _, branch := range branches {
 			for _, featureName := range featureNames {
@@ -92,6 +92,7 @@ func rankSimilar(input []string, metric strutil.StringMetric) []float64 {
 			results[j] += similarity
 		}
 	}
+
 	return results
 }
 

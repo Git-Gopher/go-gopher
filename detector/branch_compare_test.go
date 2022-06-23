@@ -21,10 +21,12 @@ func Test_rankSimilar(t *testing.T) {
 		{
 			name: "example",
 			args: args{
-				input: []string{"main",
+				input: []string{
+					"main",
 					"feature/browse-artwork",
 					"feature/manage-artwork",
-					"feature/test"},
+					"feature/test",
+				},
 				metric: metrics.NewLevenshtein(),
 			},
 			want: []float64{0.21969696969696972, 1.2727272727272727, 1.3181818181818183, 0.9924242424242425},
@@ -35,7 +37,8 @@ func Test_rankSimilar(t *testing.T) {
 				input: []string{
 					"feature/browse-artwork",
 					"feature/manage-artwork",
-					"feature/test"},
+					"feature/test",
+				},
 				metric: metrics.NewLevenshtein(),
 			},
 			want: []float64{1.2272727272727273, 1.2272727272727273, 0.9090909090909092},
@@ -80,7 +83,15 @@ func Test_rankSimilar(t *testing.T) {
 				},
 				metric: metrics.NewLevenshtein(),
 			},
-			want: []float64{1.8519073413238172, 2.638975345783126, 2.516583054626533, 2.342948717948718, 2.205128205128205, 2.886477652782001, 2.8089718252761733},
+			want: []float64{
+				1.8519073413238172,
+				2.638975345783126,
+				2.516583054626533,
+				2.342948717948718,
+				2.205128205128205,
+				2.886477652782001,
+				2.8089718252761733,
+			},
 		},
 	}
 	for _, tt := range tests {

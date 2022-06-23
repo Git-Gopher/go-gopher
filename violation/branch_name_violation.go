@@ -51,5 +51,6 @@ func (p *BranchNameViolation) Suggestion() (string, error) {
 	if p.substring == "" {
 		return "", ErrViolationMethodNotExist
 	}
+
 	return fmt.Sprintf("All branch names should consistent with the substring \"%s\" ", p.substring), nil
 }

@@ -35,8 +35,8 @@ func NewBranchNameConsistencyDetect() BranchCompareDetect {
 		violations := []violation.Violation{}
 		for i, branch := range branches {
 			if substring != "" && strings.Contains(branch.Ref, substring) {
-
 				count++
+
 				continue
 			}
 			// does not follow substring
