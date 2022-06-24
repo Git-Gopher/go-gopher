@@ -7,8 +7,8 @@ RUN make build
 
 FROM ubuntu:latest AS runner
 RUN apt-get update \
-    && apt-get upgrade \
-    && apt-get add --no-cache \
+    && apt-get -y upgrade \
+    && apt-get install -y \
     ca-certificates \
     && update-ca-certificates 2>/dev/null || true
 RUN mkdir -p /bin
