@@ -1,8 +1,8 @@
 package detector
 
 import (
+	"github.com/Git-Gopher/go-gopher/model/enriched"
 	"github.com/Git-Gopher/go-gopher/model/github"
-	"github.com/Git-Gopher/go-gopher/model/local"
 	"github.com/Git-Gopher/go-gopher/violation"
 )
 
@@ -32,11 +32,7 @@ func NewPullRequestDetector(detect PullRequestDetect) *PullRequestDetector {
 }
 
 // TODO: We should change this to the enriched model.
-func (pd *PullRequestDetector) Run(model *local.GitModel) error {
-	return nil
-}
-
-func (pd *PullRequestDetector) Run2(model *github.GithubModel) error {
+func (pd *PullRequestDetector) Run(model *enriched.EnrichedModel) error {
 	for _, pr := range model.PullRequests {
 		pr := pr
 		detected, violation, err := pd.detect(pr)

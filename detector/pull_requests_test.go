@@ -3,7 +3,9 @@ package detector
 import (
 	"testing"
 
+	"github.com/Git-Gopher/go-gopher/model/enriched"
 	"github.com/Git-Gopher/go-gopher/model/github"
+	"github.com/Git-Gopher/go-gopher/model/local"
 )
 
 func TestPullRequestLinkedIssue(t *testing.T) {
@@ -15,14 +17,15 @@ func TestPullRequestLinkedIssue(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			// Create the model
-			model, err := github.ScrapeGithubModel("Git-Gopher", "tests")
+			// Create the githubModel
+			githubModel, err := github.ScrapeGithubModel("Git-Gopher", "tests")
 			if err != nil {
 				t.Errorf("%s: scrape github model = %v", tt.name, err)
 			}
 
+			enrichedModel := enriched.NewEnrichedModel(local.GitModel{}, *githubModel)
 			detector := NewPullRequestDetector(PullRequestIssueDetector())
-			if err = detector.Run2(model); err != nil {
+			if err = detector.Run(enrichedModel); err != nil {
 				t.Errorf("%s run detector = %v", tt.name, err)
 			}
 

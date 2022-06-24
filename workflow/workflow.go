@@ -6,7 +6,7 @@ import (
 
 	"github.com/Git-Gopher/go-gopher/cache"
 	"github.com/Git-Gopher/go-gopher/detector"
-	"github.com/Git-Gopher/go-gopher/model/local"
+	"github.com/Git-Gopher/go-gopher/model/enriched"
 	"github.com/Git-Gopher/go-gopher/violation"
 )
 
@@ -40,7 +40,7 @@ func GithubFlowWorkflow() *Workflow {
 }
 
 // Run analysis on the git project for all the detectors defined by the workflow.
-func (w *Workflow) Analyze(model *local.GitModel, current *cache.Cache, caches []*cache.Cache) (violated int,
+func (w *Workflow) Analyze(model *enriched.EnrichedModel, current *cache.Cache, caches []*cache.Cache) (violated int,
 	count,
 	total int,
 	violations []violation.Violation,
@@ -66,7 +66,7 @@ func (w *Workflow) Analyze(model *local.GitModel, current *cache.Cache, caches [
 	return violated, count, total, violations, nil
 }
 
-func (w *Workflow) RunWeightedDetectors(model *local.GitModel) (
+func (w *Workflow) RunWeightedDetectors(model *enriched.EnrichedModel) (
 	violated,
 	count,
 	total int,

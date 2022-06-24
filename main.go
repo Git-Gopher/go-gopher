@@ -6,15 +6,18 @@ import (
 	"os"
 
 	"github.com/Git-Gopher/go-gopher/cache"
+	"github.com/Git-Gopher/go-gopher/model/enriched"
+	"github.com/Git-Gopher/go-gopher/model/github"
 	"github.com/Git-Gopher/go-gopher/model/local"
 	"github.com/Git-Gopher/go-gopher/utils"
 	"github.com/Git-Gopher/go-gopher/violation"
-	workflow "github.com/Git-Gopher/go-gopher/worflow"
+	"github.com/Git-Gopher/go-gopher/workflow"
 	"github.com/go-git/go-git/v5"
 	"github.com/go-git/go-git/v5/storage/memory"
 	"github.com/urfave/cli/v2"
 )
 
+//nolint
 func main() {
 	utils.Environment(".env")
 	app := cli.NewApp()
@@ -34,18 +37,50 @@ func main() {
 				// ref := os.Getenv("GITHUB_REF") // branch ref triggered
 
 				// Repo
-				r, err := git.PlainOpen(workspace)
+				repo, err := git.PlainOpen(workspace)
 				if err != nil {
 					log.Fatalf("cannot read repo: %v\n", err)
 				}
 
-				repo, err := local.NewGitModel(r)
+				gitModel, err := local.NewGitModel(repo)
 				if err != nil {
 					log.Fatalf("Could not create GitModel: %v\n", err)
 				}
 
+				url := os.Getenv("GITHUB_URL")
+				if url == "" {
+					var remotes []*git.Remote
+					remotes, err = repo.Remotes()
+					if err != nil {
+						log.Fatalf("Could not get git repository remotes: %v\n", err)
+					}
+
+					if len(remotes) == 0 {
+						log.Fatalf("No remotes present: %v\n", err)
+					}
+
+					// XXX: Use the first remote, assuming origin.
+					urls := remotes[0].Config().URLs
+					if len(urls) == 0 {
+						log.Fatalf("No URLs present: %v\n", err)
+					}
+
+					url = urls[0]
+				}
+				owner, name, err := utils.OwnerNameFromUrl(url)
+				if err != nil {
+					log.Fatalf("Could not get owner and name from URL: %v\n", err)
+				}
+
+				githubModel, err := github.ScrapeGithubModel(owner, name)
+				if err != nil {
+					log.Fatalf("Could not create GithubModel: %v\n", err)
+				}
+
+				enrichedModel := enriched.NewEnrichedModel(*gitModel, *githubModel)
+
 				// Cache
-				current := cache.NewCache(repo)
+				current := cache.NewCache(gitModel)
 				caches, err := cache.ReadCaches()
 
 				//nolint
@@ -59,7 +94,7 @@ func main() {
 					log.Fatalf("Failed to load caches: %v", err)
 				} else {
 					ghwf := workflow.GithubFlowWorkflow()
-					violated, count, total, violations, err := ghwf.Analyze(repo, current, caches)
+					violated, count, total, violations, err := ghwf.Analyze(enrichedModel, current, caches)
 					if err != nil {
 						log.Fatalf("Failed to analyze: %v\n", err)
 					}
@@ -80,24 +115,28 @@ func main() {
 			Action: func(c *cli.Context) error {
 				url := c.Args().Get(0)
 
-				r, _ := git.Clone(memory.NewStorage(), nil, &git.CloneOptions{
+				repo, _ := git.Clone(memory.NewStorage(), nil, &git.CloneOptions{
 					URL: url,
 				})
 
-				// ... retrieves the branch pointed by HEAD
-				ref, _ := r.Head()
-
-				log.Println(ref)
-
-				// TODO:
-				// From the url create a enriched model...
-				repo, err := local.NewGitModel(r)
+				gitModel, err := local.NewGitModel(repo)
 				if err != nil {
-					log.Printf("err: %v\n", err)
+					log.Fatalf("Could not create GitModel: %v\n", err)
 				}
 
+				owner, name, err := utils.OwnerNameFromUrl(url)
+				if err != nil {
+					log.Fatalf("Could not get owner and name from URL: %v\n", err)
+				}
+
+				githubModel, err := github.ScrapeGithubModel(owner, name)
+				if err != nil {
+					log.Fatalf("Could not scrape GithubModel: %v\n", err)
+				}
+				enrichedModel := enriched.NewEnrichedModel(*gitModel, *githubModel)
+
 				// Cache
-				current := cache.NewCache(repo)
+				current := cache.NewCache(gitModel)
 				caches, err := cache.ReadCaches()
 				if errors.Is(err, os.ErrNotExist) {
 					log.Printf("Cache file does not exist: %v", err)
@@ -106,7 +145,7 @@ func main() {
 				}
 
 				ghwf := workflow.GithubFlowWorkflow()
-				violated, count, total, violations, err := ghwf.Analyze(repo, current, caches)
+				violated, count, total, violations, err := ghwf.Analyze(enrichedModel, current, caches)
 				if err != nil {
 					log.Printf("err: %v\n", err)
 				}

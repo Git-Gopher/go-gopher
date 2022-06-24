@@ -1,8 +1,7 @@
 package detector
 
 import (
-	"github.com/Git-Gopher/go-gopher/model/github"
-	"github.com/Git-Gopher/go-gopher/model/local"
+	"github.com/Git-Gopher/go-gopher/model/enriched"
 	"github.com/Git-Gopher/go-gopher/violation"
 )
 
@@ -27,17 +26,13 @@ type BranchCompareDetector struct {
 }
 
 // TODO: We should change this to the enriched model.
-func (b *BranchCompareDetector) Run(model *local.GitModel) error {
+func (b *BranchCompareDetector) Run(model *enriched.EnrichedModel) error {
 	b.violated = 0
 	b.found = 0
 	b.total = 0
 	b.violations = make([]violation.Violation, 0)
 
 	return ErrNotImplemented
-}
-
-func (b *BranchCompareDetect) Run2(ghm *github.GithubModel) error {
-	return nil
 }
 
 func (b *BranchCompareDetector) Result() (int, int, int, []violation.Violation) {
