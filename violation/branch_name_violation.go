@@ -1,6 +1,10 @@
 package violation
 
-import "fmt"
+import (
+	"fmt"
+
+	"github.com/Git-Gopher/go-gopher/model/github"
+)
 
 func NewBranchNameViolation(
 	branchRef string,
@@ -53,4 +57,9 @@ func (p *BranchNameViolation) Suggestion() (string, error) {
 	}
 
 	return fmt.Sprintf("All branch names should consistent with the substring \"%s\" ", p.substring), nil
+}
+
+// Author implements Violation.
+func (p *BranchNameViolation) Author() (*github.Author, error) {
+	return nil, ErrViolationMethodNotExist
 }

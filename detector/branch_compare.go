@@ -5,9 +5,6 @@ import (
 	"strings"
 
 	"github.com/Git-Gopher/go-gopher/model/enriched"
-
-	"github.com/Git-Gopher/go-gopher/model/github"
-	"github.com/Git-Gopher/go-gopher/model/local"
 	"github.com/Git-Gopher/go-gopher/violation"
 	"github.com/adrg/strutil"
 	"gopkg.in/vmarkovtsev/go-lcss.v1"
