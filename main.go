@@ -2,7 +2,6 @@ package main
 
 import (
 	"errors"
-	"fmt"
 	"log"
 	"os"
 
@@ -72,8 +71,6 @@ func main() {
 				if err != nil {
 					log.Fatalf("Could not get owner and name from URL: %v\n", err)
 				}
-				fmt.Printf("owner: %v\n", owner)
-				fmt.Printf("name: %v\n", name)
 
 				githubModel, err := github.ScrapeGithubModel(owner, name)
 				if err != nil {

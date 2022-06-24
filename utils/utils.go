@@ -27,7 +27,6 @@ func Environment(location string) {
 // Fetch the owner and the name from the given URL.
 // Supports https and ssh URLs.
 func OwnerNameFromUrl(rawUrl string) (string, string, error) {
-	fmt.Printf("rawUrl: %v\n", rawUrl)
 	var owner, name string
 
 	url, err := giturls.Parse(rawUrl)
@@ -36,18 +35,16 @@ func OwnerNameFromUrl(rawUrl string) (string, string, error) {
 	}
 
 	xs := strings.Split(url.Path, "/")
-	fmt.Printf("xs: %v\n", xs)
 	switch url.Scheme {
 	case "ssh":
 		owner = xs[0]
 		name = xs[1][:len(xs[1])-4] // Remove ".git".
-
 	case "https":
-		name = xs[0]
 		owner = xs[1]
+		name = xs[2]
 	case "http":
-		name = xs[0]
 		owner = xs[1]
+		name = xs[2]
 	default:
 		return "", "", fmt.Errorf("%w: %v", ErrUnsupportedSchema, url.Scheme)
 	}
