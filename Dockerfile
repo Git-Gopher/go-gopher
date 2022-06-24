@@ -6,6 +6,11 @@ RUN go mod download
 RUN make build
 
 FROM ubuntu:latest AS runner
+RUN apk update \
+    && apk upgrade \
+    && apk add --no-cache \
+    ca-certificates \
+    && update-ca-certificates 2>/dev/null || true
 RUN mkdir -p /bin
 COPY --from=builder /workspace/go-gopher /bin/gitgopher
 ENTRYPOINT [ "/bin/gitgopher", "action"]
