@@ -9,14 +9,9 @@ import (
 	"golang.org/x/oauth2"
 )
 
-// dedicated hyrdation functions per use case.
-// define queries internally to function, aswell as any needed structs which should also be package only.
-// scraper should also be here!
-
-// instead do this:
-// Fetch all one query and then fetch more if page info says so!
-
-var GithubQuerySize = 100
+// TODO: gochecknoglobals is stupid...
+// nolint
+var githubQuerySize = 100
 
 type Scraper struct {
 	Client *githubv4.Client
@@ -40,6 +35,7 @@ type PageInfo struct {
 	EndCursor   githubv4.String
 }
 
+// nolint
 func (s *Scraper) FetchIssueComments(owner, name string, number int, cursor string) ([]*Comment, error) {
 	var q struct {
 		Repository struct {
@@ -62,7 +58,7 @@ func (s *Scraper) FetchIssueComments(owner, name string, number int, cursor stri
 	var all []*Comment
 	variables := map[string]interface{}{
 		"number": githubv4.Int(number),
-		"first":  githubv4.Int(GithubQuerySize),
+		"first":  githubv4.Int(githubQuerySize),
 		"cursor": githubv4.String(cursor),
 		"owner":  githubv4.String(owner),
 		"name":   githubv4.String(name),
@@ -70,7 +66,7 @@ func (s *Scraper) FetchIssueComments(owner, name string, number int, cursor stri
 
 	for {
 		if err := s.Client.Query(context.Background(), q, variables); err != nil {
-			return nil, fmt.Errorf("Failed to fetch additional pull request closing issues references: %v", err)
+			return nil, fmt.Errorf("Failed to fetch additional pull request closing issues references: %w", err)
 		}
 
 		for _, i := range q.Repository.Issue.Comments.Nodes {
@@ -119,7 +115,7 @@ func (s *Scraper) FetchPullRequestClosingIssues(owner, name string, number int, 
 	var all []*Issue
 	variables := map[string]interface{}{
 		"number": githubv4.Int(number),
-		"first":  githubv4.Int(GithubQuerySize),
+		"first":  githubv4.Int(githubQuerySize),
 		"cursor": githubv4.String(cursor),
 		"owner":  githubv4.String(owner),
 		"name":   githubv4.String(name),
@@ -127,7 +123,7 @@ func (s *Scraper) FetchPullRequestClosingIssues(owner, name string, number int, 
 
 	for {
 		if err := s.Client.Query(context.Background(), q, variables); err != nil {
-			return nil, fmt.Errorf("Failed to fetch additional pull request closing issues references: %v", err)
+			return nil, fmt.Errorf("Failed to fetch additional pull request closing issues references: %w", err)
 		}
 
 		for _, i := range q.Repository.PullRequest.ClosingIssuesReferences.Nodes {
@@ -154,6 +150,7 @@ func (s *Scraper) FetchPullRequestClosingIssues(owner, name string, number int, 
 	return all, nil
 }
 
+// nolint
 func (s *Scraper) FetchPullRequestComments(owner, name string, number int, cursor string) ([]*Comment, error) {
 	var q struct {
 		Repository struct {
@@ -176,7 +173,7 @@ func (s *Scraper) FetchPullRequestComments(owner, name string, number int, curso
 	var all []*Comment
 	variables := map[string]interface{}{
 		"number": githubv4.Int(number),
-		"first":  githubv4.Int(GithubQuerySize),
+		"first":  githubv4.Int(githubQuerySize),
 		"cursor": githubv4.String(cursor),
 		"owner":  githubv4.String(owner),
 		"name":   githubv4.String(name),
@@ -246,7 +243,7 @@ func (s *Scraper) FetchIssues(owner, name string) ([]*Issue, error) {
 
 	var all []*Issue
 	variables := map[string]interface{}{
-		"first":  githubv4.Int(GithubQuerySize),
+		"first":  githubv4.Int(githubQuerySize),
 		"cursor": (*githubv4.String)(nil),
 		"owner":  githubv4.String(owner),
 		"name":   githubv4.String(name),
@@ -254,7 +251,7 @@ func (s *Scraper) FetchIssues(owner, name string) ([]*Issue, error) {
 
 	for {
 		if err := s.Client.Query(context.Background(), &q, variables); err != nil {
-			return nil, fmt.Errorf("Failed to fetch issues: %v", err)
+			return nil, fmt.Errorf("Failed to fetch issues: %w", err)
 		}
 
 		if !q.Repository.Issues.PageInfo.HasNextPage {
@@ -263,7 +260,6 @@ func (s *Scraper) FetchIssues(owner, name string) ([]*Issue, error) {
 
 		issues := make([]*Issue, len(q.Repository.Issues.Nodes))
 		for i, is := range q.Repository.Issues.Nodes {
-
 			issue := &Issue{
 				Id:          is.Id,
 				Number:      is.Number,
@@ -289,7 +285,7 @@ func (s *Scraper) FetchIssues(owner, name string) ([]*Issue, error) {
 				acs, err := s.FetchPullRequestComments(owner, name, is.Number,
 					string(is.Comments.PageInfo.EndCursor))
 				if err != nil {
-					return nil, fmt.Errorf("Failed to fetch issue comments: %v", err)
+					return nil, fmt.Errorf("Failed to fetch issue comments: %w", err)
 				}
 
 				cs = append(cs, acs...)
@@ -370,7 +366,7 @@ func (s *Scraper) FetchPullRequests(owner, name string) ([]*PullRequest, error) 
 
 	var all []*PullRequest
 	variables := map[string]interface{}{
-		"first":  githubv4.Int(GithubQuerySize),
+		"first":  githubv4.Int(githubQuerySize),
 		"cursor": (*githubv4.String)(nil),
 		"owner":  githubv4.String(owner),
 		"name":   githubv4.String(name),
@@ -378,7 +374,7 @@ func (s *Scraper) FetchPullRequests(owner, name string) ([]*PullRequest, error) 
 
 	for {
 		if err := s.Client.Query(context.Background(), &q, variables); err != nil {
-			return nil, fmt.Errorf("Failed to fetch pull requests: %v", err)
+			return nil, fmt.Errorf("Failed to fetch pull requests: %w", err)
 		}
 
 		for _, mpr := range q.Repository.PullRequests.Nodes {
@@ -412,11 +408,10 @@ func (s *Scraper) FetchPullRequests(owner, name string) ([]*PullRequest, error) 
 				acir, err := s.FetchPullRequestClosingIssues(owner, name, pr.Number,
 					string(mpr.ClosingIssuesReferences.PageInfo.EndCursor))
 				if err != nil {
-					return nil, fmt.Errorf("Failed to fetch pull request closing issue references: %v", err)
+					return nil, fmt.Errorf("Failed to fetch pull request closing issue references: %w", err)
 				}
 
 				cis = append(cis, acir...)
-
 			}
 
 			pr.ClosingIssues = cis
@@ -435,7 +430,7 @@ func (s *Scraper) FetchPullRequests(owner, name string) ([]*PullRequest, error) 
 				acs, err := s.FetchPullRequestComments(owner, name, pr.Number,
 					string(mpr.Comments.PageInfo.EndCursor))
 				if err != nil {
-					return nil, fmt.Errorf("Failed to fetch pull request comments: %v", err)
+					return nil, fmt.Errorf("Failed to fetch pull request comments: %w", err)
 				}
 
 				cs = append(cs, acs...)

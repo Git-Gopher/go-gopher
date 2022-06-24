@@ -1,6 +1,7 @@
 package utils
 
 import (
+	"errors"
 	"fmt"
 	"log"
 	"os"
@@ -9,6 +10,8 @@ import (
 	"github.com/joho/godotenv"
 	giturls "github.com/whilp/git-urls"
 )
+
+var ErrUnsupportedSchema = errors.New("unsupported schema")
 
 // Load the environment variables from the .env file.
 func Environment(location string) {
@@ -28,7 +31,7 @@ func OwnerNameFromUrl(rawUrl string) (string, string, error) {
 
 	url, err := giturls.Parse(rawUrl)
 	if err != nil {
-		return "", "", fmt.Errorf("Could not parse git URL: %v", err)
+		return "", "", fmt.Errorf("Could not parse git URL: %w", err)
 	}
 
 	xs := strings.Split(url.Path, "/")
@@ -44,8 +47,7 @@ func OwnerNameFromUrl(rawUrl string) (string, string, error) {
 		name = xs[0]
 		owner = xs[1]
 	default:
-		return "", "", fmt.Errorf("Unsupported scheme: %v", url.Scheme)
-
+		return "", "", fmt.Errorf("%w: %v", ErrUnsupportedSchema, url.Scheme)
 	}
 
 	return owner, name, nil
