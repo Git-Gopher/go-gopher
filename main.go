@@ -90,19 +90,20 @@ func main() {
 					if err = cache.WriteCaches([]*cache.Cache{current}); err != nil {
 						log.Fatalf("Could not write cache: %v\n", err)
 					}
-				} else if err != nil {
+				}
+				if err != nil {
 					log.Fatalf("Failed to load caches: %v", err)
-				} else {
-					ghwf := workflow.GithubFlowWorkflow()
-					violated, count, total, violations, err := ghwf.Analyze(enrichedModel, current, caches)
-					if err != nil {
-						log.Fatalf("Failed to analyze: %v\n", err)
-					}
+				}
 
-					render(violated, count, total, violations)
-					for _, violation := range violations {
-						log.Println(violation.Message())
-					}
+				ghwf := workflow.GithubFlowWorkflow()
+				violated, count, total, violations, err := ghwf.Analyze(enrichedModel, current, caches)
+				if err != nil {
+					log.Fatalf("Failed to analyze: %v\n", err)
+				}
+
+				render(violated, count, total, violations)
+				for _, violation := range violations {
+					log.Println(violation.Message())
 				}
 
 				return nil
