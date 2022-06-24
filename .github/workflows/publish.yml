@@ -41,3 +41,5 @@ jobs:
         uses: Git-Gopher/go-gopher-action@latest
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_WORKSPACE: ${GITHUB_WORKSPACE}
+          GITHUB_URL: ${GITHUB_URL}
