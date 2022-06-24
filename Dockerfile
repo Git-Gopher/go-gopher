@@ -6,9 +6,9 @@ RUN go mod download
 RUN make build
 
 FROM ubuntu:latest AS runner
-RUN apk update \
-    && apk upgrade \
-    && apk add --no-cache \
+RUN apt-get update \
+    && apt-get upgrade \
+    && apt-get add --no-cache \
     ca-certificates \
     && update-ca-certificates 2>/dev/null || true
 RUN mkdir -p /bin
