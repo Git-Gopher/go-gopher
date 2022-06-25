@@ -102,9 +102,6 @@ func main() {
 				}
 
 				render(violated, count, total, violations)
-				for _, violation := range violations {
-					log.Println(violation.Message())
-				}
 
 				return nil
 			},
@@ -163,11 +160,11 @@ func main() {
 }
 
 func render(v, c, t int, vs []violation.Violation) {
-	log.Printf("violated: %d\n", v)
-	log.Printf("count: %d\n", c)
-	log.Printf("total: %d\n", t)
-	log.Printf("\n###### Violations ######\n")
-	for _, violation := range vs {
-		log.Println(violation.Message())
-	}
+	// log.Printf("violated: %d\n", v)
+	// log.Printf("count: %d\n", c)
+	// log.Printf("total: %d\n", t)
+	// log.Printf("\n###### Violations ######\n")
+	// for _, violation := range vs {
+	// 	log.Println(violation.Display())
+	// }
 }

@@ -6,7 +6,12 @@ import (
 	"log"
 	"os"
 	"strings"
+	"testing"
 
+	"github.com/go-git/go-git/v5"
+	"github.com/go-git/go-git/v5/plumbing"
+	"github.com/go-git/go-git/v5/plumbing/transport/http"
+	"github.com/go-git/go-git/v5/storage/memory"
 	"github.com/joho/godotenv"
 	giturls "github.com/whilp/git-urls"
 )
@@ -50,4 +55,32 @@ func OwnerNameFromUrl(rawUrl string) (string, string, error) {
 	}
 
 	return owner, name, nil
+}
+
+func FetchRepository(t *testing.T, remote, branch string) *git.Repository {
+	t.Helper()
+
+	if err := godotenv.Load("../.env"); err != nil {
+		log.Println("Error loading .env file")
+	}
+
+	token := os.Getenv("GITHUB_TOKEN")
+	if token == "" {
+		t.Errorf("Empty token")
+	}
+
+	r, err := git.Clone(memory.NewStorage(), nil, &git.CloneOptions{
+		Auth: &http.BasicAuth{
+			Username: "non-empty",
+			Password: token,
+		},
+		URL:           remote,
+		ReferenceName: plumbing.NewBranchReferenceName(branch),
+	})
+	if err != nil {
+		t.Errorf("%v", err)
+		t.FailNow()
+	}
+
+	return r
 }

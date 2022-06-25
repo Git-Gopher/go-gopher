@@ -9,45 +9,16 @@ import (
 	"github.com/Git-Gopher/go-gopher/model/enriched"
 	"github.com/Git-Gopher/go-gopher/model/github"
 	"github.com/Git-Gopher/go-gopher/model/local"
+	"github.com/Git-Gopher/go-gopher/utils"
 	"github.com/go-git/go-billy/v5/memfs"
 	"github.com/go-git/go-git/v5"
 	"github.com/go-git/go-git/v5/plumbing"
 	"github.com/go-git/go-git/v5/plumbing/object"
-	"github.com/go-git/go-git/v5/plumbing/transport/http"
 	"github.com/go-git/go-git/v5/storage/memory"
-	"github.com/joho/godotenv"
 )
 
-func fetchRepository(t *testing.T, remote, branch string) *git.Repository {
-	t.Helper()
-
-	if err := godotenv.Load("../.env"); err != nil {
-		log.Println("Error loading .env file")
-	}
-
-	token := os.Getenv("GITHUB_TOKEN")
-	if token == "" {
-		t.Errorf("Empty token")
-	}
-
-	r, err := git.Clone(memory.NewStorage(), nil, &git.CloneOptions{
-		Auth: &http.BasicAuth{
-			Username: "non-empty",
-			Password: token,
-		},
-		URL:           remote,
-		ReferenceName: plumbing.NewBranchReferenceName(branch),
-	})
-	if err != nil {
-		t.Errorf("%v", err)
-		t.FailNow()
-	}
-
-	return r
-}
-
 func TestTwoParentsCommitDetect(t *testing.T) {
-	r := fetchRepository(t, "https://github.com/Git-Gopher/tests", "test/two-parents-merged/0")
+	r := utils.FetchRepository(t, "https://github.com/Git-Gopher/tests", "test/two-parents-merged/0")
 	tests := []struct {
 		name string
 		want CommitDetect

@@ -57,6 +57,65 @@ type Commit struct {
 	Message string
 	// TODO: Import go-git types
 	Content string
+	// Patch
+	PatchChucks []map[string][]Chunk
+}
+
+type Operation int
+
+const (
+	// Equal item represents a equals diff.
+	Equal Operation = iota
+	// Add item represents an insert diff.
+	Add
+	// Delete item represents a delete diff.
+	Delete
+)
+
+type Chunk struct {
+	// Content contains the portion of the file.
+	Content string
+	// Type contains the Operation to do with this Chunk.
+	Type Operation
+}
+
+func FetchChunk(from *object.Commit, to *object.Commit) ([]Chunk, error) {
+	patch, err := from.Patch(to)
+	if err != nil {
+		return nil, fmt.Errorf("failed to fetch chunk: %w", err)
+	}
+
+	chunks := []Chunk{}
+
+	fmt.Println("++++++++++++++++++")
+	fmt.Println(to.Hash.String())
+	fmt.Println(from.Hash.String())
+	fmt.Println("++++++++++++++++++")
+	fmt.Println(patch.String())
+
+	for _, filePatch := range patch.FilePatches() {
+		fileChunks := filePatch.Chunks()
+		fromFile, toFile := filePatch.Files()
+		fmt.Printf("from file: %v\n", fromFile.Path())
+		fmt.Printf("to file: %v\n", toFile.Path())
+		for _, chunk := range fileChunks {
+			chunk.Content()
+		}
+		// if err != nil {
+		// 	return nil, fmt.Errorf("failed to fetch filepatch: %w", err)
+		// }
+		// fmt.Printf("files: %v\n", files)
+		for _, chunk := range fileChunks {
+
+			fmt.Printf("chunk: %v\n", chunk.Content())
+			chunks = append(chunks, Chunk{
+				Content: chunk.Content(),
+				Type:    Operation(chunk.Type()),
+			})
+		}
+	}
+
+	return chunks, nil
 }
 
 func NewCommit(c *object.Commit) *Commit {

@@ -2,6 +2,7 @@ package detector
 
 import (
 	"encoding/hex"
+	"fmt"
 
 	"github.com/Git-Gopher/go-gopher/model/enriched"
 	"github.com/Git-Gopher/go-gopher/model/local"
@@ -85,6 +86,8 @@ func DiffMatchesMessageDetect() CommitDetect {
 	// Do fuzzy searches on the diff using the nouns in the commit messages, we can also check the verbs
 	// (eg: "remove: Thing", then we search for Thing, and if it's been removed in the diff then we are good)
 	return func(commit *local.Commit) (bool, violation.Violation, error) {
+		// Get complete diff from commit
+		fmt.Printf("commit.Content: %v\n", commit.Content)
 		return true, nil, nil
 	}
 }
