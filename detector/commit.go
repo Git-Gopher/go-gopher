@@ -3,7 +3,7 @@ package detector
 import (
 	"encoding/hex"
 
-	"github.com/Git-Gopher/go-gopher/model/github"
+	"github.com/Git-Gopher/go-gopher/model/enriched"
 	"github.com/Git-Gopher/go-gopher/model/local"
 	"github.com/Git-Gopher/go-gopher/violation"
 )
@@ -20,7 +20,7 @@ type CommitDetector struct {
 }
 
 // TODO: We should change this to the enriched model.
-func (cd *CommitDetector) Run(model *local.GitModel) error {
+func (cd *CommitDetector) Run(model *enriched.EnrichedModel) error {
 	// Struct should be reset before each run, incase we are running it with a different model.
 	cd.violated = 0
 	cd.found = 0
@@ -42,10 +42,6 @@ func (cd *CommitDetector) Run(model *local.GitModel) error {
 		}
 	}
 
-	return nil
-}
-
-func (cd *CommitDetector) Run2(model *github.GithubModel) error {
 	return nil
 }
 
@@ -90,5 +86,12 @@ func DiffMatchesMessageDetect() CommitDetect {
 	// (eg: "remove: Thing", then we search for Thing, and if it's been removed in the diff then we are good)
 	return func(commit *local.Commit) (bool, violation.Violation, error) {
 		return true, nil, nil
+	}
+}
+
+// Example detector to check if the commit is greater than 10 characters.
+func NewDecriptiveCommitMessageDetect() CommitDetect {
+	return func(commit *local.Commit) (bool, violation.Violation, error) {
+		return false, nil, ErrNotImplemented
 	}
 }

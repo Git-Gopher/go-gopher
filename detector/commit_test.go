@@ -6,6 +6,8 @@ import (
 	"testing"
 	"time"
 
+	"github.com/Git-Gopher/go-gopher/model/enriched"
+	"github.com/Git-Gopher/go-gopher/model/github"
 	"github.com/Git-Gopher/go-gopher/model/local"
 	"github.com/go-git/go-billy/v5/memfs"
 	"github.com/go-git/go-git/v5"
@@ -54,14 +56,16 @@ func TestTwoParentsCommitDetect(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			// Create the model
-			model, err := local.NewGitModel(r)
+			// Create the gitModel
+			gitModel, err := local.NewGitModel(r)
 			if err != nil {
 				t.Errorf("TestTwoParentsCommitDetect() create model = %v", err)
 			}
 
+			enrichedModel := enriched.NewEnrichedModel(*gitModel, github.GithubModel{})
+
 			detector := NewCommitDetector(TwoParentsCommitDetect())
-			if err = detector.Run(model); err != nil {
+			if err = detector.Run(enrichedModel); err != nil {
 				t.Errorf("TestTwoParentsCommitDetect() run detector = %v", err)
 			}
 
@@ -158,14 +162,16 @@ func TestTwoParentsCommitDetectGoGit(t *testing.T) {
 		t.Errorf("TestTwoParentsCommitDetectGoGit() merge = %v", err)
 	}
 
-	// create the model
-	model, err := local.NewGitModel(r)
+	// create the gitModel
+	gitModel, err := local.NewGitModel(r)
 	if err != nil {
 		t.Errorf("TestTwoParentsCommitDetectGoGit() model = %v", err)
 	}
 
+	enrichedModel := enriched.NewEnrichedModel(*gitModel, github.GithubModel{})
+
 	detector := NewCommitDetector(TwoParentsCommitDetect())
-	err = detector.Run(model)
+	err = detector.Run(enrichedModel)
 	if err != nil {
 		t.Errorf("TestTwoParentsCommitDetectGoGit() run = %v", err)
 	}

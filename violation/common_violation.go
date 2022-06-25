@@ -1,7 +1,9 @@
 package violation
 
-func NewCommonViolation(message string) *CommonViolation {
-	common := &CommonViolation{display: nil, message: message}
+import "github.com/Git-Gopher/go-gopher/model/github"
+
+func NewCommonViolation(message string, author *github.Author) *CommonViolation {
+	common := &CommonViolation{display: nil, message: message, author: author}
 	common.display = &display{common}
 
 	return common
@@ -11,6 +13,7 @@ func NewCommonViolation(message string) *CommonViolation {
 type CommonViolation struct {
 	*display
 	message string
+	author  *github.Author
 }
 
 // Name returns the name of the Violation.
@@ -36,4 +39,9 @@ func (*CommonViolation) LineLocation() (int, error) {
 // Suggestion implements Violation.
 func (*CommonViolation) Suggestion() (string, error) {
 	return "", ErrViolationMethodNotExist
+}
+
+// Suggestion implements Violation.
+func (cv *CommonViolation) Author() (*github.Author, error) {
+	return cv.author, nil
 }

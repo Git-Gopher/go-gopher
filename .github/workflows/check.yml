@@ -45,4 +45,4 @@ jobs:
           tags: ${{ github.run_id }}-${{ github.run_number }}
       - name: Test
         run: |
-          docker run -e GITHUB_TOKEN=${GITHUB_TOKEN} -e GITHUB_WORKSPACE=${GITHUB_WORKSPACE} -v ${GITHUB_WORKSPACE}:${GITHUB_WORKSPACE} --rm ${{ github.run_id }}-${{ github.run_number }}
+          docker run -e GITHUB_TOKEN=${GITHUB_TOKEN} -e GITHUB_WORKSPACE=${GITHUB_WORKSPACE} -e GITHUB_URL=${GITHUB_URL} -v ${GITHUB_WORKSPACE}:${GITHUB_WORKSPACE} --rm ${{ github.run_id }}-${{ github.run_number }}

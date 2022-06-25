@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/Git-Gopher/go-gopher/model/github"
+	"github.com/Git-Gopher/go-gopher/model/enriched"
 	"github.com/Git-Gopher/go-gopher/model/local"
 	"github.com/Git-Gopher/go-gopher/violation"
 )
@@ -22,7 +22,7 @@ type BranchDetector struct {
 }
 
 // TODO: We should change this to the enriched model.
-func (bd *BranchDetector) Run(model *local.GitModel) error {
+func (bd *BranchDetector) Run(model *enriched.EnrichedModel) error {
 	bd.violated = 0
 	bd.found = 0
 	bd.total = 0
@@ -47,10 +47,6 @@ func (bd *BranchDetector) Run(model *local.GitModel) error {
 	}
 
 	return nil
-}
-
-func (db *BranchDetector) Run2(model *github.GithubModel) error {
-	return ErrNotImplemented
 }
 
 func (b *BranchDetector) Result() (int, int, int, []violation.Violation) {

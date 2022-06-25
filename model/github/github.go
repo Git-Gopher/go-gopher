@@ -1,35 +1,55 @@
 package github
 
-import (
-	"fmt"
-
-	"github.com/Git-Gopher/go-gopher/scrape"
-	"github.com/shurcooL/githubv4"
-)
+import "fmt"
 
 type Author struct {
-	Login     githubv4.String
-	AvatarUrl githubv4.String
+	Login     string
+	AvatarUrl string
 }
 
 type Issue struct {
+	Id          string
+	Number      int
+	Title       string
+	Body        string
+	State       string
+	StateReason string
+	Author      *Author
+	Comments    []*Comment
+}
+
+type Comment struct {
 	Id     string
 	Body   string
-	Title  string
 	Author *Author
 }
 
+type ReviewThread struct {
+	Id         string
+	IsResolved bool
+	IsOutdated bool
+	Path       string
+}
+
 type PullRequest struct {
-	Id     string
-	Body   string
-	Title  string
-	Issues []Issue
+	Id             string
+	Number         int
+	Title          string
+	Body           string
+	ReviewDecision string
+	Merged         bool
+	MergedBy       *Author
+	Url            string
+	Author         *Author
+	ClosingIssues  []*Issue
+	Comments       []*Comment
+	ReviewThreads  []*ReviewThread
 }
 
 type GithubModel struct {
 	Author       *Author
-	PullRequests []PullRequest
-	Issues       []Issue
+	PullRequests []*PullRequest
+	Issues       []*Issue
 }
 
 // TODO: Issues, Author. Also handling the same issue multiple times, should we fetch it multiple
@@ -37,25 +57,22 @@ type GithubModel struct {
 // where we can use pointers within our structs, the second is easier in terms of managing complexity
 // but also might add complexity in constructing objects multiple times?
 func ScrapeGithubModel(owner, name string) (*GithubModel, error) {
-	s := scrape.NewScraper()
-	sprs, err := s.ScrapePullRequests(owner, name)
+	s := NewScraper()
+	prs, err := s.FetchPullRequests(owner, name)
 	if err != nil {
-		return nil, fmt.Errorf("Failed create github model from scraped %w", err)
+		return nil, fmt.Errorf("Failed to fetch pull requests for GitHub model: %w", err)
 	}
 
-	// Map scraped PRs to Model PRs
-	prs := make([]PullRequest, 0, len(sprs))
-	for _, spr := range sprs {
-		var issues []Issue
-		for _, si := range spr.ClosingIssuesReferences.Edges {
-			issues = append(issues, Issue{Id: si.Node.Id, Title: si.Node.Title, Body: si.Node.Body})
-		}
-		prs = append(prs, PullRequest{Id: spr.Id, Body: spr.Body, Title: spr.Title, Issues: issues})
+	issues, err := s.FetchIssues(owner, name)
+	if err != nil {
+		return nil, fmt.Errorf("Failed to fetch issues for GitHub model: %w", err)
 	}
 
-	return &GithubModel{
+	thing := GithubModel{
 		Author:       nil,
 		PullRequests: prs,
-		Issues:       nil,
-	}, nil
+		Issues:       issues,
+	}
+
+	return &thing, nil
 }

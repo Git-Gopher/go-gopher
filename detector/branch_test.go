@@ -3,6 +3,8 @@ package detector
 import (
 	"testing"
 
+	"github.com/Git-Gopher/go-gopher/model/enriched"
+	"github.com/Git-Gopher/go-gopher/model/github"
 	"github.com/Git-Gopher/go-gopher/model/local"
 )
 
@@ -16,14 +18,15 @@ func TestStaleBranchDetect(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			// Create the model
-			model, err := local.NewGitModel(r)
+			// Create the gitModel
+			gitModel, err := local.NewGitModel(r)
 			if err != nil {
 				t.Errorf("TestTwoParentsCommitDetect() create model = %v", err)
 			}
 
 			detector := NewBranchDetector(StaleBranchDetect())
-			if err = detector.Run(model); err != nil {
+			enrichedModel := enriched.NewEnrichedModel(*gitModel, github.GithubModel{})
+			if err = detector.Run(enrichedModel); err != nil {
 				t.Errorf("TestStaleBranchDetect() run detector = %v", err)
 			}
 
