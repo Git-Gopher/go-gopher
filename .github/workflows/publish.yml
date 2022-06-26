@@ -33,7 +33,7 @@ jobs:
         with:
           fetch-depth: 0
       - name: Use Cache
-      - uses: actions/cache@v3
+        uses: actions/cache@v3
         with:
           path: cache.json
           key: ${{ github.base_ref }}
