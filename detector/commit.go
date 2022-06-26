@@ -20,7 +20,6 @@ type CommitDetector struct {
 	detect CommitDetect
 }
 
-// TODO: We should change this to the enriched model.
 func (cd *CommitDetector) Run(model *enriched.EnrichedModel) error {
 	// Struct should be reset before each run, incase we are running it with a different model.
 	cd.violated = 0

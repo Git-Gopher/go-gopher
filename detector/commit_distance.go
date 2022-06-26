@@ -23,7 +23,6 @@ type CommitDistanceDetector struct {
 	detect CommitDistanceCalculator
 }
 
-// TODO: We should change this to the enriched model.
 func (cd *CommitDistanceDetector) Run(model *enriched.EnrichedModel) error {
 	// Struct should be reset before each run, incase we are running it with a different model.
 	cd.violated = 0

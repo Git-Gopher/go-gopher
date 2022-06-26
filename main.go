@@ -80,7 +80,7 @@ func main() {
 				enrichedModel := enriched.NewEnrichedModel(*gitModel, *githubModel)
 
 				// Cache
-				current := cache.NewCache(gitModel)
+				current := cache.NewCache(enrichedModel)
 				caches, err := cache.ReadCaches()
 
 				//nolint

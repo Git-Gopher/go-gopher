@@ -6,8 +6,6 @@ import (
 	"github.com/Git-Gopher/go-gopher/utils"
 )
 
-// TODO: Move this to test utils?
-
 func TestScrapeGitHubModel(t *testing.T) {
 	type args struct {
 		owner string

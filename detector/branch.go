@@ -21,7 +21,6 @@ type BranchDetector struct {
 	detect BranchDetect
 }
 
-// TODO: We should change this to the enriched model.
 func (bd *BranchDetector) Run(model *enriched.EnrichedModel) error {
 	bd.violated = 0
 	bd.found = 0

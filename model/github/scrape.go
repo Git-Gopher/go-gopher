@@ -9,8 +9,7 @@ import (
 	"golang.org/x/oauth2"
 )
 
-// TODO: gochecknoglobals is stupid...
-// nolint
+// nolint: gochecknoglobals
 var githubQuerySize = 100
 
 type Scraper struct {

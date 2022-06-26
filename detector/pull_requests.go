@@ -31,7 +31,6 @@ func NewPullRequestDetector(detect PullRequestDetect) *PullRequestDetector {
 	}
 }
 
-// TODO: We should change this to the enriched model.
 func (pd *PullRequestDetector) Run(model *enriched.EnrichedModel) error {
 	for _, pr := range model.PullRequests {
 		pr := pr
