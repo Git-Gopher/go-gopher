@@ -24,7 +24,7 @@ func TestFetchChunk(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := FetchChunk(tt.args.from, tt.args.to)
+			got, err := FetchDiffs(tt.args.from, tt.args.to)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("FetchChunk() error = %v, wantErr %v", err, tt.wantErr)
 
@@ -58,17 +58,18 @@ func TestExampleFetchChunk(t *testing.T) {
 				return fmt.Errorf("CommitObject() = %w", err)
 			}
 
-			chunks, err := FetchChunk(parent, c)
+			diffs, err := FetchDiffs(parent, c)
 			if err != nil {
-				return fmt.Errorf("FetchChunk() = %w", err)
+				return fmt.Errorf("FetchDiffs() = %w", err)
 			}
 
-			if len(chunks) > 1 {
-				for _, chunk := range chunks {
-					fmt.Println("chunk type:", chunk.Type)
-					fmt.Println("chunk content:", chunk.Content)
-				}
+			for _, diff := range diffs {
+				fmt.Printf("Name: %s\n", diff.Name)
+				fmt.Printf("Added: %s\n", diff.Addition)
+				fmt.Printf("Deleted: %s\n", diff.Deletion)
+				fmt.Printf("Equal: %s\n", diff.Equal)
 			}
+
 		}
 
 		return nil

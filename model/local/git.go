@@ -3,8 +3,10 @@ package local
 import (
 	"errors"
 	"fmt"
+	"strings"
 	"time"
 
+	"github.com/bluekeyes/go-gitdiff/gitdiff"
 	"github.com/go-git/go-git/v5"
 	"github.com/go-git/go-git/v5/plumbing"
 	"github.com/go-git/go-git/v5/plumbing/object"
@@ -42,6 +44,15 @@ func NewSignature(o *object.Signature) *Signature {
 	}
 }
 
+type Diff struct {
+	Name     string
+	Equal    string
+	Addition string
+	Deletion string
+}
+
+type File = gitdiff.File
+
 type Commit struct {
 	// Hash of the commit object.
 	Hash Hash
@@ -56,9 +67,8 @@ type Commit struct {
 	// Message is the commit message, contains arbitrary text.
 	Message string
 	// TODO: Import go-git types
-	Content string
-	// Patch
-	PatchChucks []map[string][]Chunk
+	Content       string
+	DiffToParents []Diff
 }
 
 type Operation int
@@ -79,43 +89,58 @@ type Chunk struct {
 	Type Operation
 }
 
-func FetchChunk(from *object.Commit, to *object.Commit) ([]Chunk, error) {
+func FetchDiffs(from *object.Commit, to *object.Commit) ([]Diff, error) {
 	patch, err := from.Patch(to)
 	if err != nil {
 		return nil, fmt.Errorf("failed to fetch chunk: %w", err)
 	}
 
-	chunks := []Chunk{}
-
-	fmt.Println("++++++++++++++++++")
-	fmt.Println(to.Hash.String())
-	fmt.Println(from.Hash.String())
-	fmt.Println("++++++++++++++++++")
-	fmt.Println(patch.String())
-
-	for _, filePatch := range patch.FilePatches() {
-		fileChunks := filePatch.Chunks()
-		fromFile, toFile := filePatch.Files()
-		fmt.Printf("from file: %v\n", fromFile.Path())
-		fmt.Printf("to file: %v\n", toFile.Path())
-		for _, chunk := range fileChunks {
-			chunk.Content()
+	files, _, err := gitdiff.Parse(strings.NewReader(patch.String()))
+	if err != nil {
+		return nil, fmt.Errorf("Failed to parse diff: %w", err)
+	}
+	diffs := make([]Diff, len(files))
+	for i, f := range files {
+		equal, added, deleted, err := Defragment(f.TextFragments)
+		if err != nil {
+			return nil, fmt.Errorf("Failed to defragment diffs: %w", err)
 		}
-		// if err != nil {
-		// 	return nil, fmt.Errorf("failed to fetch filepatch: %w", err)
-		// }
-		// fmt.Printf("files: %v\n", files)
-		for _, chunk := range fileChunks {
 
-			fmt.Printf("chunk: %v\n", chunk.Content())
-			chunks = append(chunks, Chunk{
-				Content: chunk.Content(),
-				Type:    Operation(chunk.Type()),
-			})
+		var name string
+		if f.IsNew || f.IsRename {
+			name = f.NewName
+		} else {
+			name = f.OldName
+		}
+
+		diffs[i] = Diff{
+			Name:     name,
+			Addition: added,
+			Deletion: deleted,
+			Equal:    equal,
 		}
 	}
 
-	return chunks, nil
+	return diffs, nil
+}
+
+func Defragment(fragment []*gitdiff.TextFragment) (equal, added, deleted string, err error) {
+	for _, f := range fragment {
+		for _, l := range f.Lines {
+			switch l.Op {
+			case gitdiff.LineOp(Equal):
+				equal += l.Line
+			case gitdiff.LineOp(Add):
+				added += l.Line
+			case gitdiff.LineOp(Delete):
+				deleted += l.Line
+			default:
+				return "", "", "", fmt.Errorf("Unexpected Op: %v", l.Op)
+			}
+		}
+	}
+
+	return equal, added, deleted, nil
 }
 
 func NewCommit(c *object.Commit) *Commit {

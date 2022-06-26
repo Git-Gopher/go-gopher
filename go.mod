@@ -15,6 +15,7 @@ require (
 	github.com/Microsoft/go-winio v0.4.16 // indirect
 	github.com/ProtonMail/go-crypto v0.0.0-20210428141323-04723f9f07d7 // indirect
 	github.com/acomagu/bufpipe v1.0.3 // indirect
+	github.com/bluekeyes/go-gitdiff v0.6.1 // indirect
 	github.com/cpuguy83/go-md2man/v2 v2.0.2 // indirect
 	github.com/emirpasic/gods v1.18.1 // indirect
 	github.com/go-git/gcfg v1.5.0 // indirect
@@ -27,8 +28,8 @@ require (
 	github.com/russross/blackfriday/v2 v2.1.0 // indirect
 	github.com/sergi/go-diff v1.1.0 // indirect
 	github.com/shurcooL/graphql v0.0.0-20220520033453-bdb1221e171e // indirect
-	github.com/xanzy/ssh-agent v0.3.0 // indirect
 	github.com/whilp/git-urls v1.0.0 // indirect
+	github.com/xanzy/ssh-agent v0.3.0 // indirect
 	github.com/xrash/smetrics v0.0.0-20201216005158-039620a65673 // indirect
 	golang.org/x/crypto v0.0.0-20210421170649-83a5a9bb288b // indirect
 	golang.org/x/net v0.0.0-20220526153639-5463443f8c37 // indirect

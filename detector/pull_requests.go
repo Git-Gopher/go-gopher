@@ -18,8 +18,8 @@ type PullRequestDetector struct {
 	detect PullRequestDetect
 }
 
-func (pd *PullRequestDetector) Result() (int, int, int) {
-	return pd.violated, pd.found, pd.total
+func (prd *PullRequestDetector) Result() (int, int, int, []violation.Violation) {
+	return prd.violated, prd.found, prd.total, prd.violations
 }
 
 func NewPullRequestDetector(detect PullRequestDetect) *PullRequestDetector {

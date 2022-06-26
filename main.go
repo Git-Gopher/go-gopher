@@ -90,9 +90,9 @@ func main() {
 					if err = cache.WriteCaches([]*cache.Cache{current}); err != nil {
 						log.Fatalf("Could not write cache: %v\n", err)
 					}
-				}
-				if err != nil {
+				} else if err != nil {
 					log.Fatalf("Failed to load caches: %v", err)
+				} else {
 				}
 
 				ghwf := workflow.GithubFlowWorkflow()
@@ -160,11 +160,11 @@ func main() {
 }
 
 func render(v, c, t int, vs []violation.Violation) {
-	// log.Printf("violated: %d\n", v)
-	// log.Printf("count: %d\n", c)
-	// log.Printf("total: %d\n", t)
-	// log.Printf("\n###### Violations ######\n")
-	// for _, violation := range vs {
-	// 	log.Println(violation.Display())
-	// }
+	log.Printf("violated: %d\n", v)
+	log.Printf("count: %d\n", c)
+	log.Printf("total: %d\n", t)
+	log.Printf("\n###### Violations ######\n")
+	for _, violation := range vs {
+		log.Println(violation.Display())
+	}
 }
