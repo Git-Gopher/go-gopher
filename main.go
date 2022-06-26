@@ -176,13 +176,15 @@ func render(v, c, t int, vs []violation.Violation) {
 	for _, v := range violations {
 		log.Println(v.Display())
 	}
+
 	log.Printf("\n###### Suggestions ######\n")
 	for _, s := range suggestions {
 		log.Println(s.Display())
 	}
-	// TODO: Add a section for breaking down by user
+
 	log.Printf("\n###### Summary ######\n")
 	log.Printf("violated: %d\n", v)
 	log.Printf("count: %d\n", c)
 	log.Printf("total: %d\n", t)
+	// TODO: Add a section for breaking down by user
 }
