@@ -13,8 +13,9 @@ import (
 )
 
 var (
-	ErrCommitEmpty = errors.New("Commit empty")
-	ErrBranchEmpty = errors.New("Branch empty")
+	ErrCommitEmpty   = errors.New("Commit empty")
+	ErrBranchEmpty   = errors.New("Branch empty")
+	ErrUnknownLineOp = errors.New("Unknown line op")
 )
 
 type Hash [20]byte
@@ -155,7 +156,7 @@ func Defragment(fragment []*gitdiff.TextFragment) (equal, added, deleted string,
 			case gitdiff.LineOp(Delete):
 				deleted += l.Line
 			default:
-				return "", "", "", errors.New("Unexpected Op: %v", l.Op)
+				return "", "", "", ErrUnknownLineOp
 			}
 		}
 	}

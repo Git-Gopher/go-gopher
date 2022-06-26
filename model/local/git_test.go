@@ -48,28 +48,29 @@ func TestExampleFetchChunk(t *testing.T) {
 
 	err = cIter.ForEach(func(c *object.Commit) error {
 		if c == nil {
-			return fmt.Errorf("CommitObject()")
+			return fmt.Errorf("CommitObject() = %w", ErrCommitEmpty)
 		}
 
 		for _, ph := range c.ParentHashes {
 			// Last parent in the parent hashes is considered to be the 'only' parent
-			parent, err := r.CommitObject(ph)
+			var parent *object.Commit
+			parent, err = r.CommitObject(ph)
 			if err != nil {
 				return fmt.Errorf("CommitObject() = %w", err)
 			}
 
-			diffs, err := FetchDiffs(parent, c)
+			var diffs []Diff
+			diffs, err = FetchDiffs(parent, c)
 			if err != nil {
 				return fmt.Errorf("FetchDiffs() = %w", err)
 			}
 
 			for _, diff := range diffs {
-				fmt.Printf("Name: %s\n", diff.Name)
-				fmt.Printf("Added: %s\n", diff.Addition)
-				fmt.Printf("Deleted: %s\n", diff.Deletion)
-				fmt.Printf("Equal: %s\n", diff.Equal)
+				t.Logf("Name: %s\n", diff.Name)
+				t.Logf("Added: %s\n", diff.Addition)
+				t.Logf("Deleted: %s\n", diff.Deletion)
+				t.Logf("Equal: %s\n", diff.Equal)
 			}
-
 		}
 
 		return nil
@@ -77,6 +78,4 @@ func TestExampleFetchChunk(t *testing.T) {
 	if err != nil {
 		t.Errorf("cIter() = %v", err)
 	}
-
-	t.Fail()
 }
