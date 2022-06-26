@@ -149,3 +149,31 @@ func TestTwoParentsCommitDetectGoGit(t *testing.T) {
 
 	log.Println(detector.Result())
 }
+
+func TestDiffMatchesMessageDetect(t *testing.T) {
+	r := utils.FetchRepository(t, "https://github.com/Git-Gopher/tests", "test/commit-message-matches-diff/0")
+	tests := []struct {
+		name string
+		want CommitDetect
+	}{
+		{"Commit message diff", nil},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			// Create the gitModel
+			gitModel, err := local.NewGitModel(r)
+			if err != nil {
+				t.Errorf(" TestDiffMatchesMessageDetect() create model = %v", err)
+			}
+
+			enrichedModel := enriched.NewEnrichedModel(*gitModel, github.GithubModel{})
+
+			detector := NewCommitDetector(DiffMatchesMessageDetect())
+			if err = detector.Run(enrichedModel); err != nil {
+				t.Errorf(" TestDiffMatchesMessageDetect() run detector = %v", err)
+			}
+
+			t.Log(detector.Result())
+		})
+	}
+}

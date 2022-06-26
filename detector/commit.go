@@ -2,6 +2,7 @@ package detector
 
 import (
 	"encoding/hex"
+	"strings"
 
 	"github.com/Git-Gopher/go-gopher/model/enriched"
 	"github.com/Git-Gopher/go-gopher/model/local"
@@ -79,13 +80,20 @@ func TwoParentsCommitDetect() CommitDetect {
 	}
 }
 
-// https://github.com/lithammer/fuzzysearch.
-// TODO: Fuzzy search words in the commit message.
+// XXX: Very very lazy. I am a true software engineer.
 func DiffMatchesMessageDetect() CommitDetect {
-	// Do fuzzy searches on the diff using the nouns in the commit messages, we can also check the verbs
-	// (eg: "remove: Thing", then we search for Thing, and if it's been removed in the diff then we are good)
 	return func(commit *local.Commit) (bool, violation.Violation, error) {
-		return true, nil, nil
+		words := strings.Split(commit.Message, " ")
+		for _, diff := range commit.DiffToParents {
+			for _, word := range words {
+				all := diff.Addition + diff.Deletion + diff.Equal + diff.Name
+				if strings.Contains(all, word) {
+					return true, nil, nil
+				}
+			}
+		}
+
+		return false, violation.NewDescriptiveCommitViolation(commit.Message, commit.Author.Name), nil
 	}
 }
 

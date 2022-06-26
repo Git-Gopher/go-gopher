@@ -45,3 +45,8 @@ func (*CommonViolation) Suggestion() (string, error) {
 func (cv *CommonViolation) Author() (*github.Author, error) {
 	return cv.author, nil
 }
+
+// Severity implements Violation.
+func (p *CommonViolation) Severity() Severity {
+	return Suggestion
+}

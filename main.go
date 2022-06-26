@@ -159,12 +159,30 @@ func main() {
 	}
 }
 
+// Print violation summary to IO, Split by severity with author association.
 func render(v, c, t int, vs []violation.Violation) {
+	var violations, suggestions []violation.Violation
+	for _, v := range vs {
+		switch v.Severity() {
+		case violation.Violated:
+			violations = append(violations, v)
+		case violation.Suggestion:
+			suggestions = append(suggestions, v)
+		}
+		log.Println(v.Display())
+	}
+
+	log.Printf("\n###### Violations ######\n")
+	for _, v := range violations {
+		log.Println(v.Display())
+	}
+	log.Printf("\n###### Suggestions ######\n")
+	for _, s := range suggestions {
+		log.Println(s.Display())
+	}
+	// TODO: Add a section for breaking down by user
+	log.Printf("\n###### Summary ######\n")
 	log.Printf("violated: %d\n", v)
 	log.Printf("count: %d\n", c)
 	log.Printf("total: %d\n", t)
-	log.Printf("\n###### Violations ######\n")
-	for _, violation := range vs {
-		log.Println(violation.Display())
-	}
 }

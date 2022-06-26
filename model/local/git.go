@@ -49,6 +49,19 @@ type Diff struct {
 	Equal    string
 	Addition string
 	Deletion string
+
+	Points []DiffPoint
+}
+
+type DiffPoint struct {
+	OldPosition int64
+	OldLines    int64
+
+	NewPosition int64
+	NewLines    int64
+
+	LinesAdded   int64
+	LinesDeleted int64
 }
 
 type File = gitdiff.File
@@ -106,6 +119,11 @@ func FetchDiffs(from *object.Commit, to *object.Commit) ([]Diff, error) {
 			return nil, fmt.Errorf("Failed to defragment diffs: %w", err)
 		}
 
+		diffPoints, err := DefragmentToDiffPoint(f.TextFragments)
+		if err != nil {
+			return nil, fmt.Errorf("Failed to defragment diff points: %w", err)
+		}
+
 		var name string
 		if f.IsNew || f.IsRename {
 			name = f.NewName
@@ -118,6 +136,8 @@ func FetchDiffs(from *object.Commit, to *object.Commit) ([]Diff, error) {
 			Addition: added,
 			Deletion: deleted,
 			Equal:    equal,
+
+			Points: diffPoints,
 		}
 	}
 
@@ -143,8 +163,25 @@ func Defragment(fragment []*gitdiff.TextFragment) (equal, added, deleted string,
 	return equal, added, deleted, nil
 }
 
-func NewCommit(c *object.Commit) *Commit {
-	if c == nil {
+func DefragmentToDiffPoint(fragments []*gitdiff.TextFragment) ([]DiffPoint, error) {
+	diffPoints := make([]DiffPoint, len(fragments))
+	for i, f := range fragments {
+		point := DiffPoint{
+			OldPosition:  f.OldPosition,
+			OldLines:     f.OldLines,
+			NewPosition:  f.NewPosition,
+			NewLines:     f.NewLines,
+			LinesAdded:   f.LinesAdded,
+			LinesDeleted: f.LinesDeleted,
+		}
+		diffPoints[i] = point
+	}
+
+	return diffPoints, nil
+}
+
+func NewCommit(r *git.Repository, c *object.Commit) *Commit {
+	if c == nil || r == nil {
 		return nil
 	}
 
@@ -153,13 +190,29 @@ func NewCommit(c *object.Commit) *Commit {
 		parentHashes[i] = Hash(hash)
 	}
 
+	var diffs []Diff
+	err := c.Parents().ForEach(
+		func(p *object.Commit) error {
+			diff, err := FetchDiffs(p, c)
+			if err != nil {
+				return fmt.Errorf("Failed to fetch diff: %w", err)
+			}
+			diffs = append(diffs, diff...)
+
+			return nil
+		})
+	if err != nil {
+		return nil
+	}
+
 	return &Commit{
-		Hash:         Hash(c.Hash),
-		Author:       *NewSignature(&c.Author),
-		Committer:    *NewSignature(&c.Committer),
-		Message:      c.Message,
-		TreeHash:     Hash(c.TreeHash),
-		ParentHashes: parentHashes,
+		Hash:          Hash(c.Hash),
+		Author:        *NewSignature(&c.Author),
+		Committer:     *NewSignature(&c.Committer),
+		Message:       c.Message,
+		TreeHash:      Hash(c.TreeHash),
+		ParentHashes:  parentHashes,
+		DiffToParents: diffs,
 	}
 }
 
@@ -177,13 +230,13 @@ type Branch struct {
 	Name string
 }
 
-func NewBranch(o *plumbing.Reference, c *object.Commit) *Branch {
+func NewBranch(repo *git.Repository, o *plumbing.Reference, c *object.Commit) *Branch {
 	if o == nil {
 		return nil
 	}
 
 	return &Branch{
-		Head: *NewCommit(c),
+		Head: *NewCommit(repo, c),
 		Name: o.Name().Short(),
 	}
 }
@@ -205,7 +258,7 @@ func NewGitModel(repo *git.Repository) (*GitModel, error) {
 		if c == nil {
 			return fmt.Errorf("NewGitModel commit: %w", ErrCommitEmpty)
 		}
-		commit := NewCommit(c)
+		commit := NewCommit(repo, c)
 		gitModel.Commits = append(gitModel.Commits, *commit)
 
 		return nil
@@ -229,7 +282,7 @@ func NewGitModel(repo *git.Repository) (*GitModel, error) {
 			return fmt.Errorf("Failed to find head commit from branch: %w", err)
 		}
 
-		branch := NewBranch(b, c)
+		branch := NewBranch(repo, b, c)
 		gitModel.Branches = append(gitModel.Branches, *branch)
 
 		return nil

@@ -7,6 +7,13 @@ import (
 	"github.com/Git-Gopher/go-gopher/model/github"
 )
 
+type Severity int
+
+const (
+	Violated Severity = iota
+	Suggestion
+)
+
 var ErrViolationMethodNotExist = errors.New("Violation method not exist")
 
 type Violation interface {
@@ -18,6 +25,7 @@ type Violation interface {
 	Author() (*github.Author, error) // optional: User which caused the violation the
 	FileLocation() (string, error)
 	LineLocation() (int, error)
+	Severity() Severity
 }
 
 // display struct implements the Display method part of Violation using Violation.

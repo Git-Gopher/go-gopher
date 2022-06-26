@@ -44,3 +44,8 @@ func (*StaleCommitViolation) Suggestion() (string, error) {
 func (p *StaleCommitViolation) Author() (*github.Author, error) {
 	return nil, ErrViolationMethodNotExist
 }
+
+// Severity implements Violation.
+func (p *StaleCommitViolation) Severity() Severity {
+	return Violated
+}

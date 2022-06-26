@@ -62,3 +62,8 @@ func (p *PrimaryBranchDirectCommitViolation) Suggestion() (string, error) {
 func (p *PrimaryBranchDirectCommitViolation) Author() (*github.Author, error) {
 	return nil, ErrViolationMethodNotExist
 }
+
+// Severity implements Violation.
+func (p *PrimaryBranchDirectCommitViolation) Severity() Severity {
+	return Violated
+}
