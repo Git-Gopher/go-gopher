@@ -155,7 +155,7 @@ func Defragment(fragment []*gitdiff.TextFragment) (equal, added, deleted string,
 			case gitdiff.LineOp(Delete):
 				deleted += l.Line
 			default:
-				return "", "", "", fmt.Errorf("Unexpected Op: %v", l.Op)
+				return "", "", "", errors.New("Unexpected Op: %v", l.Op)
 			}
 		}
 	}

@@ -36,6 +36,7 @@ func GithubFlowWorkflow() *Workflow {
 			{Weight: 1, Detector: detector.NewPullRequestDetector(detector.PullRequestIssueDetector())},
 			{Weight: 1, Detector: detector.NewPullRequestDetector(detector.PullRequestReviewThreadDetector())},
 			{Weight: 1, Detector: detector.NewCommitDetector(detector.DiffMatchesMessageDetect())},
+			{Weight: 1, Detector: detector.NewCommitDistanceDetector(detector.DiffDistanceCalculation())},
 		},
 		WeightedCacheDetectors: []WeightedCacheDetector{
 			{Weight: 10, Detector: detector.NewCommitCacheDetector(detector.ForcePushDetect())},
