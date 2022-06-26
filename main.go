@@ -134,7 +134,7 @@ func main() {
 				enrichedModel := enriched.NewEnrichedModel(*gitModel, *githubModel)
 
 				// Cache
-				current := cache.NewCache(gitModel)
+				current := cache.NewCache(enrichedModel)
 				caches, err := cache.ReadCaches()
 				if errors.Is(err, os.ErrNotExist) {
 					log.Printf("Cache file does not exist: %v", err)
