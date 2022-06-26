@@ -30,7 +30,6 @@ type BranchCompareDetector struct {
 	detect BranchCompareDetect
 }
 
-// TODO: We should change this to the enriched model.
 func (b *BranchCompareDetector) Run(model *enriched.EnrichedModel) error {
 	b.violated = 0
 	b.found = 0

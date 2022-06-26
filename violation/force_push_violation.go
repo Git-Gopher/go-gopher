@@ -56,3 +56,8 @@ func (f *ForcePushViolation) Suggestion() (string, error) {
 func (f *ForcePushViolation) Author() (*github.Author, error) {
 	return nil, ErrViolationMethodNotExist
 }
+
+// Severity implements Violation.
+func (p *ForcePushViolation) Severity() Severity {
+	return Violated
+}

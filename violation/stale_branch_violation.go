@@ -55,3 +55,8 @@ func (sbv *StaleBranchViolation) Suggestion() (string, error) {
 func (*StaleBranchViolation) Author() (*github.Author, error) {
 	return nil, ErrViolationMethodNotExist
 }
+
+// Severity implements Violation.
+func (p *StaleBranchViolation) Severity() Severity {
+	return Violated
+}

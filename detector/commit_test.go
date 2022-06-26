@@ -9,45 +9,16 @@ import (
 	"github.com/Git-Gopher/go-gopher/model/enriched"
 	"github.com/Git-Gopher/go-gopher/model/github"
 	"github.com/Git-Gopher/go-gopher/model/local"
+	"github.com/Git-Gopher/go-gopher/utils"
 	"github.com/go-git/go-billy/v5/memfs"
 	"github.com/go-git/go-git/v5"
 	"github.com/go-git/go-git/v5/plumbing"
 	"github.com/go-git/go-git/v5/plumbing/object"
-	"github.com/go-git/go-git/v5/plumbing/transport/http"
 	"github.com/go-git/go-git/v5/storage/memory"
-	"github.com/joho/godotenv"
 )
 
-func fetchRepository(t *testing.T, remote, branch string) *git.Repository {
-	t.Helper()
-
-	if err := godotenv.Load("../.env"); err != nil {
-		log.Println("Error loading .env file")
-	}
-
-	token := os.Getenv("GITHUB_TOKEN")
-	if token == "" {
-		t.Errorf("Empty token")
-	}
-
-	r, err := git.Clone(memory.NewStorage(), nil, &git.CloneOptions{
-		Auth: &http.BasicAuth{
-			Username: "non-empty",
-			Password: token,
-		},
-		URL:           remote,
-		ReferenceName: plumbing.NewBranchReferenceName(branch),
-	})
-	if err != nil {
-		t.Errorf("%v", err)
-		t.FailNow()
-	}
-
-	return r
-}
-
 func TestTwoParentsCommitDetect(t *testing.T) {
-	r := fetchRepository(t, "https://github.com/Git-Gopher/tests", "test/two-parents-merged/0")
+	r := utils.FetchRepository(t, "https://github.com/Git-Gopher/tests", "test/two-parents-merged/0")
 	tests := []struct {
 		name string
 		want CommitDetect
@@ -74,7 +45,6 @@ func TestTwoParentsCommitDetect(t *testing.T) {
 	}
 }
 
-// TODO: Split go-git things into a suite of test friendly functions.
 func TestTwoParentsCommitDetectGoGit(t *testing.T) {
 	// Setup go git repo with the configuration that we want (two parents one commit)
 	fs := memfs.New()
@@ -177,4 +147,32 @@ func TestTwoParentsCommitDetectGoGit(t *testing.T) {
 	}
 
 	log.Println(detector.Result())
+}
+
+func TestDiffMatchesMessageDetect(t *testing.T) {
+	r := utils.FetchRepository(t, "https://github.com/Git-Gopher/tests", "test/commit-message-matches-diff/0")
+	tests := []struct {
+		name string
+		want CommitDetect
+	}{
+		{"Commit message diff", nil},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			// Create the gitModel
+			gitModel, err := local.NewGitModel(r)
+			if err != nil {
+				t.Errorf(" TestDiffMatchesMessageDetect() create model = %v", err)
+			}
+
+			enrichedModel := enriched.NewEnrichedModel(*gitModel, github.GithubModel{})
+
+			detector := NewCommitDetector(DiffMatchesMessageDetect())
+			if err = detector.Run(enrichedModel); err != nil {
+				t.Errorf(" TestDiffMatchesMessageDetect() run detector = %v", err)
+			}
+
+			t.Log(detector.Result())
+		})
+	}
 }

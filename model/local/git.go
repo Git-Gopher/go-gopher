@@ -3,16 +3,19 @@ package local
 import (
 	"errors"
 	"fmt"
+	"strings"
 	"time"
 
+	"github.com/bluekeyes/go-gitdiff/gitdiff"
 	"github.com/go-git/go-git/v5"
 	"github.com/go-git/go-git/v5/plumbing"
 	"github.com/go-git/go-git/v5/plumbing/object"
 )
 
 var (
-	ErrCommitEmpty = errors.New("Commit empty")
-	ErrBranchEmpty = errors.New("Branch empty")
+	ErrCommitEmpty   = errors.New("Commit empty")
+	ErrBranchEmpty   = errors.New("Branch empty")
+	ErrUnknownLineOp = errors.New("Unknown line op")
 )
 
 type Hash [20]byte
@@ -42,6 +45,28 @@ func NewSignature(o *object.Signature) *Signature {
 	}
 }
 
+type Diff struct {
+	Name     string
+	Equal    string
+	Addition string
+	Deletion string
+
+	Points []DiffPoint
+}
+
+type DiffPoint struct {
+	OldPosition int64
+	OldLines    int64
+
+	NewPosition int64
+	NewLines    int64
+
+	LinesAdded   int64
+	LinesDeleted int64
+}
+
+type File = gitdiff.File
+
 type Commit struct {
 	// Hash of the commit object.
 	Hash Hash
@@ -56,11 +81,108 @@ type Commit struct {
 	// Message is the commit message, contains arbitrary text.
 	Message string
 	// TODO: Import go-git types
-	Content string
+	Content       string
+	DiffToParents []Diff
 }
 
-func NewCommit(c *object.Commit) *Commit {
-	if c == nil {
+type Operation int
+
+const (
+	// Equal item represents a equals diff.
+	Equal Operation = iota
+	// Add item represents an insert diff.
+	Add
+	// Delete item represents a delete diff.
+	Delete
+)
+
+type Chunk struct {
+	// Content contains the portion of the file.
+	Content string
+	// Type contains the Operation to do with this Chunk.
+	Type Operation
+}
+
+func FetchDiffs(from *object.Commit, to *object.Commit) ([]Diff, error) {
+	patch, err := from.Patch(to)
+	if err != nil {
+		return nil, fmt.Errorf("failed to fetch chunk: %w", err)
+	}
+
+	files, _, err := gitdiff.Parse(strings.NewReader(patch.String()))
+	if err != nil {
+		return nil, fmt.Errorf("Failed to parse diff: %w", err)
+	}
+	diffs := make([]Diff, len(files))
+	for i, f := range files {
+		equal, added, deleted, err := Defragment(f.TextFragments)
+		if err != nil {
+			return nil, fmt.Errorf("Failed to defragment diffs: %w", err)
+		}
+
+		diffPoints, err := DefragmentToDiffPoint(f.TextFragments)
+		if err != nil {
+			return nil, fmt.Errorf("Failed to defragment diff points: %w", err)
+		}
+
+		var name string
+		if f.IsNew || f.IsRename {
+			name = f.NewName
+		} else {
+			name = f.OldName
+		}
+
+		diffs[i] = Diff{
+			Name:     name,
+			Addition: added,
+			Deletion: deleted,
+			Equal:    equal,
+
+			Points: diffPoints,
+		}
+	}
+
+	return diffs, nil
+}
+
+func Defragment(fragment []*gitdiff.TextFragment) (equal, added, deleted string, err error) {
+	for _, f := range fragment {
+		for _, l := range f.Lines {
+			switch l.Op {
+			case gitdiff.LineOp(Equal):
+				equal += l.Line
+			case gitdiff.LineOp(Add):
+				added += l.Line
+			case gitdiff.LineOp(Delete):
+				deleted += l.Line
+			default:
+				return "", "", "", ErrUnknownLineOp
+			}
+		}
+	}
+
+	return equal, added, deleted, nil
+}
+
+func DefragmentToDiffPoint(fragments []*gitdiff.TextFragment) ([]DiffPoint, error) {
+	diffPoints := make([]DiffPoint, len(fragments))
+	for i, f := range fragments {
+		point := DiffPoint{
+			OldPosition:  f.OldPosition,
+			OldLines:     f.OldLines,
+			NewPosition:  f.NewPosition,
+			NewLines:     f.NewLines,
+			LinesAdded:   f.LinesAdded,
+			LinesDeleted: f.LinesDeleted,
+		}
+		diffPoints[i] = point
+	}
+
+	return diffPoints, nil
+}
+
+func NewCommit(r *git.Repository, c *object.Commit) *Commit {
+	if c == nil || r == nil {
 		return nil
 	}
 
@@ -69,13 +191,29 @@ func NewCommit(c *object.Commit) *Commit {
 		parentHashes[i] = Hash(hash)
 	}
 
+	var diffs []Diff
+	err := c.Parents().ForEach(
+		func(p *object.Commit) error {
+			diff, err := FetchDiffs(p, c)
+			if err != nil {
+				return fmt.Errorf("Failed to fetch diff: %w", err)
+			}
+			diffs = append(diffs, diff...)
+
+			return nil
+		})
+	if err != nil {
+		return nil
+	}
+
 	return &Commit{
-		Hash:         Hash(c.Hash),
-		Author:       *NewSignature(&c.Author),
-		Committer:    *NewSignature(&c.Committer),
-		Message:      c.Message,
-		TreeHash:     Hash(c.TreeHash),
-		ParentHashes: parentHashes,
+		Hash:          Hash(c.Hash),
+		Author:        *NewSignature(&c.Author),
+		Committer:     *NewSignature(&c.Committer),
+		Message:       c.Message,
+		TreeHash:      Hash(c.TreeHash),
+		ParentHashes:  parentHashes,
+		DiffToParents: diffs,
 	}
 }
 
@@ -93,13 +231,13 @@ type Branch struct {
 	Name string
 }
 
-func NewBranch(o *plumbing.Reference, c *object.Commit) *Branch {
+func NewBranch(repo *git.Repository, o *plumbing.Reference, c *object.Commit) *Branch {
 	if o == nil {
 		return nil
 	}
 
 	return &Branch{
-		Head: *NewCommit(c),
+		Head: *NewCommit(repo, c),
 		Name: o.Name().Short(),
 	}
 }
@@ -121,7 +259,7 @@ func NewGitModel(repo *git.Repository) (*GitModel, error) {
 		if c == nil {
 			return fmt.Errorf("NewGitModel commit: %w", ErrCommitEmpty)
 		}
-		commit := NewCommit(c)
+		commit := NewCommit(repo, c)
 		gitModel.Commits = append(gitModel.Commits, *commit)
 
 		return nil
@@ -145,7 +283,7 @@ func NewGitModel(repo *git.Repository) (*GitModel, error) {
 			return fmt.Errorf("Failed to find head commit from branch: %w", err)
 		}
 
-		branch := NewBranch(b, c)
+		branch := NewBranch(repo, b, c)
 		gitModel.Branches = append(gitModel.Branches, *branch)
 
 		return nil

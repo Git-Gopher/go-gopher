@@ -9,6 +9,7 @@ import (
 	"path/filepath"
 	"time"
 
+	"github.com/Git-Gopher/go-gopher/model/enriched"
 	"github.com/Git-Gopher/go-gopher/model/local"
 )
 
@@ -20,8 +21,7 @@ type Cache struct {
 	Created time.Time    `json:"time"`
 }
 
-// TODO: Use enriched model instead.
-func NewCache(model *local.GitModel) *Cache {
+func NewCache(model *enriched.EnrichedModel) *Cache {
 	hashes := make([]local.Hash, len(model.Commits))
 	for i, c := range model.Commits {
 		hashes[i] = c.Hash

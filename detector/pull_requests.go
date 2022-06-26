@@ -18,8 +18,8 @@ type PullRequestDetector struct {
 	detect PullRequestDetect
 }
 
-func (pd *PullRequestDetector) Result() (int, int, int) {
-	return pd.violated, pd.found, pd.total
+func (prd *PullRequestDetector) Result() (int, int, int, []violation.Violation) {
+	return prd.violated, prd.found, prd.total, prd.violations
 }
 
 func NewPullRequestDetector(detect PullRequestDetect) *PullRequestDetector {
@@ -31,7 +31,6 @@ func NewPullRequestDetector(detect PullRequestDetect) *PullRequestDetector {
 	}
 }
 
-// TODO: We should change this to the enriched model.
 func (pd *PullRequestDetector) Run(model *enriched.EnrichedModel) error {
 	for _, pr := range model.PullRequests {
 		pr := pr

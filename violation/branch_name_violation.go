@@ -63,3 +63,8 @@ func (p *BranchNameViolation) Suggestion() (string, error) {
 func (p *BranchNameViolation) Author() (*github.Author, error) {
 	return nil, ErrViolationMethodNotExist
 }
+
+// Severity implements Violation.
+func (p *BranchNameViolation) Severity() Severity {
+	return Suggestion
+}

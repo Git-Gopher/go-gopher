@@ -6,10 +6,11 @@ import (
 	"github.com/Git-Gopher/go-gopher/model/enriched"
 	"github.com/Git-Gopher/go-gopher/model/github"
 	"github.com/Git-Gopher/go-gopher/model/local"
+	"github.com/Git-Gopher/go-gopher/utils"
 )
 
 func TestStaleBranchDetect(t *testing.T) {
-	r := fetchRepository(t, "https://github.com/Git-Gopher/tests", "test/stale-branch/0")
+	r := utils.FetchRepository(t, "https://github.com/Git-Gopher/tests", "test/stale-branch/0")
 	tests := []struct {
 		name string
 		want CommitDetect
