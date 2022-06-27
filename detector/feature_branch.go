@@ -67,6 +67,11 @@ func (bs *FeatureBranchDetector) checkNext(c *local.CommitGraph) *local.CommitGr
 
 	bs.total += 1
 
+	// if it has no parents
+	if len(c.ParentCommits) == 0 {
+		return nil
+	}
+
 	// if it has multiple parents
 	if len(c.ParentCommits) > 1 {
 		for _, child := range c.ParentCommits {
@@ -140,6 +145,7 @@ func (bs *FeatureBranchDetector) checkEnd(
 		c.Hash,
 		[]string{c.ParentCommits[0].Hash},
 	))
+	bs.violated++
 
 	return bs.checkEnd(c, v)
 }

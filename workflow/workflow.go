@@ -49,6 +49,18 @@ func GithubFlowWorkflow() *Workflow {
 	}
 }
 
+// LocalDetectors are detectors that can run locally without GitHub API calls.
+func LocalDetectors() []detector.Detector {
+	return []detector.Detector{
+		detector.NewBranchDetector(detector.StaleBranchDetect()),
+		detector.NewCommitDetector(detector.DiffMatchesMessageDetect()),
+		detector.NewCommitDistanceDetector(detector.DiffDistanceCalculation()),
+		detector.NewBranchCompareDetector(detector.NewBranchNameConsistencyDetect()),
+		detector.NewFeatureBranchDetector(),
+		detector.NewBranchMatrixDetector(detector.NewCrissCrossMergeDetect()),
+	}
+}
+
 // Run analysis on the git project for all the detectors defined by the workflow.
 func (w *Workflow) Analyze(model *enriched.EnrichedModel, current *cache.Cache, caches []*cache.Cache) (violated int,
 	count,
