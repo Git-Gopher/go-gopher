@@ -10,3 +10,7 @@ func Group(title, content string) {
 	fmt.Println(content)
 	fmt.Println("::endgroup::")
 }
+
+func Output(name, value string) {
+	fmt.Printf("::set-output name=%s::%s\n", name, value)
+}

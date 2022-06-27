@@ -1,0 +1,31 @@
+# This action is temporary, just testing some things out.
+name: check
+on:
+  push:
+    branches: main
+  pull_request:
+    branches: main
+
+jobs:
+  action:
+    needs: docker
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+      - name: Use Cache
+        uses: actions/cache@v3
+        with:
+          path: cache.json
+          key: ${{ github.ref }}
+      - name: Analyze Workflow
+        uses: Git-Gopher/go-gopher-action@latest
+        id: git-gopher
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_URL: ${GITHUB_URL}
+        uses: marocchino/sticky-pull-request-comment@v2
+        with:
+          message: "${{ steps.git-gopher.outputs.pr_summary }}"

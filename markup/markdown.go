@@ -60,9 +60,9 @@ func (m *Markdown) Table(rows ...[]string) *Markdown {
 	return m
 }
 
-func (m *Markdown) Collapsible(md *Markdown) *Markdown {
+func (m *Markdown) Collapsible(md *Markdown, title string) *Markdown {
 	m.builder.WriteString("<details>\n")
-	m.builder.WriteString("<summary>Show/Hide</summary>\n")
+	m.builder.WriteString("<summary>/Hide</summary>\n")
 	m.builder.WriteString(md.String())
 	m.builder.WriteString("</details>\n")
 
