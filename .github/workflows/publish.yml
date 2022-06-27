@@ -42,7 +42,7 @@ jobs:
         id: git-gopher
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          GITHUB_URL: $GITHUB_SERVER_URL/$GITHUB_REPOSITORY/
+          GITHUB_URL: ${{ github.server_url }}/${{ github.repository }}/
       - name: Add PR Comment
         uses: marocchino/sticky-pull-request-comment@v2
         with:
