@@ -164,9 +164,10 @@ func NewBranch(repo *git.Repository, o *plumbing.Reference, c *object.Commit) *B
 }
 
 type GitModel struct {
-	Commits   []Commit
-	Branches  []Branch
-	MainGraph *BranchGraph
+	Commits      []Commit
+	Branches     []Branch
+	MainGraph    *BranchGraph
+	BranchMatrix []*BranchMatrix
 }
 
 func NewGitModel(repo *git.Repository) (*GitModel, error) {
@@ -229,12 +230,33 @@ func NewGitModel(repo *git.Repository) (*GitModel, error) {
 		return nil, fmt.Errorf("Failed to retrieve branches from repository: %w", err)
 	}
 	_ = bIter.ForEach(func(b *plumbing.Reference) error {
-		if b.Name() == ref.Name() {
-			gitModel.MainGraph = FetchBranchGraph(refCommit)
+		if b.Name() != ref.Name() {
 			return nil
 		}
+		gitModel.MainGraph = FetchBranchGraph(refCommit)
+
 		return nil
 	})
+
+	// BranchMatrix
+	branches := []plumbing.Hash{}
+	bIter, err = repo.Branches()
+	if err != nil {
+		return nil, fmt.Errorf("Failed to retrieve branches from repository: %w", err)
+	}
+	_ = bIter.ForEach(func(b *plumbing.Reference) error {
+		if b == nil {
+			return nil
+		}
+		branches = append(branches, b.Hash())
+
+		return nil
+	})
+
+	gitModel.BranchMatrix, err = CreateBranchMatrix(repo, branches)
+	if err != nil {
+		return nil, fmt.Errorf("Failed to create branch matrix: %w", err)
+	}
 
 	return gitModel, nil
 }

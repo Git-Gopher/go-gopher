@@ -4,7 +4,7 @@ import (
 	"github.com/go-git/go-git/v5/plumbing/object"
 )
 
-// BranchGraph represents a branch as a CommitGraph
+// BranchGraph represents a branch as a CommitGraph.
 type BranchGraph struct {
 	// Branch Name of the represented branch
 	BranchName string
