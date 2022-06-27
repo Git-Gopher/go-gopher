@@ -2,6 +2,7 @@ package main
 
 import (
 	"errors"
+	"fmt"
 	"log"
 	"os"
 
@@ -182,9 +183,21 @@ func render(v, c, t int, vs []violation.Violation) {
 		log.Println(s.Display())
 	}
 
+	authors := make(map[string]int)
+	log.Printf("\n###### Summary Violation Authors ######\n")
+	for _, v := range vs {
+		a, err := v.Author()
+		if err != nil {
+			continue
+		}
+		authors[a.Login]++
+	}
+	for author, count := range authors {
+		fmt.Printf("%s: %d\n", author, count)
+	}
+
 	log.Printf("\n###### Summary ######\n")
 	log.Printf("violated: %d\n", v)
 	log.Printf("count: %d\n", c)
 	log.Printf("total: %d\n", t)
-	// TODO: Add a section for breaking down by user
 }
