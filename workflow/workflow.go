@@ -30,13 +30,17 @@ func GithubFlowWorkflow() *Workflow {
 	return &Workflow{
 		Name: "Github Flow",
 		WeightedCommitDetectors: []WeightedDetector{
-			{Weight: 2, Detector: detector.NewCommitDetector(detector.TwoParentsCommitDetect())},
 			{Weight: 1, Detector: detector.NewBranchDetector(detector.StaleBranchDetect())},
 			{Weight: 1, Detector: detector.NewPullRequestDetector(detector.PullRequestApprovalDetector())},
 			{Weight: 1, Detector: detector.NewPullRequestDetector(detector.PullRequestIssueDetector())},
 			{Weight: 1, Detector: detector.NewPullRequestDetector(detector.PullRequestReviewThreadDetector())},
 			{Weight: 1, Detector: detector.NewCommitDetector(detector.DiffMatchesMessageDetect())},
 			{Weight: 1, Detector: detector.NewCommitDistanceDetector(detector.DiffDistanceCalculation())},
+			{Weight: 1, Detector: detector.NewBranchCompareDetector(detector.NewBranchNameConsistencyDetect())},
+			{Weight: 1, Detector: detector.NewFeatureBranchDetector()},
+			// DISABLED
+			// {Weight: 1, Detector: detector.NewBranchCompareDetector(detector.NewFeatureBranchNameDetect())},
+			// {Weight: 1, Detector: detector.NewCommitDetector(detector.TwoParentsCommitDetect())},
 		},
 		WeightedCacheDetectors: []WeightedCacheDetector{
 			{Weight: 10, Detector: detector.NewCommitCacheDetector(detector.ForcePushDetect())},
