@@ -38,6 +38,7 @@ func GithubFlowWorkflow() *Workflow {
 			{Weight: 1, Detector: detector.NewCommitDistanceDetector(detector.DiffDistanceCalculation())},
 			{Weight: 1, Detector: detector.NewBranchCompareDetector(detector.NewBranchNameConsistencyDetect())},
 			{Weight: 1, Detector: detector.NewFeatureBranchDetector()},
+			{Weight: 1, Detector: detector.NewBranchMatrixDetector(detector.NewCrissCrossMergeDetect())},
 			// DISABLED
 			// {Weight: 1, Detector: detector.NewBranchCompareDetector(detector.NewFeatureBranchNameDetect())},
 			// {Weight: 1, Detector: detector.NewCommitDetector(detector.TwoParentsCommitDetect())},

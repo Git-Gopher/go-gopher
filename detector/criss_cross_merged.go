@@ -1,11 +1,12 @@
 package detector
 
 import (
+	"github.com/Git-Gopher/go-gopher/model/enriched"
 	"github.com/Git-Gopher/go-gopher/model/local"
 	"github.com/Git-Gopher/go-gopher/violation"
 )
 
-type BranchMatrixDetect func(branchMatrix *local.BranchMatrixModel) (bool, violation.Violation, error)
+type BranchMatrixDetect func(branchMatrix *local.BranchMatrix) (bool, violation.Violation, error)
 
 // FeatureBranchDetector is a detector that detects multiple remote branches (not deleted).
 // And check if the branch is a feature branch or a main/develop branch.
@@ -18,10 +19,10 @@ type BranchMatrixDetector struct {
 	detect BranchMatrixDetect
 }
 
-func (cc *BranchMatrixDetector) Run(branchMatrix []local.BranchMatrixModel) error {
-	for _, b := range branchMatrix {
+func (cc *BranchMatrixDetector) Run(model *enriched.EnrichedModel) error {
+	for _, b := range model.BranchMatrix {
 		b := b
-		detected, violation, err := cc.detect(&b)
+		detected, violation, err := cc.detect(b)
 		cc.total++
 		if err != nil {
 			return err
@@ -37,8 +38,8 @@ func (cc *BranchMatrixDetector) Run(branchMatrix []local.BranchMatrixModel) erro
 	return nil
 }
 
-func (cc *BranchMatrixDetector) Result() (violated, count, total int) {
-	return cc.violated, cc.found, cc.total
+func (cc *BranchMatrixDetector) Result() (violated int, count int, total int, violations []violation.Violation) {
+	return cc.violated, cc.found, cc.total, cc.violations
 }
 
 func NewBranchMatrixDetector(detect BranchMatrixDetect) *BranchMatrixDetector {
@@ -53,14 +54,15 @@ func NewBranchMatrixDetector(detect BranchMatrixDetect) *BranchMatrixDetector {
 // NewCrissCrossMergeDetect to find criss cross merges
 // Example of criss cross merge.
 // This usually happen during hotfixes.
-//
+// ```
 //          3a4f5a6 -- 973b703 -- a34e5a1 (branch A)
 //        /        \ /
 // 7c7bf85          X
 //        \        / \
 //          8f35f30 -- 3fd4180 -- 723181f (branch B)
+// ```
 func NewCrissCrossMergeDetect() BranchMatrixDetect {
-	return func(branchMatrix *local.BranchMatrixModel) (bool, violation.Violation, error) {
+	return func(branchMatrix *local.BranchMatrix) (bool, violation.Violation, error) {
 		if len(branchMatrix.CrissCrossCommits) >= 2 {
 			return true, nil, nil
 		}
