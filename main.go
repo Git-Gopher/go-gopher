@@ -7,6 +7,7 @@ import (
 	"os"
 
 	"github.com/Git-Gopher/go-gopher/cache"
+	"github.com/Git-Gopher/go-gopher/markup"
 	"github.com/Git-Gopher/go-gopher/model/enriched"
 	"github.com/Git-Gopher/go-gopher/model/github"
 	"github.com/Git-Gopher/go-gopher/model/local"
@@ -173,18 +174,20 @@ func render(v, c, t int, vs []violation.Violation) {
 		log.Println(v.Display())
 	}
 
-	log.Printf("\n###### Violations ######\n")
+	var vsd string
 	for _, v := range violations {
-		log.Println(v.Display())
+		vsd += v.Display()
 	}
+	markup.Group("Violations", vsd)
 
-	log.Printf("\n###### Suggestions ######\n")
-	for _, s := range suggestions {
-		log.Println(s.Display())
+	var ssd string
+	for _, v := range suggestions {
+		ssd += v.Display()
 	}
+	markup.Group("Suggestions", ssd)
 
+	var asd string
 	authors := make(map[string]int)
-	log.Printf("\n###### Summary Violation Authors ######\n")
 	for _, v := range vs {
 		a, err := v.Author()
 		if err != nil {
@@ -192,12 +195,13 @@ func render(v, c, t int, vs []violation.Violation) {
 		}
 		authors[a.Login]++
 	}
+
 	for author, count := range authors {
-		fmt.Printf("%s: %d\n", author, count)
+		asd += fmt.Sprintf("%s: %d\n", author, count)
 	}
 
-	log.Printf("\n###### Summary ######\n")
-	log.Printf("violated: %d\n", v)
-	log.Printf("count: %d\n", c)
-	log.Printf("total: %d\n", t)
+	asd += fmt.Sprintf("violated: %d\n", v)
+	asd += fmt.Sprintf("count: %d\n", c)
+	asd += fmt.Sprintf("total: %d\n", t)
+	markup.Group("Summary:", asd)
 }
