@@ -7,8 +7,7 @@ on:
     branches: main
 
 jobs:
-  action:
-    needs: docker
+  test-pr-comment:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -26,6 +25,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GITHUB_URL: ${GITHUB_URL}
+      - name: Add PR Comment
         uses: marocchino/sticky-pull-request-comment@v2
         with:
           message: "${{ steps.git-gopher.outputs.pr_summary }}"

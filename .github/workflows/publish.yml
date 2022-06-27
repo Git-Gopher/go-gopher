@@ -38,11 +38,12 @@ jobs:
           path: cache.json
           key: ${{ github.ref }}
       - name: Analyze Workflow
-        uses: Git-Gopher/go-gopher-action@latest
+        uses: Git-Gopher/go-gopher-action@test-comment-0
         id: git-gopher
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GITHUB_URL: ${GITHUB_URL}
+      - name: Add PR Comment
         uses: marocchino/sticky-pull-request-comment@v2
         with:
           message: "${{ steps.git-gopher.outputs.pr_summary }}"
