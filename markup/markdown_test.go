@@ -11,7 +11,7 @@ func TestMarkdown(t *testing.T) {
 		SubTitle("SubTitle").
 		Text("Text").
 		Code("Code").
-		Collapsible(NewMarkdown().Text("Collapsible")).
+		Collapsible(NewMarkdown().Text("Collapsible"), "Collapsible").
 		Table([]string{"A", "B", "C"}, []string{"D", "E", "F"}).
 		String()
 	t.Logf("\n%s", s)

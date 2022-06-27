@@ -38,7 +38,7 @@ jobs:
           path: cache.json
           key: ${{ github.ref }}
       - name: Analyze Workflow
-        uses: Git-Gopher/go-gopher-action@test-comment-0
+        uses: Git-Gopher/go-gopher-action@latest
         id: git-gopher
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

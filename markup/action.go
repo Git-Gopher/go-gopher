@@ -11,6 +11,6 @@ func Group(title, content string) {
 	fmt.Println("::endgroup::")
 }
 
-func Output(name, value string) {
+func Outputs(name, value string) {
 	fmt.Printf("::set-output name=%s::%s\n", name, value)
 }

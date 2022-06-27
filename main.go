@@ -105,6 +105,17 @@ func main() {
 
 				render(violated, count, total, violations)
 
+				// TODO: Workout multiline
+				// Set action outputs to a markdown summary.
+				// md := markup.NewMarkdown()
+				// md.
+				// 	Title("Workflow Summary").
+				// 	Collapsible(markup.NewMarkdown().Text("Stub!"), "Violations").
+				// 	Collapsible(markup.NewMarkdown().Text("Stub!"), "Suggestions").
+				// 	Collapsible(markup.NewMarkdown().Text("Stub!"), "Authors")
+
+				markup.Outputs("pr_summary", "PR Comment!")
+
 				return nil
 			},
 		},
@@ -203,14 +214,4 @@ func render(v, c, t int, vs []violation.Violation) {
 	asd += fmt.Sprintf("count: %d\n", c)
 	asd += fmt.Sprintf("total: %d\n", t)
 	markup.Group("Summary", asd)
-
-	// Set action outputs to a markdown summary.
-	md := markup.NewMarkdown()
-	md.
-		Title("Workflow Summary").
-		Collapsible(markup.NewMarkdown().Text(vsd), "Violations").
-		Collapsible(markup.NewMarkdown().Text(ssd), "Suggestions").
-		Collapsible(markup.NewMarkdown().Text(asd), "Authors")
-
-	markup.Output("pr_summary", md.String())
 }

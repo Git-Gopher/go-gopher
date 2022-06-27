@@ -57,13 +57,6 @@ func OwnerNameFromUrl(rawUrl string) (string, string, error) {
 	return owner, name, nil
 }
 
-// nolint:forbidigo
-// Set the PR summary output for GitHub actions.
-func SetActionOutputs(message string) {
-	fmt.Printf(`::set-output name=pr_summary::%s`, message)
-	fmt.Print("\n")
-}
-
 func FetchRepository(t *testing.T, remote, branch string) *git.Repository {
 	t.Helper()
 

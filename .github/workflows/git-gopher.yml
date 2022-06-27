@@ -1,0 +1,28 @@
+# Temporary file for a test.
+name: git-gopher
+on:
+  pull_request:
+    branches: main
+jobs:
+  git-gopher:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+      - name: Use Cache
+        uses: actions/cache@v3
+        with:
+          path: cache.json
+          key: ${{ github.ref }}
+      - name: Analyze Workflow
+        uses: Git-Gopher/go-gopher-action@test-comment-0
+        id: git-gopher
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_URL: "$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/"
+      - name: Add PR Comment
+        uses: marocchino/sticky-pull-request-comment@v2
+        with:
+          message: "${{ steps.git-gopher.outputs.pr_summary }}"
