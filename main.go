@@ -171,7 +171,6 @@ func render(v, c, t int, vs []violation.Violation) {
 		case violation.Suggestion:
 			suggestions = append(suggestions, v)
 		}
-		log.Println(v.Display())
 	}
 
 	var vsd string
