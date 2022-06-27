@@ -36,7 +36,7 @@ jobs:
         uses: actions/cache@v3
         with:
           path: cache.json
-          key: ${{ github.base_ref }}
+          key: ${{ github.ref }}
       - name: Analyze Workflow
         uses: Git-Gopher/go-gopher-action@latest
         env:
