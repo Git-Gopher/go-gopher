@@ -4,6 +4,8 @@ import (
 	"errors"
 	"math"
 
+	"github.com/Git-Gopher/go-gopher/model/enriched"
+	"github.com/Git-Gopher/go-gopher/model/local"
 	"github.com/Git-Gopher/go-gopher/violation"
 )
 
@@ -12,15 +14,16 @@ var (
 	ErrFeatureBranchNoCommonAncestor = errors.New("feature branch no common ancestor found")
 )
 
-// TODO: move to models.
-type CommitGraph struct {
-	Hash          string
-	ParentCommits []*CommitGraph
-}
-
-type FeatureBranchModel struct {
-	BranchName string
-	Head       *CommitGraph
+// NewFeatureBranchDetector creates a new feature branch detector.
+// This detector is a custom recursive detector that does not rely on the
+// `detector.NewDetector(detector.Detect)` pattern.
+func NewFeatureBranchDetector() *FeatureBranchDetector {
+	return &FeatureBranchDetector{
+		violated:   0,
+		found:      0,
+		total:      0,
+		violations: make([]violation.Violation, 0),
+	}
 }
 
 // FeatureBranchDetector is a detector that detects multiple remote branches (not deleted).
@@ -34,7 +37,7 @@ type FeatureBranchDetector struct {
 	primaryBranch string
 }
 
-func (bs *FeatureBranchDetector) Run(model *FeatureBranchModel) error {
+func (bs *FeatureBranchDetector) Run(model *enriched.EnrichedModel) error {
 	if model == nil {
 		return ErrFeatureBranchModelNil
 	}
@@ -44,14 +47,20 @@ func (bs *FeatureBranchDetector) Run(model *FeatureBranchModel) error {
 	bs.total = 0
 	bs.violations = make([]violation.Violation, 0)
 
-	bs.primaryBranch = model.BranchName
+	bs.primaryBranch = model.MainGraph.BranchName
 
-	bs.checkNext(model.Head)
+	bs.checkNext(model.MainGraph.Head)
 
 	return nil
 }
 
-func (bs *FeatureBranchDetector) checkNext(c *CommitGraph) *CommitGraph {
+// checkNext is used to check the next commit in the branch. (recursive)
+//
+// If the commit has multiple parents, it will check which is the primary parent.
+// If the commit has one parent check if all commits after this commit has one parent.
+// If the commit has one parent and one parent after it has multiple parents,
+// this commit is a direct commit not from a feature branch (violation).
+func (bs *FeatureBranchDetector) checkNext(c *local.CommitGraph) *local.CommitGraph {
 	if c == nil {
 		return nil
 	}
@@ -72,7 +81,7 @@ func (bs *FeatureBranchDetector) checkNext(c *CommitGraph) *CommitGraph {
 		// assumes the shorter branch to be the violation
 		lenViolations := math.MaxInt
 		var violations []violation.Violation
-		var nextCommit *CommitGraph
+		var nextCommit *local.CommitGraph
 
 		for _, child := range c.ParentCommits {
 			next, v := bs.checkEnd(child, []violation.Violation{})
@@ -107,9 +116,9 @@ func (bs *FeatureBranchDetector) checkNext(c *CommitGraph) *CommitGraph {
 // Check if the commit is made as the start of the branch
 // if not return last commit with two parent and associated violations.
 func (bs *FeatureBranchDetector) checkEnd(
-	c *CommitGraph,
+	c *local.CommitGraph,
 	v []violation.Violation,
-) (*CommitGraph, []violation.Violation) {
+) (*local.CommitGraph, []violation.Violation) {
 	if c == nil {
 		return nil, v
 	}

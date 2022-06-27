@@ -10,6 +10,8 @@ type EnrichedModel struct {
 	Branches     []local.Branch
 	PullRequests []*github.PullRequest
 	Issues       []*github.Issue
+	// Graph representation of commits in the main branch
+	MainGraph *local.BranchGraph
 }
 
 // Create an enriched model by merging the local and GitHub model.
@@ -19,5 +21,6 @@ func NewEnrichedModel(local local.GitModel, github github.GithubModel) *Enriched
 		Branches:     local.Branches,
 		PullRequests: github.PullRequests,
 		Issues:       github.Issues,
+		MainGraph:    local.MainGraph,
 	}
 }

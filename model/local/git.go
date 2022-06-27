@@ -3,7 +3,6 @@ package local
 import (
 	"errors"
 	"fmt"
-	"strings"
 	"time"
 
 	"github.com/bluekeyes/go-gitdiff/gitdiff"
@@ -103,84 +102,6 @@ type Chunk struct {
 	Type Operation
 }
 
-func FetchDiffs(from *object.Commit, to *object.Commit) ([]Diff, error) {
-	patch, err := from.Patch(to)
-	if err != nil {
-		return nil, fmt.Errorf("failed to fetch chunk: %w", err)
-	}
-
-	files, _, err := gitdiff.Parse(strings.NewReader(patch.String()))
-	if err != nil {
-		return nil, fmt.Errorf("Failed to parse diff: %w", err)
-	}
-	diffs := make([]Diff, len(files))
-	for i, f := range files {
-		equal, added, deleted, err := Defragment(f.TextFragments)
-		if err != nil {
-			return nil, fmt.Errorf("Failed to defragment diffs: %w", err)
-		}
-
-		diffPoints, err := DefragmentToDiffPoint(f.TextFragments)
-		if err != nil {
-			return nil, fmt.Errorf("Failed to defragment diff points: %w", err)
-		}
-
-		var name string
-		if f.IsNew || f.IsRename {
-			name = f.NewName
-		} else {
-			name = f.OldName
-		}
-
-		diffs[i] = Diff{
-			Name:     name,
-			Addition: added,
-			Deletion: deleted,
-			Equal:    equal,
-
-			Points: diffPoints,
-		}
-	}
-
-	return diffs, nil
-}
-
-func Defragment(fragment []*gitdiff.TextFragment) (equal, added, deleted string, err error) {
-	for _, f := range fragment {
-		for _, l := range f.Lines {
-			switch l.Op {
-			case gitdiff.LineOp(Equal):
-				equal += l.Line
-			case gitdiff.LineOp(Add):
-				added += l.Line
-			case gitdiff.LineOp(Delete):
-				deleted += l.Line
-			default:
-				return "", "", "", ErrUnknownLineOp
-			}
-		}
-	}
-
-	return equal, added, deleted, nil
-}
-
-func DefragmentToDiffPoint(fragments []*gitdiff.TextFragment) ([]DiffPoint, error) {
-	diffPoints := make([]DiffPoint, len(fragments))
-	for i, f := range fragments {
-		point := DiffPoint{
-			OldPosition:  f.OldPosition,
-			OldLines:     f.OldLines,
-			NewPosition:  f.NewPosition,
-			NewLines:     f.NewLines,
-			LinesAdded:   f.LinesAdded,
-			LinesDeleted: f.LinesDeleted,
-		}
-		diffPoints[i] = point
-	}
-
-	return diffPoints, nil
-}
-
 func NewCommit(r *git.Repository, c *object.Commit) *Commit {
 	if c == nil || r == nil {
 		return nil
@@ -243,18 +164,19 @@ func NewBranch(repo *git.Repository, o *plumbing.Reference, c *object.Commit) *B
 }
 
 type GitModel struct {
-	Commits  []Commit
-	Branches []Branch
+	Commits   []Commit
+	Branches  []Branch
+	MainGraph *BranchGraph
 }
 
 func NewGitModel(repo *git.Repository) (*GitModel, error) {
 	gitModel := new(GitModel)
 
+	// Commits
 	cIter, err := repo.CommitObjects()
 	if err != nil {
 		return nil, fmt.Errorf("Failed to retrieve commits from repository: %w", err)
 	}
-
 	err = cIter.ForEach(func(c *object.Commit) error {
 		if c == nil {
 			return fmt.Errorf("NewGitModel commit: %w", ErrCommitEmpty)
@@ -268,6 +190,7 @@ func NewGitModel(repo *git.Repository) (*GitModel, error) {
 		return nil, fmt.Errorf("Failed to graft commits to model: %w", err)
 	}
 
+	// Branches
 	bIter, err := repo.Branches()
 	if err != nil {
 		return nil, fmt.Errorf("Failed to retrieve branches from repository: %w", err)
@@ -291,6 +214,27 @@ func NewGitModel(repo *git.Repository) (*GitModel, error) {
 	if err != nil {
 		return nil, fmt.Errorf("Failed to graft branches to model: %w", err)
 	}
+
+	// MainGraph
+	ref, err := repo.Head()
+	if err != nil {
+		return nil, fmt.Errorf("Failed to find head reference: %w", err)
+	}
+	refCommit, err := repo.CommitObject(ref.Hash())
+	if err != nil {
+		return nil, fmt.Errorf("Failed to find head commit: %w", err)
+	}
+	bIter, err = repo.Branches()
+	if err != nil {
+		return nil, fmt.Errorf("Failed to retrieve branches from repository: %w", err)
+	}
+	_ = bIter.ForEach(func(b *plumbing.Reference) error {
+		if b.Name() == ref.Name() {
+			gitModel.MainGraph = FetchBranchGraph(refCommit)
+			return nil
+		}
+		return nil
+	})
 
 	return gitModel, nil
 }
