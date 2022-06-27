@@ -1,24 +1,17 @@
 package detector
 
 import (
+	"fmt"
 	"log"
 	"strings"
 
 	"github.com/Git-Gopher/go-gopher/model/enriched"
+	"github.com/Git-Gopher/go-gopher/model/local"
 	"github.com/Git-Gopher/go-gopher/violation"
-	"github.com/adrg/strutil"
-	"gopkg.in/vmarkovtsev/go-lcss.v1"
 )
 
 // Branch name.
-type BranchCompareDetect func(branches []MockBranchCompareModel) (int, []violation.Violation, error)
-
-// XXX: Move into either local or github model.
-type MockBranchCompareModel struct {
-	Ref    string
-	Remote string
-	Hash   string
-}
+type BranchCompareDetect func(branches []local.Branch) (int, []violation.Violation, error)
 
 // BranchCompareDetector is used to run a detector on multiple branch and compare each branch.
 type BranchCompareDetector struct {
@@ -36,7 +29,17 @@ func (b *BranchCompareDetector) Run(model *enriched.EnrichedModel) error {
 	b.total = 0
 	b.violations = make([]violation.Violation, 0)
 
-	return ErrNotImplemented
+	if model == nil {
+		return nil
+	}
+
+	var err error
+	b.found, b.violations, err = b.detect(model.Branches)
+	if err != nil {
+		return fmt.Errorf("Error BranchCompareDetector: %w", err)
+	}
+
+	return nil
 }
 
 func (b *BranchCompareDetector) Result() (int, int, int, []violation.Violation) {
@@ -53,21 +56,23 @@ func NewBranchCompareDetector(detect BranchCompareDetect) *BranchCompareDetector
 	}
 }
 
+// Deprecated: this detect is a demo
+// NewFeatureBranchNewDetect is used to detect if a branch has the prefix feature or feat
 func NewFeatureBranchNameDetect() BranchCompareDetect {
-	return func(branches []MockBranchCompareModel) (int, []violation.Violation, error) {
+	return func(branches []local.Branch) (int, []violation.Violation, error) {
 		branchRefs := []string{}
 		featureNames := [...]string{"feature", "feat"}
 
 	b:
 		for _, branch := range branches {
 			for _, featureName := range featureNames {
-				if strings.Contains(branch.Ref, featureName) {
+				if strings.Contains(branch.Name, featureName) {
 					// contains featureNames part of branch
 					continue b
 				}
 			}
 			// does not contain featureNames
-			branchRefs = append(branchRefs, branch.Ref)
+			branchRefs = append(branchRefs, branch.Name)
 		}
 
 		// TODO: report using warning (not violation)
@@ -75,26 +80,4 @@ func NewFeatureBranchNameDetect() BranchCompareDetect {
 
 		return 0, nil, nil
 	}
-}
-
-func rankSimilar(input []string, metric strutil.StringMetric) []float64 {
-	results := make([]float64, len(input))
-	for i := 0; i < len(input); i++ {
-		for j := i + 1; j < len(input); j++ {
-			similarity := strutil.Similarity(input[i], input[j], metric)
-			results[i] += similarity
-			results[j] += similarity
-		}
-	}
-
-	return results
-}
-
-func longestSubstring(input []string) string {
-	b := make([][]byte, len(input))
-	for i, str := range input {
-		b[i] = []byte(str)
-	}
-
-	return string(lcss.LongestCommonSubstring(b...))
 }
