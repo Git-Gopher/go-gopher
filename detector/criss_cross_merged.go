@@ -60,7 +60,7 @@ func NewBranchMatrixDetector(detect BranchMatrixDetect) *BranchMatrixDetector {
 // 7c7bf85          X
 //        \        / \
 //          8f35f30 -- 3fd4180 -- 723181f (branch B)
-// ```
+// ```.
 func NewCrissCrossMergeDetect() BranchMatrixDetect {
 	return func(branchMatrix *local.BranchMatrix) (bool, violation.Violation, error) {
 		if len(branchMatrix.CrissCrossCommits) >= 2 {

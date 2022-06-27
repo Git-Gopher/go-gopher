@@ -57,7 +57,7 @@ func NewBranchCompareDetector(detect BranchCompareDetect) *BranchCompareDetector
 }
 
 // Deprecated: this detect is a demo
-// NewFeatureBranchNewDetect is used to detect if a branch has the prefix feature or feat
+// NewFeatureBranchNewDetect is used to detect if a branch has the prefix feature or feat.
 func NewFeatureBranchNameDetect() BranchCompareDetect {
 	return func(branches []local.Branch) (int, []violation.Violation, error) {
 		branchRefs := []string{}
