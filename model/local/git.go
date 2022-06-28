@@ -225,18 +225,8 @@ func NewGitModel(repo *git.Repository) (*GitModel, error) {
 	if err != nil {
 		return nil, fmt.Errorf("Failed to find head commit: %w", err)
 	}
-	bIter, err = repo.Branches()
-	if err != nil {
-		return nil, fmt.Errorf("Failed to retrieve branches from repository: %w", err)
-	}
-	_ = bIter.ForEach(func(b *plumbing.Reference) error {
-		if b.Name() != ref.Name() {
-			return nil
-		}
-		gitModel.MainGraph = FetchBranchGraph(refCommit)
-
-		return nil
-	})
+	gitModel.MainGraph = FetchBranchGraph(refCommit)
+	gitModel.MainGraph.BranchName = ref.Hash().String()
 
 	// BranchMatrix
 	branches := []plumbing.Hash{}

@@ -15,7 +15,9 @@ import (
 	"github.com/Git-Gopher/go-gopher/workflow"
 	"github.com/go-git/go-git/v5"
 	"github.com/go-git/go-git/v5/plumbing"
+	"github.com/go-git/go-git/v5/plumbing/transport/http"
 	"github.com/go-git/go-git/v5/storage/memory"
+	"github.com/joho/godotenv"
 	"github.com/urfave/cli/v2"
 )
 
@@ -163,12 +165,22 @@ func main() {
 				url := c.Args().Get(0)
 				branch := c.Args().Get(1)
 
+				if err := godotenv.Load(".env"); err != nil {
+					log.Println("Error loading .env file")
+				}
+
+				token := os.Getenv("GITHUB_TOKEN")
+
 				var branchRef plumbing.ReferenceName
 				if branch != "" {
 					branchRef = plumbing.NewBranchReferenceName(branch)
 				}
 
 				repo, _ := git.Clone(memory.NewStorage(), nil, &git.CloneOptions{
+					Auth: &http.BasicAuth{
+						Username: "non-empty",
+						Password: token,
+					},
 					URL:           url,
 					ReferenceName: branchRef,
 				})
