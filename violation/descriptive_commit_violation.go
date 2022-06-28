@@ -36,7 +36,9 @@ func (dvc *DescriptiveCommitViolation) Name() string {
 // Message implements Violation.
 func (dvc *DescriptiveCommitViolation) Message() string {
 	message := strings.ReplaceAll(dvc.message, "\n", " ")
-	return fmt.Sprintf("The commit message \"%s\" may not be descriptive enough", message)
+
+	return fmt.Sprintf(`The commit message \"%s\" may not be 
+		descriptive enough`, message)
 }
 
 // Suggestion implements Violation.

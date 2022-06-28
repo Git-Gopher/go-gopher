@@ -34,7 +34,6 @@ func Environment(location string) {
 func OwnerNameFromUrl(rawUrl string) (string, string, error) {
 	var owner, name string
 
-	fmt.Printf("rawUrl: %v\n", rawUrl)
 	url, err := giturls.Parse(rawUrl)
 	if err != nil {
 		return "", "", fmt.Errorf("Could not parse git URL: %w", err)

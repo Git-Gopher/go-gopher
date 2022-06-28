@@ -105,32 +105,11 @@ func main() {
 
 				workflowLog(violated, count, total, violations)
 
-				// Setup tables
-				vrows := make([][]string, len(violations)+1)
-
-				vrows[0] = []string{"Name", "Message", "Suggestion", "Author"}
-				for i, v := range violations {
-					var login, suggestion string
-					suggestion, err = v.Suggestion()
-					if err != nil {
-						suggestion = "N/A"
-					}
-
-					author, err := v.Author()
-					if err != nil {
-						login = "N/A"
-					} else {
-						login = author.Login
-					}
-
-					vrows[i+1] = []string{v.Name(), v.Message(), suggestion, login}
-				}
-
 				// Set action outputs to a markdown summary.
 				md := markup.NewMarkdown()
 				md.
 					Title("Workflow Summary").
-					Collapsible("Violations", markup.NewMarkdown().Table(vrows...)).
+					Collapsible("Violations", markup.NewMarkdown().Text("Stub!")).
 					Collapsible("Suggestions", markup.NewMarkdown().Text("Stub!")).
 					Collapsible("Authors", markup.NewMarkdown().Text("Stub!"))
 
