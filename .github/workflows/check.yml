@@ -25,3 +25,23 @@ jobs:
         run: go vet ./...
       - name: Run tests
         run: make test
+  docker:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v2
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+      - name: Build and export to Docker
+        uses: docker/build-push-action@v3
+        with:
+          context: .
+          load: true
+          tags: ${{ github.run_id }}-${{ github.run_number }}
+      - name: Test
+        run: |
+          docker run -e GITHUB_TOKEN=${GITHUB_TOKEN} -e GITHUB_WORKSPACE=${GITHUB_WORKSPACE} -e GITHUB_URL=${GITHUB_URL} -v ${GITHUB_WORKSPACE}:${GITHUB_WORKSPACE} --rm ${{ github.run_id }}-${{ github.run_number }}
