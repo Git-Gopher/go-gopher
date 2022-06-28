@@ -1,11 +1,11 @@
+name: publish
 on:
   workflow_dispatch:
     inputs:
       tags:
-        description: "Publish docker image to latest tag"
+        description: "Publish docker image to latest tag, test action when merged"
   push:
-    branches:
-      - "main"
+    branches: main
 jobs:
   docker:
     runs-on: ubuntu-latest
@@ -22,10 +22,7 @@ jobs:
         with:
           push: true
           tags: gitgopher/gitgopher:latest
-
-  # Test that action is working
   action:
-    needs: docker
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -39,6 +36,7 @@ jobs:
           key: ${{ github.ref }}
       - name: Analyze Workflow
         uses: Git-Gopher/go-gopher-action@latest
+        id: git-gopher
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          GITHUB_URL: ${GITHUB_URL}
+          GITHUB_URL: ${{ github.server_url }}/${{ github.repository }}/

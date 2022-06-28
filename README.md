@@ -20,9 +20,3 @@ Environment variables are defined in the `.env` which should be created from the
 ## GitHub Action
 
 This project is available as a GitHub action. An example usage can be found within this [project](./.github/workflows/publish.yml). The action has been published via the [go-gopher-action](https://github.com/Git-Gopher/go-gopher-action) repository.
-
-## Dependencies
-
-The following dependencies are required to build and run the project:
-
-- make

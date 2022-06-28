@@ -40,7 +40,7 @@ func (d *display) Display() string {
 	if err != nil {
 		return fmt.Sprintf(format, d.v.Name(), d.v.Message())
 	}
-	format += "\n\t%s"
+	format += "\n\t%s\n"
 
 	return fmt.Sprintf(format, d.v.Name(), d.v.Message(), suggestion)
 }

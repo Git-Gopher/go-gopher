@@ -25,7 +25,6 @@ jobs:
         run: go vet ./...
       - name: Run tests
         run: make test
-
   docker:
     runs-on: ubuntu-latest
     steps:

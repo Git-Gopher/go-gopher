@@ -2,6 +2,7 @@ package violation
 
 import (
 	"fmt"
+	"strings"
 
 	"github.com/Git-Gopher/go-gopher/model/github"
 )
@@ -34,7 +35,10 @@ func (dvc *DescriptiveCommitViolation) Name() string {
 
 // Message implements Violation.
 func (dvc *DescriptiveCommitViolation) Message() string {
-	return fmt.Sprintf("The commit message \"%s\" may not be descriptive enough", dvc.message)
+	message := strings.ReplaceAll(dvc.message, "\n", " ")
+
+	return fmt.Sprintf(`The commit message \"%s\" may not be 
+		descriptive enough`, message)
 }
 
 // Suggestion implements Violation.
