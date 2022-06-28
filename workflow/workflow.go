@@ -30,17 +30,34 @@ func GithubFlowWorkflow() *Workflow {
 	return &Workflow{
 		Name: "Github Flow",
 		WeightedCommitDetectors: []WeightedDetector{
-			{Weight: 2, Detector: detector.NewCommitDetector(detector.TwoParentsCommitDetect())},
 			{Weight: 1, Detector: detector.NewBranchDetector(detector.StaleBranchDetect())},
 			{Weight: 1, Detector: detector.NewPullRequestDetector(detector.PullRequestApprovalDetector())},
 			{Weight: 1, Detector: detector.NewPullRequestDetector(detector.PullRequestIssueDetector())},
 			{Weight: 1, Detector: detector.NewPullRequestDetector(detector.PullRequestReviewThreadDetector())},
 			{Weight: 1, Detector: detector.NewCommitDetector(detector.DiffMatchesMessageDetect())},
 			{Weight: 1, Detector: detector.NewCommitDistanceDetector(detector.DiffDistanceCalculation())},
+			{Weight: 1, Detector: detector.NewBranchCompareDetector(detector.NewBranchNameConsistencyDetect())},
+			{Weight: 1, Detector: detector.NewFeatureBranchDetector()},
+			{Weight: 1, Detector: detector.NewBranchMatrixDetector(detector.NewCrissCrossMergeDetect())},
+			// DISABLED
+			// {Weight: 1, Detector: detector.NewBranchCompareDetector(detector.NewFeatureBranchNameDetect())},
+			// {Weight: 1, Detector: detector.NewCommitDetector(detector.TwoParentsCommitDetect())},
 		},
 		WeightedCacheDetectors: []WeightedCacheDetector{
 			{Weight: 10, Detector: detector.NewCommitCacheDetector(detector.ForcePushDetect())},
 		},
+	}
+}
+
+// LocalDetectors are detectors that can run locally without GitHub API calls.
+func LocalDetectors() []detector.Detector {
+	return []detector.Detector{
+		detector.NewBranchDetector(detector.StaleBranchDetect()),
+		detector.NewCommitDetector(detector.DiffMatchesMessageDetect()),
+		detector.NewCommitDistanceDetector(detector.DiffDistanceCalculation()),
+		detector.NewBranchCompareDetector(detector.NewBranchNameConsistencyDetect()),
+		detector.NewFeatureBranchDetector(),
+		detector.NewBranchMatrixDetector(detector.NewCrissCrossMergeDetect()),
 	}
 }
 
