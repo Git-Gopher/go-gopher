@@ -15,7 +15,10 @@ import (
 	"github.com/Git-Gopher/go-gopher/violation"
 	"github.com/Git-Gopher/go-gopher/workflow"
 	"github.com/go-git/go-git/v5"
+	"github.com/go-git/go-git/v5/plumbing"
+	"github.com/go-git/go-git/v5/plumbing/transport/http"
 	"github.com/go-git/go-git/v5/storage/memory"
+	"github.com/joho/godotenv"
 	"github.com/urfave/cli/v2"
 )
 
@@ -120,7 +123,7 @@ func main() {
 		},
 		{
 			Name:    "memory",
-			Aliases: []string{"a"},
+			Aliases: []string{"m"},
 			Usage:   "detect a workflow for a given git project url",
 			Action: func(c *cli.Context) error {
 				url := c.Args().Get(0)
@@ -160,6 +163,55 @@ func main() {
 					log.Printf("err: %v\n", err)
 				}
 				workflowLog(violated, count, total, violations)
+
+				return nil
+			},
+		},
+		{
+			Name:    "local",
+			Aliases: []string{"m"},
+			Usage:   "detect a workflow for a given git project url",
+			// Example: `go-gopher local https://github.com/Git-Gopher/tests test/two-parents-merged/0`
+			Action: func(c *cli.Context) error {
+				url := c.Args().Get(0)
+				branch := c.Args().Get(1)
+
+				if err := godotenv.Load(".env"); err != nil {
+					log.Println("Error loading .env file")
+				}
+
+				token := os.Getenv("GITHUB_TOKEN")
+
+				var branchRef plumbing.ReferenceName
+				if branch != "" {
+					branchRef = plumbing.NewBranchReferenceName(branch)
+				}
+
+				repo, _ := git.Clone(memory.NewStorage(), nil, &git.CloneOptions{
+					Auth: &http.BasicAuth{
+						Username: "non-empty",
+						Password: token,
+					},
+					URL:           url,
+					ReferenceName: branchRef,
+				})
+
+				gitModel, err := local.NewGitModel(repo)
+				if err != nil {
+					log.Fatalf("Could not create GitModel: %v\n", err)
+				}
+
+				enrichedModel := enriched.NewEnrichedModel(*gitModel, github.GithubModel{})
+
+				for _, detector := range workflow.LocalDetectors() {
+					if err := detector.Run(enrichedModel); err != nil {
+						log.Fatalf("Failed to run weighted detectors: %v", err)
+					}
+					v, c, t, vs := detector.Result()
+
+					fmt.Printf("\n## Detector Type: %T ##\n", detector)
+					render(v, c, t, vs)
+				}
 
 				return nil
 			},
