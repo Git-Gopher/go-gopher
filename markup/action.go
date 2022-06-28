@@ -14,10 +14,12 @@ func Group(title, content string) {
 
 func Outputs(name, value string) {
 	// Sanitize with literals
-	name = strings.ReplaceAll(name, "\n", `\n`)
-	value = strings.ReplaceAll(value, "\n", `\n`)
-	name = strings.ReplaceAll(name, "\r", `\r`)
-	value = strings.ReplaceAll(value, "\r", `\r`)
+	name = strings.ReplaceAll(name, "%", `%25`)
+	value = strings.ReplaceAll(value, "%", `%25`)
+	name = strings.ReplaceAll(name, "\n", `%0A`)
+	value = strings.ReplaceAll(value, "\n", `%0A`)
+	name = strings.ReplaceAll(name, "\r", `%0D`)
+	value = strings.ReplaceAll(value, "\r", `%0D`)
 
 	fmt.Printf("::set-output name=%s::%s\n", name, value)
 }
