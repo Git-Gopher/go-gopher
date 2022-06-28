@@ -108,12 +108,21 @@ func (bs *FeatureBranchDetector) checkNext(c *local.CommitGraph) *local.CommitGr
 		return bs.checkNext(nextCommit)
 	}
 
+	next, v := bs.checkEnd(c.ParentCommits[0], []violation.Violation{})
+	if next == nil {
+		// no more commits to check
+		bs.violations = append(bs.violations, v...)
+
+		return nil
+	}
+
 	// only one parent (violation)
 	bs.violations = append(bs.violations, violation.NewPrimaryBranchDirectCommitViolation(
 		bs.primaryBranch,
 		c.Hash,
 		[]string{c.ParentCommits[0].Hash},
 	))
+	bs.violated++
 
 	return bs.checkNext(c.ParentCommits[0])
 }
