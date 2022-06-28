@@ -22,7 +22,17 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GITHUB_URL: ${{ github.server_url }}/${{ github.repository }}/
+      - name: Escape Comment
+        id: escape-comment
+        run: |
+          text="${{ steps.git-gopher.outputs.pr_summary }}"
+          echo "$text"
+          text="${text//'%'/'%25'}"
+          text="${text//$'\n'/'%0A'}"
+          text="${text//$'\r'/'%0D'}"
+          echo "$text"
+          echo "::set-output name=pr_summary::$text"
       - name: Add PR Comment
         uses: marocchino/sticky-pull-request-comment@v2
         with:
-          message: "${{ steps.git-gopher.outputs.pr_summary }}"
+          message: "${{ steps.escape-comment.outputs.pr_summary }}"
