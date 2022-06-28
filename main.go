@@ -103,15 +103,36 @@ func main() {
 					log.Fatalf("Failed to analyze: %v\n", err)
 				}
 
-				render(violated, count, total, violations)
+				workflowLog(violated, count, total, violations)
+
+				// Setup tables
+				vrows := make([][]string, len(violations)+1)
+
+				vrows[0] = []string{"Name", "Message", "Suggestion", "Author"}
+				for i, v := range violations {
+					var login, suggestion string
+					suggestion, err = v.Suggestion()
+					if err != nil {
+						suggestion = "N/A"
+					}
+
+					author, err := v.Author()
+					if err != nil {
+						login = "N/A"
+					} else {
+						login = author.Login
+					}
+
+					vrows[i+1] = []string{v.Name(), v.Message(), suggestion, login}
+				}
 
 				// Set action outputs to a markdown summary.
 				md := markup.NewMarkdown()
 				md.
 					Title("Workflow Summary").
-					Collapsible(markup.NewMarkdown().Text("Stub!"), "Violations").
-					Collapsible(markup.NewMarkdown().Text("Stub!"), "Suggestions").
-					Collapsible(markup.NewMarkdown().Text("Stub!"), "Authors")
+					Collapsible("Violations", markup.NewMarkdown().Table(vrows...)).
+					Collapsible("Suggestions", markup.NewMarkdown().Text("Stub!")).
+					Collapsible("Authors", markup.NewMarkdown().Text("Stub!"))
 
 				markup.Outputs("pr_summary", md.String())
 
@@ -159,7 +180,7 @@ func main() {
 				if err != nil {
 					log.Printf("err: %v\n", err)
 				}
-				render(violated, count, total, violations)
+				workflowLog(violated, count, total, violations)
 
 				return nil
 			},
@@ -172,7 +193,7 @@ func main() {
 }
 
 // Print violation summary to IO, Split by severity with author association.
-func render(v, c, t int, vs []violation.Violation) {
+func workflowLog(v, c, t int, vs []violation.Violation) {
 	var violations, suggestions []violation.Violation
 	for _, v := range vs {
 		switch v.Severity() {

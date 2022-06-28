@@ -1,6 +1,9 @@
 package markup
 
-import "strings"
+import (
+	"fmt"
+	"strings"
+)
 
 // Chainable markdown generator.
 type Markdown struct {
@@ -60,10 +63,10 @@ func (m *Markdown) Table(rows ...[]string) *Markdown {
 	return m
 }
 
-func (m *Markdown) Collapsible(md *Markdown, title string) *Markdown {
+func (m *Markdown) Collapsible(title string, body *Markdown) *Markdown {
 	m.builder.WriteString("<details>\n")
-	m.builder.WriteString("<summary>/Hide</summary>\n")
-	m.builder.WriteString(md.String())
+	m.builder.WriteString(fmt.Sprintf("<summary>%s</summary>\n", title))
+	m.builder.WriteString(body.String())
 	m.builder.WriteString("</details>\n")
 
 	return m

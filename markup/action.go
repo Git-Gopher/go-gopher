@@ -13,7 +13,7 @@ func Group(title, content string) {
 }
 
 func Outputs(name, value string) {
-	// Sanitize with literals
+	// Sanitize input with literals
 	name = strings.ReplaceAll(name, "%", `%25`)
 	value = strings.ReplaceAll(value, "%", `%25`)
 	name = strings.ReplaceAll(name, "\n", `%0A`)
