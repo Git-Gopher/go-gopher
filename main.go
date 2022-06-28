@@ -210,7 +210,7 @@ func main() {
 					v, c, t, vs := detector.Result()
 
 					fmt.Printf("\n## Detector Type: %T ##\n", detector)
-					render(v, c, t, vs)
+					workflowLog(v, c, t, vs)
 				}
 
 				return nil
