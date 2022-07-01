@@ -35,6 +35,7 @@ func GithubFlowWorkflow() *Workflow {
 			{Weight: 1, Detector: detector.NewPullRequestDetector(detector.PullRequestIssueDetector())},
 			{Weight: 1, Detector: detector.NewPullRequestDetector(detector.PullRequestReviewThreadDetector())},
 			{Weight: 1, Detector: detector.NewCommitDetector(detector.DiffMatchesMessageDetect())},
+			{Weight: 1, Detector: detector.NewCommitDetector(detector.ShortCommitMessageDetect())},
 			{Weight: 1, Detector: detector.NewCommitDistanceDetector(detector.DiffDistanceCalculation())},
 			{Weight: 1, Detector: detector.NewBranchCompareDetector(detector.NewBranchNameConsistencyDetect())},
 			{Weight: 1, Detector: detector.NewFeatureBranchDetector()},
@@ -54,8 +55,10 @@ func LocalDetectors() []detector.Detector {
 	return []detector.Detector{
 		detector.NewBranchDetector(detector.StaleBranchDetect()),
 		detector.NewCommitDetector(detector.DiffMatchesMessageDetect()),
+		detector.NewCommitDetector(detector.ShortCommitMessageDetect()),
 		detector.NewCommitDistanceDetector(detector.DiffDistanceCalculation()),
 		detector.NewBranchCompareDetector(detector.NewBranchNameConsistencyDetect()),
+		detector.NewCommitDetector(detector.BranchCommitDetect()), // used to check if branches are used
 		detector.NewFeatureBranchDetector(),
 		detector.NewBranchMatrixDetector(detector.NewCrissCrossMergeDetect()),
 	}

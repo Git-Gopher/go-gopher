@@ -35,7 +35,7 @@ func TestTwoParentsCommitDetect(t *testing.T) {
 
 			enrichedModel := enriched.NewEnrichedModel(*gitModel, github.GithubModel{})
 
-			detector := NewCommitDetector(TwoParentsCommitDetect())
+			detector := NewCommitDetector(BranchCommitDetect())
 			if err = detector.Run(enrichedModel); err != nil {
 				t.Errorf("TestTwoParentsCommitDetect() run detector = %v", err)
 			}
@@ -140,7 +140,7 @@ func TestTwoParentsCommitDetectGoGit(t *testing.T) {
 
 	enrichedModel := enriched.NewEnrichedModel(*gitModel, github.GithubModel{})
 
-	detector := NewCommitDetector(TwoParentsCommitDetect())
+	detector := NewCommitDetector(BranchCommitDetect())
 	err = detector.Run(enrichedModel)
 	if err != nil {
 		t.Errorf("TestTwoParentsCommitDetectGoGit() run = %v", err)

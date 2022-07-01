@@ -2,12 +2,14 @@ package detector
 
 import (
 	"fmt"
+	"log"
 	"path/filepath"
 	"strings"
 
 	"github.com/Git-Gopher/go-gopher/model/enriched"
 	"github.com/Git-Gopher/go-gopher/model/local"
 	"github.com/Git-Gopher/go-gopher/violation"
+	"github.com/montanaflynn/stats"
 )
 
 type CommitDistanceCalculator func(commit *local.Commit) (distance float64, err error)
@@ -43,9 +45,30 @@ func (cd *CommitDistanceDetector) Run(model *enriched.EnrichedModel) error {
 		cd.distance[i] = distance
 	}
 
-	// find outliers from the distance using.
-	// fmt.Println("++++++++++++++++++++++++++++++++++++++++")
-	// fmt.Println(cd.distance)
+	// Calculate the quartiles and interquartile range
+	qs, err := stats.Quartile(cd.distance)
+	if err != nil {
+		return fmt.Errorf("failed to calculate quartiles: %w", err)
+	}
+
+	iqr, err := stats.InterQuartileRange(cd.distance)
+	if err != nil {
+		return fmt.Errorf("failed to calculate interquartile range: %w", err)
+	}
+
+	// Calculate the lower and upper inner and outer fences
+	lif := qs.Q1 - (1.5 * iqr)
+	uif := qs.Q3 + (1.5 * iqr)
+	lof := qs.Q1 - (3 * iqr)
+	uof := qs.Q3 + (3 * iqr)
+
+	for i, v := range cd.distance {
+		if v < lof || v > uof {
+			log.Printf("EXTREME commit \"%s\" has a distance of %f\n", model.Commits[i].Hash.String(), v)
+		} else if v < lif || v > uif {
+			log.Printf("MILD commit \"%s\" has a distance of %f\n", model.Commits[i].Hash.String(), v)
+		}
+	}
 
 	return nil
 }
@@ -94,7 +117,7 @@ func DiffDistanceCalculation() CommitDistanceCalculator {
 			average := float64(max-min) / float64(len(diff.Points))
 
 			// clamp: average cannot be zero for calculations
-			if average == 0 {
+			if average == 0 || len(diff.Points) == 0 {
 				average = 1
 			}
 

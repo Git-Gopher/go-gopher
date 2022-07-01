@@ -70,20 +70,23 @@ func FetchBranchGraph(head *object.Commit) *BranchGraph {
 
 		_ = commit.Parents().ForEach(
 			func(c *object.Commit) error {
-				hash := commit.Hash.String()
+				hash := c.Hash.String()
 
 				// check cache if exist use commit object and check next
-				if cached, ok := commitGraphMap[hash]; !ok {
+				if cached, ok := commitGraphMap[hash]; ok {
 					commitGraph.ParentCommits = append(commitGraph.ParentCommits, cached)
 
 					return nil
 				}
 
 				// add parent to stack to be processed
-				commit := &CommitGraph{Hash: hash}
+				parent := &CommitGraph{Hash: hash}
 				commitRefs = append(commitRefs, c)
-				commitGraphRefs = append(commitGraphRefs, commit)
-				commitGraphMap[hash] = commit
+				commitGraphRefs = append(commitGraphRefs, parent)
+				commitGraphMap[hash] = parent
+
+				// add commit to graph
+				commitGraph.ParentCommits = append(commitGraph.ParentCommits, parent)
 
 				return nil
 			})

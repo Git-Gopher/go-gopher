@@ -1,7 +1,6 @@
 package detector
 
 import (
-	"encoding/hex"
 	"strings"
 
 	"github.com/Git-Gopher/go-gopher/model/enriched"
@@ -61,21 +60,13 @@ func NewCommitDetector(detect CommitDetect) *CommitDetector {
 
 // All commits on the main branch for github flow should be merged in,
 // meaning that they have two parents(the main branch and the feature branch).
-func TwoParentsCommitDetect() CommitDetect {
+func BranchCommitDetect() CommitDetect {
 	return func(commit *local.Commit) (bool, violation.Violation, error) {
 		if len(commit.ParentHashes) >= 2 {
 			return true, nil, nil
 		}
 
-		commitHash := hex.EncodeToString(commit.Hash.ToByte())
-
-		parentHashes := make([]string, len(commit.ParentHashes))
-		for i, p := range commit.ParentHashes {
-			parentHashes[i] = hex.EncodeToString(p.ToByte())
-		}
-
-		// TODO: Don't use hardcoded primary branch
-		return false, violation.NewPrimaryBranchDirectCommitViolation("main", commitHash, parentHashes), nil
+		return false, nil, nil
 	}
 }
 
@@ -96,9 +87,24 @@ func DiffMatchesMessageDetect() CommitDetect {
 	}
 }
 
-// Example detector to check if the commit is greater than 10 characters.
-func NewDecriptiveCommitMessageDetect() CommitDetect {
+// Check if commit is less than 3 words.
+func ShortCommitMessageDetect() CommitDetect {
 	return func(commit *local.Commit) (bool, violation.Violation, error) {
-		return false, nil, ErrNotImplemented
+		exclusions := []string{
+			"first commit",
+			"initial commit",
+		}
+		for _, exclusion := range exclusions {
+			if strings.ToLower(commit.Message) == exclusion {
+				return true, nil, nil
+			}
+		}
+
+		words := strings.Split(commit.Message, " ")
+		if len(words) < 3 {
+			return false, violation.NewShortCommitViolation(commit.Message, commit.Author.Name), nil
+		}
+
+		return true, nil, nil
 	}
 }
