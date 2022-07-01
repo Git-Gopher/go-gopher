@@ -78,6 +78,7 @@ func (bs *FeatureBranchDetector) checkNext(c *local.CommitGraph) *local.CommitGr
 			if len(child.ParentCommits) > 1 {
 				bs.found += 1
 				// skip other branch
+
 				return bs.checkNext(child)
 			}
 		}
@@ -102,6 +103,7 @@ func (bs *FeatureBranchDetector) checkNext(c *local.CommitGraph) *local.CommitGr
 				nextCommit = next
 			}
 		}
+		bs.violated += lenViolations
 
 		bs.violations = append(bs.violations, violations...)
 
@@ -115,6 +117,7 @@ func (bs *FeatureBranchDetector) checkNext(c *local.CommitGraph) *local.CommitGr
 
 		return nil
 	}
+	bs.violated += len(v)
 
 	// only one parent (violation)
 	bs.violations = append(bs.violations, violation.NewPrimaryBranchDirectCommitViolation(
@@ -154,9 +157,8 @@ func (bs *FeatureBranchDetector) checkEnd(
 		c.Hash,
 		[]string{c.ParentCommits[0].Hash},
 	))
-	bs.violated++
 
-	return bs.checkEnd(c, v)
+	return bs.checkEnd(c.ParentCommits[0], v)
 }
 
 func (bs *FeatureBranchDetector) Result() (int, int, int, []violation.Violation) {

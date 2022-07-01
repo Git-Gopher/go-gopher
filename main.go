@@ -7,6 +7,7 @@ import (
 	"os"
 
 	"github.com/Git-Gopher/go-gopher/cache"
+	"github.com/Git-Gopher/go-gopher/detector"
 	"github.com/Git-Gopher/go-gopher/markup"
 	"github.com/Git-Gopher/go-gopher/model/enriched"
 	"github.com/Git-Gopher/go-gopher/model/github"
@@ -212,6 +213,102 @@ func main() {
 					fmt.Printf("\n## Detector Type: %T ##\n", detector)
 					workflowLog(v, c, t, vs)
 				}
+
+				return nil
+			},
+		},
+		{
+			Name:    "feature",
+			Aliases: []string{"feat", "features"},
+			Usage:   "detect a feature branching",
+			// Example: `go-gopher feature https://github.com/Git-Gopher/tests test/two-parents-merged/0`
+			Action: func(c *cli.Context) error {
+				url := c.Args().Get(0)
+				branch := c.Args().Get(1)
+
+				if err := godotenv.Load(".env"); err != nil {
+					log.Println("Error loading .env file")
+				}
+
+				token := os.Getenv("GITHUB_TOKEN")
+
+				var branchRef plumbing.ReferenceName
+				if branch != "" {
+					branchRef = plumbing.NewBranchReferenceName(branch)
+				}
+
+				repo, _ := git.Clone(memory.NewStorage(), nil, &git.CloneOptions{
+					Auth: &http.BasicAuth{
+						Username: "non-empty",
+						Password: token,
+					},
+					URL:           url,
+					ReferenceName: branchRef,
+				})
+
+				gitModel, err := local.NewGitModel(repo)
+				if err != nil {
+					log.Fatalf("Could not create GitModel: %v\n", err)
+				}
+
+				enrichedModel := enriched.NewEnrichedModel(*gitModel, github.GithubModel{})
+
+				d := detector.NewFeatureBranchDetector()
+				if err := d.Run(enrichedModel); err != nil {
+					log.Fatalf("Failed to run weighted detectors: %v", err)
+				}
+				v, co, t, vs := d.Result()
+
+				fmt.Printf("\n## Detector Type: %T ##\n", d)
+				workflowLog(v, co, t, vs)
+
+				return nil
+			},
+		},
+		{
+			Name:    "diff-distance",
+			Aliases: []string{"dd"},
+			Usage:   "detect diff distance",
+			// Example: `go-gopher dd https://github.com/Git-Gopher/tests test/two-parents-merged/0`
+			Action: func(c *cli.Context) error {
+				url := c.Args().Get(0)
+				branch := c.Args().Get(1)
+
+				if err := godotenv.Load(".env"); err != nil {
+					log.Println("Error loading .env file")
+				}
+
+				token := os.Getenv("GITHUB_TOKEN")
+
+				var branchRef plumbing.ReferenceName
+				if branch != "" {
+					branchRef = plumbing.NewBranchReferenceName(branch)
+				}
+
+				repo, _ := git.Clone(memory.NewStorage(), nil, &git.CloneOptions{
+					Auth: &http.BasicAuth{
+						Username: "non-empty",
+						Password: token,
+					},
+					URL:           url,
+					ReferenceName: branchRef,
+				})
+
+				gitModel, err := local.NewGitModel(repo)
+				if err != nil {
+					log.Fatalf("Could not create GitModel: %v\n", err)
+				}
+
+				enrichedModel := enriched.NewEnrichedModel(*gitModel, github.GithubModel{})
+
+				d := detector.NewCommitDistanceDetector(detector.DiffDistanceCalculation())
+				if err := d.Run(enrichedModel); err != nil {
+					log.Fatalf("Failed to run weighted detectors: %v", err)
+				}
+				v, co, t, vs := d.Result()
+
+				fmt.Printf("\n## Detector Type: %T ##\n", d)
+				workflowLog(v, co, t, vs)
 
 				return nil
 			},
