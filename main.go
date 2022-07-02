@@ -7,6 +7,7 @@ import (
 	"os"
 
 	"github.com/Git-Gopher/go-gopher/cache"
+	"github.com/Git-Gopher/go-gopher/config"
 	"github.com/Git-Gopher/go-gopher/detector"
 	"github.com/Git-Gopher/go-gopher/markup"
 	"github.com/Git-Gopher/go-gopher/model/enriched"
@@ -21,6 +22,7 @@ import (
 	"github.com/go-git/go-git/v5/storage/memory"
 	"github.com/joho/godotenv"
 	"github.com/urfave/cli/v2"
+	"go.uber.org/zap"
 )
 
 //nolint
@@ -33,7 +35,7 @@ func main() {
 			Name:    "action",
 			Aliases: []string{"a"},
 			Usage:   "detect a workflow for current root",
-			Action: func(c *cli.Context) error {
+			Action: func(ctx *cli.Context) error {
 				// repository := os.Getenv("GITHUB_REPOSITORY")
 				workspace := os.Getenv("GITHUB_WORKSPACE")
 				if workspace == "" {
@@ -101,7 +103,7 @@ func main() {
 				} else {
 				}
 
-				ghwf := workflow.GithubFlowWorkflow()
+				ghwf := workflow.GithubFlowWorkflow(nil)
 				violated, count, total, violations, err := ghwf.Analyze(enrichedModel, current, caches)
 				if err != nil {
 					log.Fatalf("Failed to analyze: %v\n", err)
@@ -119,6 +121,8 @@ func main() {
 
 				markup.Outputs("pr_summary", md.String())
 
+				ghwf.Csv(workflow.DefaultCsvPath)
+
 				return nil
 			},
 		},
@@ -126,8 +130,8 @@ func main() {
 			Name:    "memory",
 			Aliases: []string{"m"},
 			Usage:   "detect a workflow for a given git project url",
-			Action: func(c *cli.Context) error {
-				url := c.Args().Get(0)
+			Action: func(ctx *cli.Context) error {
+				url := ctx.Args().Get(0)
 
 				repo, _ := git.Clone(memory.NewStorage(), nil, &git.CloneOptions{
 					URL: url,
@@ -158,7 +162,7 @@ func main() {
 					log.Fatalf("Failed to load caches: %v", err)
 				}
 
-				ghwf := workflow.GithubFlowWorkflow()
+				ghwf := workflow.GithubFlowWorkflow(nil)
 				violated, count, total, violations, err := ghwf.Analyze(enrichedModel, current, caches)
 				if err != nil {
 					log.Printf("err: %v\n", err)
@@ -169,13 +173,116 @@ func main() {
 			},
 		},
 		{
+			Name:    "debug",
+			Aliases: []string{"d"},
+			Usage:   "debug/development subcommands",
+			Subcommands: []*cli.Command{
+				{
+					Name:    "feature",
+					Aliases: []string{"feat", "features"},
+					Usage:   "detect a feature branching",
+					// Example: `go-gopher feature https://github.com/Git-Gopher/tests test/two-parents-merged/0`
+					Action: func(ctx *cli.Context) error {
+						url := ctx.Args().Get(0)
+						branch := ctx.Args().Get(1)
+
+						if err := godotenv.Load(".env"); err != nil {
+							log.Println("Error loading .env file")
+						}
+
+						token := os.Getenv("GITHUB_TOKEN")
+
+						var branchRef plumbing.ReferenceName
+						if branch != "" {
+							branchRef = plumbing.NewBranchReferenceName(branch)
+						}
+
+						repo, _ := git.Clone(memory.NewStorage(), nil, &git.CloneOptions{
+							Auth: &http.BasicAuth{
+								Username: "non-empty",
+								Password: token,
+							},
+							URL:           url,
+							ReferenceName: branchRef,
+						})
+
+						gitModel, err := local.NewGitModel(repo)
+						if err != nil {
+							log.Fatalf("Could not create GitModel: %v\n", err)
+						}
+
+						enrichedModel := enriched.NewEnrichedModel(*gitModel, github.GithubModel{})
+
+						d := detector.NewFeatureBranchDetector()
+						if err := d.Run(enrichedModel); err != nil {
+							log.Fatalf("Failed to run weighted detectors: %v", err)
+						}
+						v, co, t, vs := d.Result()
+
+						fmt.Printf("\n## Detector Type: %T ##\n", d)
+						workflowLog(v, co, t, vs)
+
+						return nil
+					},
+				},
+				{
+					Name:    "diff-distance",
+					Aliases: []string{"dd"},
+					Usage:   "detect diff distance",
+					// Example: `go-gopher dd https://github.com/Git-Gopher/tests test/two-parents-merged/0`
+					Action: func(ctx *cli.Context) error {
+						url := ctx.Args().Get(0)
+						branch := ctx.Args().Get(1)
+
+						if err := godotenv.Load(".env"); err != nil {
+							log.Println("Error loading .env file")
+						}
+
+						token := os.Getenv("GITHUB_TOKEN")
+
+						var branchRef plumbing.ReferenceName
+						if branch != "" {
+							branchRef = plumbing.NewBranchReferenceName(branch)
+						}
+
+						repo, _ := git.Clone(memory.NewStorage(), nil, &git.CloneOptions{
+							Auth: &http.BasicAuth{
+								Username: "non-empty",
+								Password: token,
+							},
+							URL:           url,
+							ReferenceName: branchRef,
+						})
+
+						gitModel, err := local.NewGitModel(repo)
+						if err != nil {
+							log.Fatalf("Could not create GitModel: %v\n", err)
+						}
+
+						enrichedModel := enriched.NewEnrichedModel(*gitModel, github.GithubModel{})
+
+						d := detector.NewCommitDistanceDetector(detector.DiffDistanceCalculation())
+						if err := d.Run(enrichedModel); err != nil {
+							log.Fatalf("Failed to run weighted detectors: %v", err)
+						}
+						v, co, t, vs := d.Result()
+
+						fmt.Printf("\n## Detector Type: %T ##\n", d)
+						workflowLog(v, co, t, vs)
+
+						return nil
+					},
+				},
+			},
+		},
+		{
 			Name:    "local",
 			Aliases: []string{"m"},
 			Usage:   "detect a workflow for a given git project url",
 			// Example: `go-gopher local https://github.com/Git-Gopher/tests test/two-parents-merged/0`
-			Action: func(c *cli.Context) error {
-				url := c.Args().Get(0)
-				branch := c.Args().Get(1)
+			Action: func(ctx *cli.Context) error {
+				url := ctx.Args().Get(0)
+				branch := ctx.Args().Get(1)
 
 				if err := godotenv.Load(".env"); err != nil {
 					log.Println("Error loading .env file")
@@ -218,98 +325,54 @@ func main() {
 			},
 		},
 		{
-			Name:    "feature",
-			Aliases: []string{"feat", "features"},
-			Usage:   "detect a feature branching",
-			// Example: `go-gopher feature https://github.com/Git-Gopher/tests test/two-parents-merged/0`
-			Action: func(c *cli.Context) error {
-				url := c.Args().Get(0)
-				branch := c.Args().Get(1)
-
-				if err := godotenv.Load(".env"); err != nil {
-					log.Println("Error loading .env file")
-				}
-
-				token := os.Getenv("GITHUB_TOKEN")
-
-				var branchRef plumbing.ReferenceName
-				if branch != "" {
-					branchRef = plumbing.NewBranchReferenceName(branch)
-				}
-
-				repo, _ := git.Clone(memory.NewStorage(), nil, &git.CloneOptions{
-					Auth: &http.BasicAuth{
-						Username: "non-empty",
-						Password: token,
+			Name:  "analyze",
+			Usage: "detect a workflow for current root",
+			Subcommands: []*cli.Command{
+				{
+					Name:  "url",
+					Usage: "remove an existing template",
+					Flags: []cli.Flag{
+						&cli.StringFlag{
+							Name:     "config",
+							Aliases:  []string{"c"},
+							Required: false,
+						},
 					},
-					URL:           url,
-					ReferenceName: branchRef,
-				})
+					Action: func(ctx *cli.Context) error {
+						cfg := readConfig(ctx)
 
-				gitModel, err := local.NewGitModel(repo)
-				if err != nil {
-					log.Fatalf("Could not create GitModel: %v\n", err)
-				}
+						fmt.Printf("c: %v\n", cfg)
 
-				enrichedModel := enriched.NewEnrichedModel(*gitModel, github.GithubModel{})
-
-				d := detector.NewFeatureBranchDetector()
-				if err := d.Run(enrichedModel); err != nil {
-					log.Fatalf("Failed to run weighted detectors: %v", err)
-				}
-				v, co, t, vs := d.Result()
-
-				fmt.Printf("\n## Detector Type: %T ##\n", d)
-				workflowLog(v, co, t, vs)
-
-				return nil
+						return nil
+					},
+				},
+				{
+					Name:  "local",
+					Usage: "add a new template",
+					Action: func(ctx *cli.Context) error {
+						fmt.Println("new task template: ", ctx.Args().First())
+						return nil
+					},
+				},
+				{
+					Name:  "local-batch",
+					Usage: "batch",
+					Action: func(ctx *cli.Context) error {
+						fmt.Println("new task template: ", ctx.Args().First())
+						return nil
+					},
+				},
 			},
-		},
-		{
-			Name:    "diff-distance",
-			Aliases: []string{"dd"},
-			Usage:   "detect diff distance",
-			// Example: `go-gopher dd https://github.com/Git-Gopher/tests test/two-parents-merged/0`
-			Action: func(c *cli.Context) error {
-				url := c.Args().Get(0)
-				branch := c.Args().Get(1)
+			Action: func(ctx *cli.Context) error {
+				fmt.Println("detect path or url and apply batch, local or url to it")
 
-				if err := godotenv.Load(".env"); err != nil {
-					log.Println("Error loading .env file")
-				}
+				logger, _ := zap.NewProduction()
+				zap.ReplaceGlobals(logger)
 
-				token := os.Getenv("GITHUB_TOKEN")
-
-				var branchRef plumbing.ReferenceName
-				if branch != "" {
-					branchRef = plumbing.NewBranchReferenceName(branch)
-				}
-
-				repo, _ := git.Clone(memory.NewStorage(), nil, &git.CloneOptions{
-					Auth: &http.BasicAuth{
-						Username: "non-empty",
-						Password: token,
-					},
-					URL:           url,
-					ReferenceName: branchRef,
-				})
-
-				gitModel, err := local.NewGitModel(repo)
-				if err != nil {
-					log.Fatalf("Could not create GitModel: %v\n", err)
-				}
-
-				enrichedModel := enriched.NewEnrichedModel(*gitModel, github.GithubModel{})
-
-				d := detector.NewCommitDistanceDetector(detector.DiffDistanceCalculation())
-				if err := d.Run(enrichedModel); err != nil {
-					log.Fatalf("Failed to run weighted detectors: %v", err)
-				}
-				v, co, t, vs := d.Result()
-
-				fmt.Printf("\n## Detector Type: %T ##\n", d)
-				workflowLog(v, co, t, vs)
-
+				defer logger.Sync() // flushes buffer, if any
+				sugar := logger.Sugar()
+				url := "asdf"
+				sugar.Infof("Failed to fetch URL: %s", url)
 				return nil
 			},
 		},
@@ -318,6 +381,10 @@ func main() {
 	if err := app.Run(os.Args); err != nil {
 		log.Fatal(err)
 	}
+}
+
+// Analyze a model
+func analyze() {
 }
 
 // Print violation summary to IO, Split by severity with author association.
@@ -362,4 +429,27 @@ func workflowLog(v, c, t int, vs []violation.Violation) {
 	asd += fmt.Sprintf("count: %d\n", c)
 	asd += fmt.Sprintf("total: %d\n", t)
 	markup.Group("Summary", asd)
+}
+
+// Fetch custom or default config. Fatal on bad custom config.
+func readConfig(ctx *cli.Context) *config.Config {
+	var cfg *config.Config
+	var err error
+
+	// Custom config
+	if ctx.String("config") != "" {
+		cfg, err = config.Read(ctx.String("config"))
+		if err != nil {
+			log.Fatalf("Failed to read custom config: %v", err)
+		}
+	} else
+	// Use default config
+	{
+		cfg, err = config.Default()
+		if err != nil {
+			log.Fatalf("Failed to read default config: %v", err)
+		}
+	}
+
+	return cfg
 }

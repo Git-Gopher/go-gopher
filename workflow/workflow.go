@@ -1,13 +1,28 @@
 package workflow
 
 import (
+	"encoding/csv"
 	"fmt"
 	"log"
+	"os"
+	"path/filepath"
+	"reflect"
 
 	"github.com/Git-Gopher/go-gopher/cache"
+	"github.com/Git-Gopher/go-gopher/config"
 	"github.com/Git-Gopher/go-gopher/detector"
 	"github.com/Git-Gopher/go-gopher/model/enriched"
 	"github.com/Git-Gopher/go-gopher/violation"
+)
+
+var (
+	DefaultCsvPath   = "summary.csv"
+	DetectorRegistry = map[string]detector.Detector{
+		"StaleBranchDetect": detector.NewBranchDetector(detector.StaleBranchDetect()),
+	}
+	CacheDetectorRegistry = map[string]detector.CacheDetector{
+		"ForcePush": detector.NewBranchDetector(detector.StaleBranchDetect()),
+	}
 )
 
 type Workflow struct {
@@ -26,27 +41,12 @@ type WeightedCacheDetector struct {
 	Detector detector.CacheDetector
 }
 
-func GithubFlowWorkflow() *Workflow {
+func GithubFlowWorkflow(cfg *config.Config) *Workflow {
+	comd, cacd := preprocess(cfg)
 	return &Workflow{
-		Name: "Github Flow",
-		WeightedCommitDetectors: []WeightedDetector{
-			{Weight: 1, Detector: detector.NewBranchDetector(detector.StaleBranchDetect())},
-			{Weight: 1, Detector: detector.NewPullRequestDetector(detector.PullRequestApprovalDetector())},
-			{Weight: 1, Detector: detector.NewPullRequestDetector(detector.PullRequestIssueDetector())},
-			{Weight: 1, Detector: detector.NewPullRequestDetector(detector.PullRequestReviewThreadDetector())},
-			{Weight: 1, Detector: detector.NewCommitDetector(detector.DiffMatchesMessageDetect())},
-			{Weight: 1, Detector: detector.NewCommitDetector(detector.ShortCommitMessageDetect())},
-			{Weight: 1, Detector: detector.NewCommitDistanceDetector(detector.DiffDistanceCalculation())},
-			{Weight: 1, Detector: detector.NewBranchCompareDetector(detector.NewBranchNameConsistencyDetect())},
-			{Weight: 1, Detector: detector.NewFeatureBranchDetector()},
-			{Weight: 1, Detector: detector.NewBranchMatrixDetector(detector.NewCrissCrossMergeDetect())},
-			// DISABLED
-			// {Weight: 1, Detector: detector.NewBranchCompareDetector(detector.NewFeatureBranchNameDetect())},
-			// {Weight: 1, Detector: detector.NewCommitDetector(detector.TwoParentsCommitDetect())},
-		},
-		WeightedCacheDetectors: []WeightedCacheDetector{
-			{Weight: 10, Detector: detector.NewCommitCacheDetector(detector.ForcePushDetect())},
-		},
+		Name:                    "Github Flow",
+		WeightedCommitDetectors: comd,
+		WeightedCacheDetectors:  cacd,
 	}
 }
 
@@ -154,4 +154,46 @@ func add(
 	*count += c * weight
 	*total += t * weight
 	*violations = append(*violations, *vs...)
+}
+
+// Summarize the results of the analysis into a csv file.
+func (wk *Workflow) Csv(path string) error {
+	fh, err := os.Create(filepath.Clean(path))
+	if err != nil {
+		return fmt.Errorf("Failed to export workflow to csv file: %w", err)
+	}
+
+	// nolint
+	defer fh.Close()
+	// var rows [][]string
+	// Construct header
+	header := []string{"Repository", "URL"}
+	// var body []string
+	for _, wd := range wk.WeightedCommitDetectors {
+		t := reflect.TypeOf(wd.Detector)
+		header = append(header, t.Elem().Name())
+		// violated, _, _, _ := wd.Detector.Result()
+		// body = append(violated.String())
+	}
+
+	for _, wcd := range wk.WeightedCacheDetectors {
+		t := reflect.TypeOf(wcd.Detector)
+		header = append(header, t.Elem().Name())
+	}
+
+	w := csv.NewWriter(fh)
+	err = w.Write(header)
+
+	fmt.Printf("header: %v\n", header)
+
+	if err != nil {
+		return fmt.Errorf("Failed to write header: %w", err)
+	}
+
+	return nil
+}
+
+// Enable or disable detectors based on config.
+func preprocess(cfg *config.Config) ([]WeightedDetector, []WeightedCacheDetector) {
+	return nil, nil
 }

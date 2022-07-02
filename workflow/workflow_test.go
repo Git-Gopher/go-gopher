@@ -15,7 +15,7 @@ func TestWorkflow(t *testing.T) {
 		wantErr  bool
 		want     bool
 	}{
-		{"Github Flow", GithubFlowWorkflow(), nil, false, true},
+		{"Github Flow", GithubFlowWorkflow(nil), nil, false, true},
 	}
 
 	for _, tc := range tests {
