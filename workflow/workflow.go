@@ -97,7 +97,7 @@ func (w *Workflow) Analyze(model *enriched.EnrichedModel, current *cache.Cache, 
 	add(&violated, &count, &total, &violations, v, c, t, &vs, 1)
 
 	// Only run when we have a cache
-	if current != nil && caches != nil {
+	if current != nil || caches != nil {
 		v, c, t, vs, err = w.RunCacheDetectors(current, caches)
 		if err != nil {
 			return 0, 0, 0, nil, fmt.Errorf("Failed to analyze workflow: %w", err)
@@ -218,11 +218,14 @@ func configureDetectors(cfg *config.Config) ([]WeightedDetector, []WeightedCache
 	var weightedCacheDetectors []WeightedCacheDetector
 
 	for k := range cfg.Detectors {
+		// Check keys match between config and registry.
+		found := false
 		if val, ok := detectorRegistry[k]; ok {
 			weightedCommitDetectors = append(weightedCommitDetectors, WeightedDetector{
 				Detector: val,
 				Weight:   cfg.Detectors[k].Weight,
 			})
+			found = true
 		}
 
 		if val, ok := cacheDetectorRegistry[k]; ok {
@@ -231,13 +234,14 @@ func configureDetectors(cfg *config.Config) ([]WeightedDetector, []WeightedCache
 					Detector: val,
 					Weight:   cfg.Detectors[k].Weight,
 				})
+				found = true
 			}
 		}
 
-	}
+		if !found {
+			log.Printf("Detector \"%s\" from config not found", k)
+		}
 
-	if len(weightedCommitDetectors)+len(weightedCacheDetectors) != len(cfg.Detectors) {
-		log.Println("Some detectors were skipped because they were not found in the registry.")
 	}
 
 	return weightedCommitDetectors, weightedCacheDetectors

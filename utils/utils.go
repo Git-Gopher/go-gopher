@@ -16,7 +16,10 @@ import (
 	giturls "github.com/whilp/git-urls"
 )
 
-var ErrUnsupportedSchema = errors.New("unsupported schema")
+var (
+	ErrUnsupportedSchema = errors.New("unsupported schema")
+	ErrRepo              = errors.New("Repository is nil")
+)
 
 // Load the environment variables from the .env file.
 func Environment(location string) {
@@ -83,4 +86,28 @@ func FetchRepository(t *testing.T, remote, branch string) *git.Repository {
 	}
 
 	return r
+}
+
+// Fetch the Url from the repository remotes.
+// Returns the first remote.
+func Url(repo *git.Repository) (string, error) {
+	if repo == nil {
+		return "", ErrRepo
+	}
+	remotes, err := repo.Remotes()
+	if err != nil {
+		return "", fmt.Errorf("Could not get git repository remotes: %w", err)
+	}
+
+	if len(remotes) == 0 {
+		return "", fmt.Errorf("No remotes present: %w", err)
+	}
+
+	// Use the first remote, assuming it correct.
+	urls := remotes[0].Config().URLs
+	if len(urls) == 0 {
+		return "", fmt.Errorf("No URLs present: %w", err)
+	}
+
+	return urls[0], nil
 }

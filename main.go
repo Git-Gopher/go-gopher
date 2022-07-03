@@ -22,7 +22,6 @@ import (
 	"github.com/go-git/go-git/v5/storage/memory"
 	"github.com/joho/godotenv"
 	"github.com/urfave/cli/v2"
-	"go.uber.org/zap"
 )
 
 //nolint
@@ -35,6 +34,14 @@ func main() {
 			Name:    "action",
 			Aliases: []string{"a"},
 			Usage:   "detect a workflow for current root",
+			Flags: []cli.Flag{
+				&cli.StringFlag{
+					Name:     "logging",
+					Usage:    "enable logging, output to the set file name",
+					Aliases:  []string{"l"},
+					Required: false,
+				},
+			},
 			Action: func(ctx *cli.Context) error {
 				// repository := os.Getenv("GITHUB_REPOSITORY")
 				workspace := os.Getenv("GITHUB_WORKSPACE")
@@ -57,23 +64,11 @@ func main() {
 
 				url := os.Getenv("GITHUB_URL")
 				if url == "" {
-					var remotes []*git.Remote
-					remotes, err = repo.Remotes()
+					url, err = utils.Url(repo)
 					if err != nil {
-						log.Fatalf("Could not get git repository remotes: %v\n", err)
+						log.Fatalf("Could get url from repository: %v\n", err)
 					}
-
-					if len(remotes) == 0 {
-						log.Fatalf("No remotes present: %v\n", err)
-					}
-
-					// XXX: Use the first remote, assuming origin.
-					urls := remotes[0].Config().URLs
-					if len(urls) == 0 {
-						log.Fatalf("No URLs present: %v\n", err)
-					}
-
-					url = urls[0]
+					log.Printf("GITHUB_URL is not set, using fallback url of \"%s\"...\n", url)
 				}
 				owner, name, err := utils.OwnerNameFromUrl(url)
 				if err != nil {
@@ -123,56 +118,6 @@ func main() {
 				markup.Outputs("pr_summary", md.String())
 
 				ghwf.Csv(workflow.DefaultCsvPath)
-
-				return nil
-			},
-		},
-		{
-			Name:    "memory",
-			Aliases: []string{"m"},
-			Usage:   "detect a workflow for a given git project url",
-			Action: func(ctx *cli.Context) error {
-				url := ctx.Args().Get(0)
-
-				repo, err := git.Clone(memory.NewStorage(), nil, &git.CloneOptions{
-					URL: url,
-				})
-				if err != nil {
-					log.Fatalf("Failed to clone repository: %v", err)
-				}
-
-				gitModel, err := local.NewGitModel(repo)
-				if err != nil {
-					log.Fatalf("Could not create GitModel: %v\n", err)
-				}
-
-				owner, name, err := utils.OwnerNameFromUrl(url)
-				if err != nil {
-					log.Fatalf("Could not get owner and name from URL: %v\n", err)
-				}
-
-				githubModel, err := github.ScrapeGithubModel(owner, name)
-				if err != nil {
-					log.Fatalf("Could not scrape GithubModel: %v\n", err)
-				}
-				enrichedModel := enriched.NewEnrichedModel(*gitModel, *githubModel)
-
-				// Cache
-				current := cache.NewCache(enrichedModel)
-				caches, err := cache.ReadCaches()
-				if errors.Is(err, os.ErrNotExist) {
-					log.Printf("Cache file does not exist: %v", err)
-				} else {
-					log.Fatalf("Failed to load caches: %v", err)
-				}
-
-				cfg := readConfig(ctx)
-				ghwf := workflow.GithubFlowWorkflow(cfg)
-				violated, count, total, violations, err := ghwf.Analyze(enrichedModel, current, caches)
-				if err != nil {
-					log.Printf("err: %v\n", err)
-				}
-				workflowLog(violated, count, total, violations)
 
 				return nil
 			},
@@ -287,58 +232,6 @@ func main() {
 			},
 		},
 		{
-			Name:    "local",
-			Aliases: []string{"m"},
-			Usage:   "detect a workflow for a given git project url",
-			// Example: `go-gopher local https://github.com/Git-Gopher/tests test/two-parents-merged/0`
-			Action: func(ctx *cli.Context) error {
-				url := ctx.Args().Get(0)
-				branch := ctx.Args().Get(1)
-
-				if err := godotenv.Load(".env"); err != nil {
-					log.Println("Error loading .env file")
-				}
-
-				token := os.Getenv("GITHUB_TOKEN")
-
-				var branchRef plumbing.ReferenceName
-				if branch != "" {
-					branchRef = plumbing.NewBranchReferenceName(branch)
-				}
-
-				repo, err := git.Clone(memory.NewStorage(), nil, &git.CloneOptions{
-					Auth: &http.BasicAuth{
-						Username: "non-empty",
-						Password: token,
-					},
-					URL:           url,
-					ReferenceName: branchRef,
-				})
-				if err != nil {
-					log.Fatalf("Failed to clone repository: %v", err)
-				}
-
-				gitModel, err := local.NewGitModel(repo)
-				if err != nil {
-					log.Fatalf("Could not create GitModel: %v\n", err)
-				}
-
-				enrichedModel := enriched.NewEnrichedModel(*gitModel, github.GithubModel{})
-
-				for _, detector := range workflow.LocalDetectors() {
-					if err := detector.Run(enrichedModel); err != nil {
-						log.Fatalf("Failed to run weighted detectors: %v", err)
-					}
-					v, c, t, vs := detector.Result()
-
-					fmt.Printf("\n## Detector Type: %T ##\n", detector)
-					workflowLog(v, c, t, vs)
-				}
-
-				return nil
-			},
-		},
-		{
 			Name:  "analyze",
 			Usage: "detect a workflow for current root",
 			Flags: []cli.Flag{
@@ -385,39 +278,64 @@ func main() {
 							log.Fatalf("Could not scrape GithubModel: %v\n", err)
 						}
 						enrichedModel := enriched.NewEnrichedModel(*gitModel, *githubModel)
-						fmt.Printf("enrichedModel: %v\n", enrichedModel)
+
+						// Cache
+						current := cache.NewCache(enrichedModel)
+						caches, err := cache.ReadCaches()
+
+						//nolint
+						if errors.Is(err, os.ErrNotExist) {
+							log.Printf("Cache file does not exist: %v", err)
+							// Write a cache for current so that next run can use it
+							if err = cache.WriteCaches([]*cache.Cache{current}); err != nil {
+								log.Fatalf("Could not write cache: %v\n", err)
+							}
+						} else if err != nil {
+							log.Fatalf("Failed to load caches: %v", err)
+						} else {
+						}
+
+						cfg := readConfig(ctx)
+						ghwf := workflow.GithubFlowWorkflow(cfg)
+						violated, count, total, violations, err := ghwf.Analyze(enrichedModel, current, caches)
+						if err != nil {
+							log.Fatalf("Failed to analyze: %v\n", err)
+						}
+
+						workflowLog(violated, count, total, violations)
 
 						return nil
 					},
 				},
 				{
 					Name:  "local",
-					Usage: "add a new template",
+					Usage: "analyze a local git project directory",
 					Action: func(ctx *cli.Context) error {
-						fmt.Println("new task template: ", ctx.Args().First())
+						path := ctx.Args().Get(0)
+						repo, err := git.PlainOpen(path)
+						if err != nil {
+							log.Fatalf("Failed to clone repository: %v", err)
+						}
+
+						gitModel, err := local.NewGitModel(repo)
+						if err != nil {
+							log.Fatalf("Could not create GitModel: %v\n", err)
+						}
+
+						enrichedModel := enriched.NewEnrichedModel(*gitModel, github.GithubModel{})
+
+						cfg := readConfig(ctx)
+						ghwf := workflow.GithubFlowWorkflow(cfg)
+						v, c, t, vs, err := ghwf.Analyze(enrichedModel, nil, nil)
+						if err != nil {
+							log.Fatalf("Failed to analyze: %v\n", err)
+						}
+
+						workflowLog(v, c, t, vs)
+
 						return nil
 					},
 				},
-				{
-					Name:  "local-batch",
-					Usage: "batch",
-					Action: func(ctx *cli.Context) error {
-						fmt.Println("new task template: ", ctx.Args().First())
-						return nil
-					},
-				},
-			},
-			Action: func(ctx *cli.Context) error {
-				fmt.Println("detect path or url and apply batch, local or url to it")
-
-				logger, _ := zap.NewProduction()
-				zap.ReplaceGlobals(logger)
-
-				defer logger.Sync() // flushes buffer, if any
-				sugar := logger.Sugar()
-				url := "asdf"
-				sugar.Infof("Failed to fetch URL: %s", url)
-				return nil
 			},
 		},
 	}
@@ -425,10 +343,6 @@ func main() {
 	if err := app.Run(os.Args); err != nil {
 		log.Fatal(err)
 	}
-}
-
-// Analyze a model
-func analyze() {
 }
 
 // Print violation summary to IO, Split by severity with author association.
