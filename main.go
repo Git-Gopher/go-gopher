@@ -341,6 +341,7 @@ func main() {
 					Action: func(ctx *cli.Context) error {
 						cfg := readConfig(ctx)
 
+						workflow.GithubFlowWorkflow(cfg)
 						fmt.Printf("c: %v\n", cfg)
 
 						return nil

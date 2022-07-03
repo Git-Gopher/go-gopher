@@ -2,17 +2,16 @@ package config
 
 import (
 	_ "embed"
+	"encoding/json"
 	"fmt"
 	"os"
 	"path/filepath"
-
-	"gopkg.in/yaml.v3"
 )
 
 var (
-	DefaultConfigPath = "config.yml"
+	DefaultConfigPath = "config.json"
 
-	//go:embed config.yml
+	//go:embed config.json
 	defaultConfig []byte
 )
 
@@ -32,7 +31,7 @@ func Read(path string) (*Config, error) {
 
 	t := Config{}
 
-	if err = yaml.Unmarshal(data, &t); err != nil {
+	if err = json.Unmarshal(data, &t); err != nil {
 		return nil, fmt.Errorf("Failed to parse config file: %v", err)
 	}
 
@@ -42,7 +41,7 @@ func Read(path string) (*Config, error) {
 // Read a default config from embedded default config.
 func Default() (*Config, error) {
 	t := Config{}
-	if err := yaml.Unmarshal(defaultConfig, &t); err != nil {
+	if err := json.Unmarshal(defaultConfig, &t); err != nil {
 		return nil, fmt.Errorf("Failed to parse embedded config file: %w", err)
 	}
 

@@ -1,4 +1,0 @@
-detectors:
-  ShortCommitMessageDetect:
-    enabled: true
-    weight: 1

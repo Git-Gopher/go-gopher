@@ -15,13 +15,26 @@ import (
 	"github.com/Git-Gopher/go-gopher/violation"
 )
 
+// XXX: This is a hack to get the name of the detector.
+// This should really be done using reflect so that you don't
+// have to think about changing this part of the code whenever you
+// change the name of a detector, making this rather brittle.
 var (
 	DefaultCsvPath   = "summary.csv"
 	DetectorRegistry = map[string]detector.Detector{
-		"StaleBranchDetect": detector.NewBranchDetector(detector.StaleBranchDetect()),
+		"StaleBranchDetect":               detector.NewBranchDetector(detector.StaleBranchDetect()),
+		"PullRequestApprovalDetector":     detector.NewPullRequestDetector(detector.PullRequestApprovalDetector()),
+		"PullRequestIssueDetector":        detector.NewPullRequestDetector(detector.PullRequestIssueDetector()),
+		"PullRequestReviewThreadDetector": detector.NewPullRequestDetector(detector.PullRequestReviewThreadDetector()),
+		"DiffMatchesMessageDetect":        detector.NewCommitDetector(detector.DiffMatchesMessageDetect()),
+		"ShortCommitMessageDetect":        detector.NewCommitDetector(detector.ShortCommitMessageDetect()),
+		"DiffDistanceCalculation":         detector.NewCommitDistanceDetector(detector.DiffDistanceCalculation()),
+		"NewBranchNameConsistencyDetect":  detector.NewBranchCompareDetector(detector.NewBranchNameConsistencyDetect()),
+		"NewFeatureBranchDetector":        detector.NewFeatureBranchDetector(),
+		"NewCrissCrossMergeDetect":        detector.NewBranchMatrixDetector(detector.NewCrissCrossMergeDetect()),
 	}
 	CacheDetectorRegistry = map[string]detector.CacheDetector{
-		"ForcePush": detector.NewBranchDetector(detector.StaleBranchDetect()),
+		"ForcePushDetect": detector.NewCommitCacheDetector(detector.ForcePushDetect()),
 	}
 )
 
@@ -42,7 +55,7 @@ type WeightedCacheDetector struct {
 }
 
 func GithubFlowWorkflow(cfg *config.Config) *Workflow {
-	comd, cacd := preprocess(cfg)
+	comd, cacd := configureDetectors(cfg)
 	return &Workflow{
 		Name:                    "Github Flow",
 		WeightedCommitDetectors: comd,
@@ -194,6 +207,32 @@ func (wk *Workflow) Csv(path string) error {
 }
 
 // Enable or disable detectors based on config.
-func preprocess(cfg *config.Config) ([]WeightedDetector, []WeightedCacheDetector) {
-	return nil, nil
+func configureDetectors(cfg *config.Config) ([]WeightedDetector, []WeightedCacheDetector) {
+	var weightedCommitDetectors []WeightedDetector
+	var weightedCacheDetectors []WeightedCacheDetector
+
+	for k := range cfg.Detectors {
+		if val, ok := DetectorRegistry[k]; ok {
+			weightedCommitDetectors = append(weightedCommitDetectors, WeightedDetector{
+				Detector: val,
+				Weight:   cfg.Detectors[k].Weight,
+			})
+		} else {
+			log.Printf("Detector named %s from config not found", k)
+		}
+
+		if val, ok := CacheDetectorRegistry[k]; ok {
+			if cfg.Detectors[k].Enabled {
+				weightedCacheDetectors = append(weightedCacheDetectors, WeightedCacheDetector{
+					Detector: val,
+					Weight:   cfg.Detectors[k].Weight,
+				})
+			}
+		} else {
+			log.Printf("Detector named %s from config not found", k)
+		}
+
+	}
+
+	return weightedCommitDetectors, weightedCacheDetectors
 }
