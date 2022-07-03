@@ -21,7 +21,7 @@ import (
 // change the name of a detector, making this rather brittle.
 var (
 	DefaultCsvPath   = "summary.csv"
-	DetectorRegistry = map[string]detector.Detector{
+	detectorRegistry = map[string]detector.Detector{
 		"StaleBranchDetect":               detector.NewBranchDetector(detector.StaleBranchDetect()),
 		"PullRequestApprovalDetector":     detector.NewPullRequestDetector(detector.PullRequestApprovalDetector()),
 		"PullRequestIssueDetector":        detector.NewPullRequestDetector(detector.PullRequestIssueDetector()),
@@ -32,8 +32,12 @@ var (
 		"NewBranchNameConsistencyDetect":  detector.NewBranchCompareDetector(detector.NewBranchNameConsistencyDetect()),
 		"NewFeatureBranchDetector":        detector.NewFeatureBranchDetector(),
 		"NewCrissCrossMergeDetect":        detector.NewBranchMatrixDetector(detector.NewCrissCrossMergeDetect()),
+
+		// Disabled
+		// "NewFeatureBranchNameDetect": detector.NewBranchCompareDetector(detector.NewFeatureBranchNameDetect()),
+		// "TwoParentsCommitDetect":     detector.NewCommitDetector(detector.TwoParentsCommitDetect()),
 	}
-	CacheDetectorRegistry = map[string]detector.CacheDetector{
+	cacheDetectorRegistry = map[string]detector.CacheDetector{
 		"ForcePushDetect": detector.NewCommitCacheDetector(detector.ForcePushDetect()),
 	}
 )
@@ -55,14 +59,16 @@ type WeightedCacheDetector struct {
 }
 
 func GithubFlowWorkflow(cfg *config.Config) *Workflow {
-	comd, cacd := configureDetectors(cfg)
+	weightedCommitDetectors, weightedCacheDetectors := configureDetectors(cfg)
+
 	return &Workflow{
 		Name:                    "Github Flow",
-		WeightedCommitDetectors: comd,
-		WeightedCacheDetectors:  cacd,
+		WeightedCommitDetectors: weightedCommitDetectors,
+		WeightedCacheDetectors:  weightedCacheDetectors,
 	}
 }
 
+// TODO: Remove this & use the config file instead. But it's currently useful for testing probably.
 // LocalDetectors are detectors that can run locally without GitHub API calls.
 func LocalDetectors() []detector.Detector {
 	return []detector.Detector{
@@ -212,26 +218,26 @@ func configureDetectors(cfg *config.Config) ([]WeightedDetector, []WeightedCache
 	var weightedCacheDetectors []WeightedCacheDetector
 
 	for k := range cfg.Detectors {
-		if val, ok := DetectorRegistry[k]; ok {
+		if val, ok := detectorRegistry[k]; ok {
 			weightedCommitDetectors = append(weightedCommitDetectors, WeightedDetector{
 				Detector: val,
 				Weight:   cfg.Detectors[k].Weight,
 			})
-		} else {
-			log.Printf("Detector named %s from config not found", k)
 		}
 
-		if val, ok := CacheDetectorRegistry[k]; ok {
+		if val, ok := cacheDetectorRegistry[k]; ok {
 			if cfg.Detectors[k].Enabled {
 				weightedCacheDetectors = append(weightedCacheDetectors, WeightedCacheDetector{
 					Detector: val,
 					Weight:   cfg.Detectors[k].Weight,
 				})
 			}
-		} else {
-			log.Printf("Detector named %s from config not found", k)
 		}
 
+	}
+
+	if len(weightedCommitDetectors)+len(weightedCacheDetectors) != len(cfg.Detectors) {
+		log.Println("Some detectors were skipped because they were not found in the registry.")
 	}
 
 	return weightedCommitDetectors, weightedCacheDetectors

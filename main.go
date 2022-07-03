@@ -103,7 +103,8 @@ func main() {
 				} else {
 				}
 
-				ghwf := workflow.GithubFlowWorkflow(nil)
+				cfg := readConfig(ctx)
+				ghwf := workflow.GithubFlowWorkflow(cfg)
 				violated, count, total, violations, err := ghwf.Analyze(enrichedModel, current, caches)
 				if err != nil {
 					log.Fatalf("Failed to analyze: %v\n", err)
@@ -133,9 +134,12 @@ func main() {
 			Action: func(ctx *cli.Context) error {
 				url := ctx.Args().Get(0)
 
-				repo, _ := git.Clone(memory.NewStorage(), nil, &git.CloneOptions{
+				repo, err := git.Clone(memory.NewStorage(), nil, &git.CloneOptions{
 					URL: url,
 				})
+				if err != nil {
+					log.Fatalf("Failed to clone repository: %v", err)
+				}
 
 				gitModel, err := local.NewGitModel(repo)
 				if err != nil {
@@ -162,7 +166,8 @@ func main() {
 					log.Fatalf("Failed to load caches: %v", err)
 				}
 
-				ghwf := workflow.GithubFlowWorkflow(nil)
+				cfg := readConfig(ctx)
+				ghwf := workflow.GithubFlowWorkflow(cfg)
 				violated, count, total, violations, err := ghwf.Analyze(enrichedModel, current, caches)
 				if err != nil {
 					log.Printf("err: %v\n", err)
@@ -197,7 +202,7 @@ func main() {
 							branchRef = plumbing.NewBranchReferenceName(branch)
 						}
 
-						repo, _ := git.Clone(memory.NewStorage(), nil, &git.CloneOptions{
+						repo, err := git.Clone(memory.NewStorage(), nil, &git.CloneOptions{
 							Auth: &http.BasicAuth{
 								Username: "non-empty",
 								Password: token,
@@ -205,6 +210,9 @@ func main() {
 							URL:           url,
 							ReferenceName: branchRef,
 						})
+						if err != nil {
+							log.Fatalf("Failed to clone repository: %v", err)
+						}
 
 						gitModel, err := local.NewGitModel(repo)
 						if err != nil {
@@ -245,7 +253,7 @@ func main() {
 							branchRef = plumbing.NewBranchReferenceName(branch)
 						}
 
-						repo, _ := git.Clone(memory.NewStorage(), nil, &git.CloneOptions{
+						repo, err := git.Clone(memory.NewStorage(), nil, &git.CloneOptions{
 							Auth: &http.BasicAuth{
 								Username: "non-empty",
 								Password: token,
@@ -253,6 +261,9 @@ func main() {
 							URL:           url,
 							ReferenceName: branchRef,
 						})
+						if err != nil {
+							log.Fatalf("Failed to clone repository: %v", err)
+						}
 
 						gitModel, err := local.NewGitModel(repo)
 						if err != nil {
@@ -295,7 +306,7 @@ func main() {
 					branchRef = plumbing.NewBranchReferenceName(branch)
 				}
 
-				repo, _ := git.Clone(memory.NewStorage(), nil, &git.CloneOptions{
+				repo, err := git.Clone(memory.NewStorage(), nil, &git.CloneOptions{
 					Auth: &http.BasicAuth{
 						Username: "non-empty",
 						Password: token,
@@ -303,6 +314,9 @@ func main() {
 					URL:           url,
 					ReferenceName: branchRef,
 				})
+				if err != nil {
+					log.Fatalf("Failed to clone repository: %v", err)
+				}
 
 				gitModel, err := local.NewGitModel(repo)
 				if err != nil {
@@ -327,22 +341,51 @@ func main() {
 		{
 			Name:  "analyze",
 			Usage: "detect a workflow for current root",
+			Flags: []cli.Flag{
+				&cli.StringFlag{
+					Name:     "config",
+					Usage:    "path to configuation file",
+					Aliases:  []string{"c"},
+					Required: false,
+				},
+				&cli.StringFlag{
+					Name:     "logging",
+					Usage:    "enable logging, output to the set file name",
+					Aliases:  []string{"l"},
+					Required: false,
+				},
+			},
+
 			Subcommands: []*cli.Command{
 				{
 					Name:  "url",
 					Usage: "remove an existing template",
-					Flags: []cli.Flag{
-						&cli.StringFlag{
-							Name:     "config",
-							Aliases:  []string{"c"},
-							Required: false,
-						},
-					},
 					Action: func(ctx *cli.Context) error {
-						cfg := readConfig(ctx)
+						url := ctx.Args().Get(0)
 
-						workflow.GithubFlowWorkflow(cfg)
-						fmt.Printf("c: %v\n", cfg)
+						repo, err := git.Clone(memory.NewStorage(), nil, &git.CloneOptions{
+							URL: url,
+						})
+						if err != nil {
+							log.Fatalf("Failed to clone repository: %v", err)
+						}
+
+						gitModel, err := local.NewGitModel(repo)
+						if err != nil {
+							log.Fatalf("Could not create GitModel: %v\n", err)
+						}
+
+						owner, name, err := utils.OwnerNameFromUrl(url)
+						if err != nil {
+							log.Fatalf("Could not get owner and name from URL: %v\n", err)
+						}
+
+						githubModel, err := github.ScrapeGithubModel(owner, name)
+						if err != nil {
+							log.Fatalf("Could not scrape GithubModel: %v\n", err)
+						}
+						enrichedModel := enriched.NewEnrichedModel(*gitModel, *githubModel)
+						fmt.Printf("enrichedModel: %v\n", enrichedModel)
 
 						return nil
 					},
@@ -453,4 +496,7 @@ func readConfig(ctx *cli.Context) *config.Config {
 	}
 
 	return cfg
+}
+
+func logging(ctx *cli.Context) {
 }

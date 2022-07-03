@@ -9,7 +9,6 @@ import (
 	"golang.org/x/oauth2"
 )
 
-// nolint: gochecknoglobals
 var githubQuerySize = 100
 
 type Scraper struct {
