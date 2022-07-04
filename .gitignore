@@ -6,6 +6,7 @@
 # whitelist yml
 **/*.[yml, yaml]
 !/.github/**/*.[yml, yaml]
+!/golangci.[yml, yaml]
 
 # binaries
 /go-gopher
