@@ -241,7 +241,7 @@ func main() {
 					Aliases:  []string{"c"},
 					Required: false,
 				},
-				&cli.StringFlag{
+				&cli.BoolFlag{
 					Name:     "logging",
 					Usage:    "enable logging, output to the set file name",
 					Aliases:  []string{"l"},
@@ -252,7 +252,7 @@ func main() {
 			Subcommands: []*cli.Command{
 				{
 					Name:  "url",
-					Usage: "remove an existing template",
+					Usage: "analyze github project url",
 					Action: func(ctx *cli.Context) error {
 						url := ctx.Args().Get(0)
 
@@ -322,7 +322,22 @@ func main() {
 							log.Fatalf("Could not create GitModel: %v\n", err)
 						}
 
-						enrichedModel := enriched.NewEnrichedModel(*gitModel, github.GithubModel{})
+						url, err := utils.Url(repo)
+						if err != nil {
+							log.Fatalf("Could get url from repository: \"%v\", does it have any remotes?", err)
+						}
+
+						owner, name, err := utils.OwnerNameFromUrl(url)
+						if err != nil {
+							log.Fatalf("Could get the owner and name from URL: %v", err)
+						}
+
+						githubModel, err := github.ScrapeGithubModel(owner, name)
+						if err != nil {
+							log.Fatalf("Could not create GithubModel: %v\n", err)
+						}
+
+						enrichedModel := enriched.NewEnrichedModel(*gitModel, *githubModel)
 
 						cfg := readConfig(ctx)
 						ghwf := workflow.GithubFlowWorkflow(cfg)
@@ -333,6 +348,16 @@ func main() {
 
 						workflowLog(v, c, t, vs)
 
+						return nil
+					},
+				},
+				{
+					Name:    "batch",
+					Aliases: []string{"b"},
+					Usage:   "batch analyze a series of local projects",
+					Action: func(ctx *cli.Context) error {
+						// TODO: Finish this.
+						fmt.Println("batch")
 						return nil
 					},
 				},
@@ -412,5 +437,8 @@ func readConfig(ctx *cli.Context) *config.Config {
 	return cfg
 }
 
-func logging(ctx *cli.Context) {
+// TODO: This in another PR.
+func logging(ctx *cli.Context, w *workflow.Workflow) {
+	if ctx.Bool("logging") {
+	}
 }
