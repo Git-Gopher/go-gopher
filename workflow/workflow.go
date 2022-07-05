@@ -7,6 +7,7 @@ import (
 	"os"
 	"path/filepath"
 	"reflect"
+	"strconv"
 
 	"github.com/Git-Gopher/go-gopher/cache"
 	"github.com/Git-Gopher/go-gopher/config"
@@ -176,7 +177,7 @@ func add(
 }
 
 // Summarize the results of the analysis into a csv file.
-func (wk *Workflow) Csv(path string) error {
+func (wk *Workflow) Csv(path, name, url string) error {
 	fh, err := os.Create(filepath.Clean(path))
 	if err != nil {
 		return fmt.Errorf("Failed to export workflow to csv file: %w", err)
@@ -187,26 +188,39 @@ func (wk *Workflow) Csv(path string) error {
 	// var rows [][]string
 	// Construct header
 	header := []string{"Repository", "URL"}
-	// var body []string
+	var body []string
+	body = append(body, name, url)
 	for _, wd := range wk.WeightedCommitDetectors {
 		t := reflect.TypeOf(wd.Detector)
 		header = append(header, t.Elem().Name())
-		// violated, _, _, _ := wd.Detector.Result()
-		// body = append(violated.String())
+		violated, _, _, _ := wd.Detector.Result()
+		body = append(body, strconv.Itoa(violated))
 	}
 
 	for _, wcd := range wk.WeightedCacheDetectors {
 		t := reflect.TypeOf(wcd.Detector)
 		header = append(header, t.Elem().Name())
+		violated, _, _, _ := wcd.Detector.Result()
+		body = append(body, strconv.Itoa(violated))
 	}
 
 	w := csv.NewWriter(fh)
 	err = w.Write(header)
+	if err != nil {
+		return fmt.Errorf("could not write to csv file: %w", err)
+	}
+
+	err = w.Write(body)
+	if err != nil {
+		return fmt.Errorf("could not write to csv file: %w", err)
+	}
+	w.Flush()
 
 	fmt.Printf("header: %v\n", header)
+	fmt.Printf("body: %v\n", header)
 
 	if err != nil {
-		return fmt.Errorf("Failed to write header: %w", err)
+		return fmt.Errorf("failed to write header: %w", err)
 	}
 
 	return nil

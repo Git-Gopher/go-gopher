@@ -117,7 +117,7 @@ func main() {
 
 				markup.Outputs("pr_summary", md.String())
 
-				ghwf.Csv(workflow.DefaultCsvPath)
+				ghwf.Csv(workflow.DefaultCsvPath, enrichedModel.Name, enrichedModel.URL)
 
 				return nil
 			},
@@ -247,6 +247,11 @@ func main() {
 					Aliases:  []string{"l"},
 					Required: false,
 				},
+				&cli.BoolFlag{
+					Name:     "csv",
+					Usage:    "csv summary of the workflow run",
+					Required: false,
+				},
 			},
 
 			Subcommands: []*cli.Command{
@@ -304,6 +309,7 @@ func main() {
 
 						workflowLog(violated, count, total, violations)
 
+						ghwf.Csv(workflow.DefaultCsvPath, enrichedModel.Name, enrichedModel.URL)
 						return nil
 					},
 				},
@@ -347,6 +353,7 @@ func main() {
 						}
 
 						workflowLog(v, c, t, vs)
+						ghwf.Csv(workflow.DefaultCsvPath, enrichedModel.Name, enrichedModel.URL)
 
 						return nil
 					},
@@ -437,8 +444,8 @@ func readConfig(ctx *cli.Context) *config.Config {
 	return cfg
 }
 
-// TODO: This in another PR.
-func logging(ctx *cli.Context, w *workflow.Workflow) {
-	if ctx.Bool("logging") {
+func csv(ctx *cli.Context, w *workflow.Workflow, name string, url string) {
+	if ctx.Bool("csv") {
+		w.Csv(workflow.DefaultCsvPath, name, url)
 	}
 }

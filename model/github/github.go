@@ -47,6 +47,9 @@ type PullRequest struct {
 }
 
 type GithubModel struct {
+	Owner        string
+	Name         string
+	URL          string
 	Author       *Author
 	PullRequests []*PullRequest
 	Issues       []*Issue
@@ -68,11 +71,19 @@ func ScrapeGithubModel(owner, name string) (*GithubModel, error) {
 		return nil, fmt.Errorf("Failed to fetch issues for GitHub model: %w", err)
 	}
 
-	thing := GithubModel{
+	url, err := s.FetchURL(owner, name)
+	if err != nil {
+		return nil, fmt.Errorf("Failed to fetch URL for GitHub model: %w", err)
+	}
+
+	ghm := GithubModel{
+		Owner:        owner,
+		Name:         name,
+		URL:          url,
 		Author:       nil,
 		PullRequests: prs,
 		Issues:       issues,
 	}
 
-	return &thing, nil
+	return &ghm, nil
 }

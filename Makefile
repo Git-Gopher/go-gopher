@@ -5,7 +5,6 @@ run: build
 .PHONY: build
 build:
 	go build -v ./
-	go build -v -o server ./server/ 
 
 
 .PHONY: lint
