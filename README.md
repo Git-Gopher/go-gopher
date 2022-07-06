@@ -2,18 +2,13 @@
 
 go-gopher is a git workflow analysis tool to check cohesion to popular git workflows
 
-## Applications
-
-| Binary     | Description                                |
-| ---------- | ------------------------------------------ |
-| go-gopher | git workflow analysis tool                 |
-| server     | simple http fileserver to host action logs |
-
 ## Running
 
 1. Ensure that the project [environment](#environment) file is filled out
 2. Run `make` in the root of the project directory to create the `go-gopher` binary
-3. Run the binary `./go-gopher analyze`
+3. Run the binary `./go-gopher --help` to display help.
+
+A good starting point is to navigate to a git project and run `./go-gopher analyze local ./ --csv`
 
 ## Environment
 

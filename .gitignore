@@ -2,12 +2,4 @@
 **/cache.json
 **/__debug_bin
 **/*.csv
-
-# whitelist yml
-**/*.[yml, yaml]
-!/.github/**/*.[yml, yaml]
-!/golangci.[yml, yaml]
-
-# binaries
 /go-gopher
-/server/server

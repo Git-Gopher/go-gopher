@@ -3,8 +3,10 @@ package main
 import (
 	"errors"
 	"fmt"
+	"io/fs"
 	"log"
 	"os"
+	"path/filepath"
 
 	"github.com/Git-Gopher/go-gopher/cache"
 	"github.com/Git-Gopher/go-gopher/config"
@@ -361,10 +363,30 @@ func main() {
 				{
 					Name:    "batch",
 					Aliases: []string{"b"},
-					Usage:   "batch analyze a series of local projects",
+					Usage:   "batch analyze a series of local git projects",
 					Action: func(ctx *cli.Context) error {
-						// TODO: Finish this.
-						fmt.Println("batch")
+
+						path := ctx.Args().Get(0)
+						if path == "" {
+							path = "./"
+							log.Printf("No path provided, using current directory (\"%s\") as target path", path)
+
+						}
+
+						var ps []string
+						filepath.Walk(path, func(path string, info fs.FileInfo, err error) error {
+
+							if info.IsDir() && info.Name() == ".git" {
+								ps = append(ps, filepath.Dir(path))
+								return filepath.SkipDir
+							}
+
+							return nil
+						})
+						if len(ps) == 0 {
+							log.Fatalf("Could not detect any git repositories within the directiory: \"%s\"", path)
+
+						}
 						return nil
 					},
 				},
