@@ -13,6 +13,7 @@ import (
 	"github.com/Git-Gopher/go-gopher/config"
 	"github.com/Git-Gopher/go-gopher/detector"
 	"github.com/Git-Gopher/go-gopher/model/enriched"
+	"github.com/Git-Gopher/go-gopher/utils"
 	"github.com/Git-Gopher/go-gopher/violation"
 )
 
@@ -178,51 +179,67 @@ func add(
 
 // Summarize the results of the analysis into a csv file.
 func (wk *Workflow) Csv(path, name, url string) error {
-	fh, err := os.Create(filepath.Clean(path))
+	exists, err := utils.Exists(path)
+	var fh *os.File
+	var w *csv.Writer
+	defer fh.Close()
 	if err != nil {
-		return fmt.Errorf("Failed to export workflow to csv file: %w", err)
+		return fmt.Errorf("Unable to check if CSV exists: %v", err)
+	}
+	// Create file and header
+	if !exists {
+		fh, err = os.Create(filepath.Clean(path))
+		w = csv.NewWriter(fh)
+		if err != nil {
+			return fmt.Errorf("Failed to create csv file: %w", err)
+		}
+		header := []string{"Repository", "URL"}
+
+		// Add detector names to header.
+		for _, wd := range wk.WeightedCommitDetectors {
+			t := reflect.TypeOf(wd.Detector)
+			header = append(header, t.Elem().Name())
+		}
+
+		for _, wcd := range wk.WeightedCacheDetectors {
+			t := reflect.TypeOf(wcd.Detector)
+			header = append(header, t.Elem().Name())
+		}
+
+		err = w.Write(header)
+		if err != nil {
+			return fmt.Errorf("Could not write header to csv file: %w", err)
+		}
+	} else {
+		fh, err = os.Open(filepath.Clean(path))
+		if err != nil {
+			return fmt.Errorf("Failed to open csv file: %w", err)
+		}
+		w = csv.NewWriter(fh)
 	}
 
-	// nolint
-	defer fh.Close()
-	// var rows [][]string
-	// Construct header
-	header := []string{"Repository", "URL"}
 	var body []string
 	body = append(body, name, url)
+
 	for _, wd := range wk.WeightedCommitDetectors {
-		t := reflect.TypeOf(wd.Detector)
-		header = append(header, t.Elem().Name())
 		violated, _, _, _ := wd.Detector.Result()
 		body = append(body, strconv.Itoa(violated))
 	}
 
 	for _, wcd := range wk.WeightedCacheDetectors {
-		t := reflect.TypeOf(wcd.Detector)
-		header = append(header, t.Elem().Name())
 		violated, _, _, _ := wcd.Detector.Result()
 		body = append(body, strconv.Itoa(violated))
 	}
 
-	w := csv.NewWriter(fh)
-	err = w.Write(header)
-	if err != nil {
-		return fmt.Errorf("could not write to csv file: %w", err)
-	}
-
 	err = w.Write(body)
 	if err != nil {
-		return fmt.Errorf("could not write to csv file: %w", err)
+		return fmt.Errorf("Could not write body to csv file: %w", err)
 	}
+
 	w.Flush()
-
-	fmt.Printf("header: %v\n", header)
-	fmt.Printf("body: %v\n", header)
-
-	if err != nil {
-		return fmt.Errorf("failed to write header: %w", err)
+	if w.Error() != nil {
+		log.Fatal(w.Error().Error())
 	}
-
 	return nil
 }
 

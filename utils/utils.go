@@ -57,6 +57,9 @@ func OwnerNameFromUrl(rawUrl string) (string, string, error) {
 		return "", "", fmt.Errorf("%w: %v", ErrUnsupportedSchema, url.Scheme)
 	}
 
+	// XXX: Hack to remove .git from url
+	name = strings.Replace(name, ".git", "", -1)
+
 	return owner, name, nil
 }
 
@@ -110,4 +113,16 @@ func Url(repo *git.Repository) (string, error) {
 	}
 
 	return urls[0], nil
+}
+
+// Check if a given filepath exists.
+func Exists(name string) (bool, error) {
+	_, err := os.Stat(name)
+	if err == nil {
+		return true, nil
+	}
+	if errors.Is(err, os.ErrNotExist) {
+		return false, nil
+	}
+	return false, err
 }

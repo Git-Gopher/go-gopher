@@ -387,6 +387,50 @@ func main() {
 							log.Fatalf("Could not detect any git repositories within the directiory: \"%s\"", path)
 
 						}
+
+						cfg := readConfig(ctx)
+						ghwf := workflow.GithubFlowWorkflow(cfg)
+
+						for _, p := range ps {
+							repo, err := git.PlainOpen(p)
+							if err != nil {
+								log.Fatalf("Failed to clone repository: %v", err)
+							}
+
+							gitModel, err := local.NewGitModel(repo)
+							if err != nil {
+								log.Fatalf("Could not create GitModel: %v\n", err)
+							}
+
+							url, err := utils.Url(repo)
+							if err != nil {
+								log.Fatalf("Could get url from repository: \"%v\", does it have any remotes?", err)
+							}
+
+							owner, name, err := utils.OwnerNameFromUrl(url)
+							fmt.Printf("owner: %v\n", owner)
+							fmt.Printf("name: %v\n", name)
+							if err != nil {
+								log.Fatalf("Could get the owner and name from URL: %v", err)
+							}
+
+							githubModel, err := github.ScrapeGithubModel(owner, name)
+							if err != nil {
+								log.Fatalf("Could not create GithubModel: %v\n", err)
+							}
+
+							enrichedModel := enriched.NewEnrichedModel(*gitModel, *githubModel)
+
+							v, c, t, vs, err := ghwf.Analyze(enrichedModel, nil, nil)
+							if err != nil {
+								log.Fatalf("Failed to analyze: %v\n", err)
+							}
+
+							workflowLog(v, c, t, vs)
+							nameCsv := fmt.Sprintf("batch-%s.csv", filepath.Base(path))
+							ghwf.Csv(nameCsv, enrichedModel.Name, enrichedModel.URL)
+
+						}
 						return nil
 					},
 				},
