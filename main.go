@@ -119,7 +119,10 @@ func main() {
 
 				markup.Outputs("pr_summary", md.String())
 
-				ghwf.Csv(workflow.DefaultCsvPath, enrichedModel.Name, enrichedModel.URL)
+				err = ghwf.Csv(workflow.DefaultCsvPath, enrichedModel.Name, enrichedModel.URL)
+				if err != nil {
+					log.Fatalf("Could not create csv summary: %v", err)
+				}
 
 				return nil
 			},
@@ -311,7 +314,10 @@ func main() {
 
 						workflowLog(violated, count, total, violations)
 
-						ghwf.Csv(workflow.DefaultCsvPath, enrichedModel.Name, enrichedModel.URL)
+						err = ghwf.Csv(workflow.DefaultCsvPath, enrichedModel.Name, enrichedModel.URL)
+						if err != nil {
+							log.Fatalf("Could not create csv summary: %v", err)
+						}
 						return nil
 					},
 				},
@@ -355,7 +361,10 @@ func main() {
 						}
 
 						workflowLog(v, c, t, vs)
-						ghwf.Csv(workflow.DefaultCsvPath, enrichedModel.Name, enrichedModel.URL)
+						err = ghwf.Csv(workflow.DefaultCsvPath, enrichedModel.Name, enrichedModel.URL)
+						if err != nil {
+							log.Fatalf("Could not create csv summary: %v", err)
+						}
 
 						return nil
 					},
@@ -408,8 +417,6 @@ func main() {
 							}
 
 							owner, name, err := utils.OwnerNameFromUrl(url)
-							fmt.Printf("owner: %v\n", owner)
-							fmt.Printf("name: %v\n", name)
 							if err != nil {
 								log.Fatalf("Could get the owner and name from URL: %v", err)
 							}
@@ -428,7 +435,10 @@ func main() {
 
 							workflowLog(v, c, t, vs)
 							nameCsv := fmt.Sprintf("batch-%s.csv", filepath.Base(path))
-							ghwf.Csv(nameCsv, enrichedModel.Name, enrichedModel.URL)
+							err = ghwf.Csv(nameCsv, enrichedModel.Name, enrichedModel.URL)
+							if err != nil {
+								log.Fatalf("Could not create csv summary: %v", err)
+							}
 
 						}
 						return nil
@@ -445,46 +455,46 @@ func main() {
 
 // Print violation summary to IO, Split by severity with author association.
 func workflowLog(v, c, t int, vs []violation.Violation) {
-	var violations, suggestions []violation.Violation
-	for _, v := range vs {
-		switch v.Severity() {
-		case violation.Violated:
-			violations = append(violations, v)
-		case violation.Suggestion:
-			suggestions = append(suggestions, v)
-		}
-	}
+	// var violations, suggestions []violation.Violation
+	// for _, v := range vs {
+	// 	switch v.Severity() {
+	// 	case violation.Violated:
+	// 		violations = append(violations, v)
+	// 	case violation.Suggestion:
+	// 		suggestions = append(suggestions, v)
+	// 	}
+	// }
 
-	var vsd string
-	for _, v := range violations {
-		vsd += v.Display()
-	}
-	markup.Group("Violations", vsd)
+	// var vsd string
+	// for _, v := range violations {
+	// 	vsd += v.Display()
+	// }
+	// markup.Group("Violations", vsd)
 
-	var ssd string
-	for _, v := range suggestions {
-		ssd += v.Display()
-	}
-	markup.Group("Suggestions", ssd)
+	// var ssd string
+	// for _, v := range suggestions {
+	// 	ssd += v.Display()
+	// }
+	// markup.Group("Suggestions", ssd)
 
-	var asd string
-	authors := make(map[string]int)
-	for _, v := range vs {
-		a, err := v.Author()
-		if err != nil {
-			continue
-		}
-		authors[a.Login]++
-	}
+	// var asd string
+	// authors := make(map[string]int)
+	// for _, v := range vs {
+	// 	a, err := v.Author()
+	// 	if err != nil {
+	// 		continue
+	// 	}
+	// 	authors[a.Login]++
+	// }
 
-	for author, count := range authors {
-		asd += fmt.Sprintf("%s: %d\n", author, count)
-	}
+	// for author, count := range authors {
+	// 	asd += fmt.Sprintf("%s: %d\n", author, count)
+	// }
 
-	asd += fmt.Sprintf("violated: %d\n", v)
-	asd += fmt.Sprintf("count: %d\n", c)
-	asd += fmt.Sprintf("total: %d\n", t)
-	markup.Group("Summary", asd)
+	// asd += fmt.Sprintf("violated: %d\n", v)
+	// asd += fmt.Sprintf("count: %d\n", c)
+	// asd += fmt.Sprintf("total: %d\n", t)
+	// markup.Group("Summary", asd)
 }
 
 // Fetch custom or default config. Fatal on bad custom config.
@@ -510,8 +520,10 @@ func readConfig(ctx *cli.Context) *config.Config {
 	return cfg
 }
 
-func csv(ctx *cli.Context, w *workflow.Workflow, name string, url string) {
+func csv(ctx *cli.Context, w *workflow.Workflow, name string, url string) error {
 	if ctx.Bool("csv") {
-		w.Csv(workflow.DefaultCsvPath, name, url)
+		return w.Csv(workflow.DefaultCsvPath, name, url)
 	}
+
+	return nil
 }

@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"log"
 	"os"
-	"path/filepath"
 	"reflect"
 	"strconv"
 
@@ -180,19 +179,16 @@ func add(
 // Summarize the results of the analysis into a csv file.
 func (wk *Workflow) Csv(path, name, url string) error {
 	exists, err := utils.Exists(path)
-	var fh *os.File
-	var w *csv.Writer
-	defer fh.Close()
+	fh, err := os.OpenFile(path, os.O_WRONLY|os.O_CREATE|os.O_APPEND, 0644)
+
 	if err != nil {
-		return fmt.Errorf("Unable to check if CSV exists: %v", err)
+		return fmt.Errorf("Failed to create csv file: %w", err)
 	}
+	w := csv.NewWriter(fh)
+	defer fh.Close()
+
 	// Create file and header
 	if !exists {
-		fh, err = os.Create(filepath.Clean(path))
-		w = csv.NewWriter(fh)
-		if err != nil {
-			return fmt.Errorf("Failed to create csv file: %w", err)
-		}
 		header := []string{"Repository", "URL"}
 
 		// Add detector names to header.
@@ -207,15 +203,10 @@ func (wk *Workflow) Csv(path, name, url string) error {
 		}
 
 		err = w.Write(header)
+		w.Flush()
 		if err != nil {
 			return fmt.Errorf("Could not write header to csv file: %w", err)
 		}
-	} else {
-		fh, err = os.Open(filepath.Clean(path))
-		if err != nil {
-			return fmt.Errorf("Failed to open csv file: %w", err)
-		}
-		w = csv.NewWriter(fh)
 	}
 
 	var body []string
@@ -233,13 +224,10 @@ func (wk *Workflow) Csv(path, name, url string) error {
 
 	err = w.Write(body)
 	if err != nil {
-		return fmt.Errorf("Could not write body to csv file: %w", err)
+		return fmt.Errorf("could not write body to csv file: %w", err)
 	}
 
 	w.Flush()
-	if w.Error() != nil {
-		log.Fatal(w.Error().Error())
-	}
 	return nil
 }
 
