@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"path/filepath"
 	"reflect"
 	"strconv"
 
@@ -179,12 +180,18 @@ func add(
 // Summarize the results of the analysis into a csv file.
 func (wk *Workflow) Csv(path, name, url string) error {
 	exists, err := utils.Exists(path)
-	fh, err := os.OpenFile(path, os.O_WRONLY|os.O_CREATE|os.O_APPEND, 0644)
+	if err != nil {
+		return fmt.Errorf("Could not check if file exists: %w'", err)
+	}
 
+	var fh *os.File
+	fh, err = os.OpenFile(filepath.Clean(path), os.O_WRONLY|os.O_CREATE|os.O_APPEND, 0o644)
 	if err != nil {
 		return fmt.Errorf("Failed to create csv file: %w", err)
 	}
+
 	w := csv.NewWriter(fh)
+	// nolint: errcheck, gosec
 	defer fh.Close()
 
 	// Create file and header
@@ -209,6 +216,8 @@ func (wk *Workflow) Csv(path, name, url string) error {
 		}
 	}
 
+	// XXX: Body will likely change later with beyond length of headers, so don't alloc.
+	// nolint: prealloc
 	var body []string
 	body = append(body, name, url)
 
@@ -228,6 +237,7 @@ func (wk *Workflow) Csv(path, name, url string) error {
 	}
 
 	w.Flush()
+
 	return nil
 }
 
@@ -260,7 +270,6 @@ func configureDetectors(cfg *config.Config) ([]WeightedDetector, []WeightedCache
 		if !found {
 			log.Printf("Detector \"%s\" from config not found", k)
 		}
-
 	}
 
 	return weightedCommitDetectors, weightedCacheDetectors

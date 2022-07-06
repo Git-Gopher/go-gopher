@@ -26,13 +26,13 @@ type Config struct {
 func Read(path string) (*Config, error) {
 	data, err := os.ReadFile(filepath.Clean(path))
 	if err != nil {
-		return nil, fmt.Errorf("Failed to read config file: %v", err)
+		return nil, fmt.Errorf("Failed to read config file: %w", err)
 	}
 
 	t := Config{}
 
 	if err = json.Unmarshal(data, &t); err != nil {
-		return nil, fmt.Errorf("Failed to parse config file: %v", err)
+		return nil, fmt.Errorf("Failed to parse config file: %w", err)
 	}
 
 	return &t, nil

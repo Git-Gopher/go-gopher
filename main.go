@@ -314,9 +314,11 @@ func main() {
 
 						workflowLog(violated, count, total, violations)
 
-						err = ghwf.Csv(workflow.DefaultCsvPath, enrichedModel.Name, enrichedModel.URL)
-						if err != nil {
-							log.Fatalf("Could not create csv summary: %v", err)
+						if ctx.Bool("csv") {
+							err = ghwf.Csv(workflow.DefaultCsvPath, enrichedModel.Name, enrichedModel.URL)
+							if err != nil {
+								log.Fatalf("Could not create csv summary: %v", err)
+							}
 						}
 						return nil
 					},
@@ -361,9 +363,11 @@ func main() {
 						}
 
 						workflowLog(v, c, t, vs)
-						err = ghwf.Csv(workflow.DefaultCsvPath, enrichedModel.Name, enrichedModel.URL)
-						if err != nil {
-							log.Fatalf("Could not create csv summary: %v", err)
+						if ctx.Bool("csv") {
+							err = ghwf.Csv(workflow.DefaultCsvPath, enrichedModel.Name, enrichedModel.URL)
+							if err != nil {
+								log.Fatalf("Could not create csv summary: %v", err)
+							}
 						}
 
 						return nil
@@ -374,7 +378,6 @@ func main() {
 					Aliases: []string{"b"},
 					Usage:   "batch analyze a series of local git projects",
 					Action: func(ctx *cli.Context) error {
-
 						path := ctx.Args().Get(0)
 						if path == "" {
 							path = "./"
@@ -384,7 +387,6 @@ func main() {
 
 						var ps []string
 						filepath.Walk(path, func(path string, info fs.FileInfo, err error) error {
-
 							if info.IsDir() && info.Name() == ".git" {
 								ps = append(ps, filepath.Dir(path))
 								return filepath.SkipDir
@@ -394,7 +396,6 @@ func main() {
 						})
 						if len(ps) == 0 {
 							log.Fatalf("Could not detect any git repositories within the directiory: \"%s\"", path)
-
 						}
 
 						cfg := readConfig(ctx)
@@ -435,11 +436,12 @@ func main() {
 
 							workflowLog(v, c, t, vs)
 							nameCsv := fmt.Sprintf("batch-%s.csv", filepath.Base(path))
-							err = ghwf.Csv(nameCsv, enrichedModel.Name, enrichedModel.URL)
-							if err != nil {
-								log.Fatalf("Could not create csv summary: %v", err)
+							if ctx.Bool("csv") {
+								err = ghwf.Csv(nameCsv, enrichedModel.Name, enrichedModel.URL)
+								if err != nil {
+									log.Fatalf("Could not create csv summary: %v", err)
+								}
 							}
-
 						}
 						return nil
 					},
@@ -518,12 +520,4 @@ func readConfig(ctx *cli.Context) *config.Config {
 	}
 
 	return cfg
-}
-
-func csv(ctx *cli.Context, w *workflow.Workflow, name string, url string) error {
-	if ctx.Bool("csv") {
-		return w.Csv(workflow.DefaultCsvPath, name, url)
-	}
-
-	return nil
 }

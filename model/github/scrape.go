@@ -300,7 +300,7 @@ func (s *Scraper) FetchIssues(owner, name string) ([]*Issue, error) {
 	return all, nil
 }
 
-// Fetch all pull requests associated with the repository
+// Fetch all pull requests associated with the repository.
 func (s *Scraper) FetchPullRequests(owner, name string) ([]*PullRequest, error) {
 	var q struct {
 		Repository struct {

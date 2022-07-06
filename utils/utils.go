@@ -58,7 +58,7 @@ func OwnerNameFromUrl(rawUrl string) (string, string, error) {
 	}
 
 	// XXX: Hack to remove .git from url
-	name = strings.Replace(name, ".git", "", -1)
+	name = strings.ReplaceAll(name, ".git", "")
 
 	return owner, name, nil
 }
@@ -124,5 +124,6 @@ func Exists(name string) (bool, error) {
 	if errors.Is(err, os.ErrNotExist) {
 		return false, nil
 	}
-	return false, err
+
+	return false, fmt.Errorf("Could not check file exists status: %w", err)
 }
