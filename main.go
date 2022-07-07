@@ -4,7 +4,9 @@ import (
 	"errors"
 	"fmt"
 	"io/fs"
+	"io/ioutil"
 	"log"
+	"net/http"
 	"os"
 	"path/filepath"
 
@@ -20,7 +22,7 @@ import (
 	"github.com/Git-Gopher/go-gopher/workflow"
 	"github.com/go-git/go-git/v5"
 	"github.com/go-git/go-git/v5/plumbing"
-	"github.com/go-git/go-git/v5/plumbing/transport/http"
+	githttp "github.com/go-git/go-git/v5/plumbing/transport/http"
 	"github.com/go-git/go-git/v5/storage/memory"
 	"github.com/joho/godotenv"
 	"github.com/urfave/cli/v2"
@@ -133,6 +135,26 @@ func main() {
 			Usage:   "debug/development subcommands",
 			Subcommands: []*cli.Command{
 				{
+					Name:  "download",
+					Usage: "Download logs from workflow runs",
+					Action: func(ctx *cli.Context) error {
+						response, err := http.Get("http://pokeapi.co/api/v2/pokedex/kanto/")
+
+						if err != nil {
+							fmt.Print(err.Error())
+							os.Exit(1)
+						}
+
+						responseData, err := ioutil.ReadAll(response.Body)
+						if err != nil {
+							log.Fatal(err)
+						}
+						fmt.Println(string(responseData))
+
+						return nil
+					},
+				},
+				{
 					Name:    "feature",
 					Aliases: []string{"feat", "features"},
 					Usage:   "detect a feature branching",
@@ -153,7 +175,7 @@ func main() {
 						}
 
 						repo, err := git.Clone(memory.NewStorage(), nil, &git.CloneOptions{
-							Auth: &http.BasicAuth{
+							Auth: &githttp.BasicAuth{
 								Username: "non-empty",
 								Password: token,
 							},
@@ -204,7 +226,7 @@ func main() {
 						}
 
 						repo, err := git.Clone(memory.NewStorage(), nil, &git.CloneOptions{
-							Auth: &http.BasicAuth{
+							Auth: &githttp.BasicAuth{
 								Username: "non-empty",
 								Password: token,
 							},
