@@ -185,6 +185,7 @@ func (wk *Workflow) Csv(path, name, url string) error {
 	}
 
 	var fh *os.File
+	// nolint: gosec
 	fh, err = os.OpenFile(filepath.Clean(path), os.O_WRONLY|os.O_CREATE|os.O_APPEND, 0o644)
 	if err != nil {
 		return fmt.Errorf("Failed to create csv file: %w", err)

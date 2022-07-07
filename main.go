@@ -246,6 +246,7 @@ func main() {
 					Aliases:  []string{"c"},
 					Required: false,
 				},
+				// TODO: Complete this feature
 				&cli.BoolFlag{
 					Name:     "logging",
 					Usage:    "enable logging, output to the set file name",
@@ -377,6 +378,13 @@ func main() {
 					Name:    "batch",
 					Aliases: []string{"b"},
 					Usage:   "batch analyze a series of local git projects",
+					Flags: []cli.Flag{
+						&cli.BoolFlag{
+							Name:     "csv",
+							Usage:    "csv summary of the workflow run",
+							Required: false,
+						},
+					},
 					Action: func(ctx *cli.Context) error {
 						path := ctx.Args().Get(0)
 						if path == "" {
@@ -457,46 +465,46 @@ func main() {
 
 // Print violation summary to IO, Split by severity with author association.
 func workflowLog(v, c, t int, vs []violation.Violation) {
-	// var violations, suggestions []violation.Violation
-	// for _, v := range vs {
-	// 	switch v.Severity() {
-	// 	case violation.Violated:
-	// 		violations = append(violations, v)
-	// 	case violation.Suggestion:
-	// 		suggestions = append(suggestions, v)
-	// 	}
-	// }
+	var violations, suggestions []violation.Violation
+	for _, v := range vs {
+		switch v.Severity() {
+		case violation.Violated:
+			violations = append(violations, v)
+		case violation.Suggestion:
+			suggestions = append(suggestions, v)
+		}
+	}
 
-	// var vsd string
-	// for _, v := range violations {
-	// 	vsd += v.Display()
-	// }
-	// markup.Group("Violations", vsd)
+	var vsd string
+	for _, v := range violations {
+		vsd += v.Display()
+	}
+	markup.Group("Violations", vsd)
 
-	// var ssd string
-	// for _, v := range suggestions {
-	// 	ssd += v.Display()
-	// }
-	// markup.Group("Suggestions", ssd)
+	var ssd string
+	for _, v := range suggestions {
+		ssd += v.Display()
+	}
+	markup.Group("Suggestions", ssd)
 
-	// var asd string
-	// authors := make(map[string]int)
-	// for _, v := range vs {
-	// 	a, err := v.Author()
-	// 	if err != nil {
-	// 		continue
-	// 	}
-	// 	authors[a.Login]++
-	// }
+	var asd string
+	authors := make(map[string]int)
+	for _, v := range vs {
+		a, err := v.Author()
+		if err != nil {
+			continue
+		}
+		authors[a.Login]++
+	}
 
-	// for author, count := range authors {
-	// 	asd += fmt.Sprintf("%s: %d\n", author, count)
-	// }
+	for author, count := range authors {
+		asd += fmt.Sprintf("%s: %d\n", author, count)
+	}
 
-	// asd += fmt.Sprintf("violated: %d\n", v)
-	// asd += fmt.Sprintf("count: %d\n", c)
-	// asd += fmt.Sprintf("total: %d\n", t)
-	// markup.Group("Summary", asd)
+	asd += fmt.Sprintf("violated: %d\n", v)
+	asd += fmt.Sprintf("count: %d\n", c)
+	asd += fmt.Sprintf("total: %d\n", t)
+	markup.Group("Summary", asd)
 }
 
 // Fetch custom or default config. Fatal on bad custom config.
