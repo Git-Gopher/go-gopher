@@ -42,7 +42,6 @@ linters:
     - exportloopref # checks for pointers to enclosing loop variables
     - forcetypeassert # finds forced type assertions
     - gci # Gci control golang package import order and make it always deterministic.
-    - gochecknoglobals # Checks that no globals are present in Go code
     - gochecknoinits # Checks that no init functions are present in Go code
     - gocognit # Computes and checks the cognitive complexity of functions
     - goconst # Finds repeated strings that could be replaced by a constant
@@ -111,6 +110,7 @@ linters:
     - cyclop # checks function and package cyclomatic complexity
     # TODO: I understand the irony in this comment. These should be warnings so that they still show up
     - godox # Tool for detection of FIXME, TODO and other comment keywords
+    - gochecknoglobals # Checks that no globals are present in Go code
 
 issues:
   exclude-use-default: false

@@ -1,13 +1,47 @@
 package workflow
 
 import (
+	"encoding/csv"
 	"fmt"
 	"log"
+	"os"
+	"path/filepath"
+	"reflect"
+	"strconv"
 
 	"github.com/Git-Gopher/go-gopher/cache"
+	"github.com/Git-Gopher/go-gopher/config"
 	"github.com/Git-Gopher/go-gopher/detector"
 	"github.com/Git-Gopher/go-gopher/model/enriched"
+	"github.com/Git-Gopher/go-gopher/utils"
 	"github.com/Git-Gopher/go-gopher/violation"
+)
+
+// XXX: This is a hack to get the name of the detector.
+// This should really be done using reflect so that you don't
+// have to think about changing this part of the code whenever you
+// change the name of a detector, making this rather brittle.
+var (
+	DefaultCsvPath   = "summary.csv"
+	detectorRegistry = map[string]detector.Detector{
+		"StaleBranchDetect":               detector.NewBranchDetector(detector.StaleBranchDetect()),
+		"PullRequestApprovalDetector":     detector.NewPullRequestDetector(detector.PullRequestApprovalDetector()),
+		"PullRequestIssueDetector":        detector.NewPullRequestDetector(detector.PullRequestIssueDetector()),
+		"PullRequestReviewThreadDetector": detector.NewPullRequestDetector(detector.PullRequestReviewThreadDetector()),
+		"DiffMatchesMessageDetect":        detector.NewCommitDetector(detector.DiffMatchesMessageDetect()),
+		"ShortCommitMessageDetect":        detector.NewCommitDetector(detector.ShortCommitMessageDetect()),
+		"DiffDistanceCalculation":         detector.NewCommitDistanceDetector(detector.DiffDistanceCalculation()),
+		"NewBranchNameConsistencyDetect":  detector.NewBranchCompareDetector(detector.NewBranchNameConsistencyDetect()),
+		"NewFeatureBranchDetector":        detector.NewFeatureBranchDetector(),
+		"NewCrissCrossMergeDetect":        detector.NewBranchMatrixDetector(detector.NewCrissCrossMergeDetect()),
+
+		// Disabled
+		// "NewFeatureBranchNameDetect": detector.NewBranchCompareDetector(detector.NewFeatureBranchNameDetect()),
+		// "TwoParentsCommitDetect":     detector.NewCommitDetector(detector.TwoParentsCommitDetect()),
+	}
+	cacheDetectorRegistry = map[string]detector.CacheDetector{
+		"ForcePushDetect": detector.NewCommitCacheDetector(detector.ForcePushDetect()),
+	}
 )
 
 type Workflow struct {
@@ -26,30 +60,17 @@ type WeightedCacheDetector struct {
 	Detector detector.CacheDetector
 }
 
-func GithubFlowWorkflow() *Workflow {
+func GithubFlowWorkflow(cfg *config.Config) *Workflow {
+	weightedCommitDetectors, weightedCacheDetectors := configureDetectors(cfg)
+
 	return &Workflow{
-		Name: "Github Flow",
-		WeightedCommitDetectors: []WeightedDetector{
-			{Weight: 1, Detector: detector.NewBranchDetector(detector.StaleBranchDetect())},
-			{Weight: 1, Detector: detector.NewPullRequestDetector(detector.PullRequestApprovalDetector())},
-			{Weight: 1, Detector: detector.NewPullRequestDetector(detector.PullRequestIssueDetector())},
-			{Weight: 1, Detector: detector.NewPullRequestDetector(detector.PullRequestReviewThreadDetector())},
-			{Weight: 1, Detector: detector.NewCommitDetector(detector.DiffMatchesMessageDetect())},
-			{Weight: 1, Detector: detector.NewCommitDetector(detector.ShortCommitMessageDetect())},
-			{Weight: 1, Detector: detector.NewCommitDistanceDetector(detector.DiffDistanceCalculation())},
-			{Weight: 1, Detector: detector.NewBranchCompareDetector(detector.NewBranchNameConsistencyDetect())},
-			{Weight: 1, Detector: detector.NewFeatureBranchDetector()},
-			{Weight: 1, Detector: detector.NewBranchMatrixDetector(detector.NewCrissCrossMergeDetect())},
-			// DISABLED
-			// {Weight: 1, Detector: detector.NewBranchCompareDetector(detector.NewFeatureBranchNameDetect())},
-			// {Weight: 1, Detector: detector.NewCommitDetector(detector.TwoParentsCommitDetect())},
-		},
-		WeightedCacheDetectors: []WeightedCacheDetector{
-			{Weight: 10, Detector: detector.NewCommitCacheDetector(detector.ForcePushDetect())},
-		},
+		Name:                    "Github Flow",
+		WeightedCommitDetectors: weightedCommitDetectors,
+		WeightedCacheDetectors:  weightedCacheDetectors,
 	}
 }
 
+// TODO: Remove this & use the config file instead. But it's currently useful for testing probably.
 // LocalDetectors are detectors that can run locally without GitHub API calls.
 func LocalDetectors() []detector.Detector {
 	return []detector.Detector{
@@ -78,7 +99,7 @@ func (w *Workflow) Analyze(model *enriched.EnrichedModel, current *cache.Cache, 
 	add(&violated, &count, &total, &violations, v, c, t, &vs, 1)
 
 	// Only run when we have a cache
-	if current != nil && caches != nil {
+	if current != nil || caches != nil {
 		v, c, t, vs, err = w.RunCacheDetectors(current, caches)
 		if err != nil {
 			return 0, 0, 0, nil, fmt.Errorf("Failed to analyze workflow: %w", err)
@@ -154,4 +175,103 @@ func add(
 	*count += c * weight
 	*total += t * weight
 	*violations = append(*violations, *vs...)
+}
+
+// Summarize the results of the analysis into a csv file.
+func (wk *Workflow) Csv(path, name, url string) error {
+	exists, err := utils.Exists(path)
+	if err != nil {
+		return fmt.Errorf("Could not check if file exists: %w'", err)
+	}
+
+	var fh *os.File
+	// nolint: gosec
+	fh, err = os.OpenFile(filepath.Clean(path), os.O_WRONLY|os.O_CREATE|os.O_APPEND, 0o644)
+	if err != nil {
+		return fmt.Errorf("Failed to create csv file: %w", err)
+	}
+
+	w := csv.NewWriter(fh)
+	// nolint: errcheck, gosec
+	defer fh.Close()
+
+	// Create file and header
+	if !exists {
+		header := []string{"Repository", "URL"}
+
+		// Add detector names to header.
+		for _, wd := range wk.WeightedCommitDetectors {
+			t := reflect.TypeOf(wd.Detector)
+			header = append(header, t.Elem().Name())
+		}
+
+		for _, wcd := range wk.WeightedCacheDetectors {
+			t := reflect.TypeOf(wcd.Detector)
+			header = append(header, t.Elem().Name())
+		}
+
+		err = w.Write(header)
+		w.Flush()
+		if err != nil {
+			return fmt.Errorf("Could not write header to csv file: %w", err)
+		}
+	}
+
+	// XXX: Body will likely change later with beyond length of headers, so don't alloc.
+	// nolint: prealloc
+	var body []string
+	body = append(body, name, url)
+
+	for _, wd := range wk.WeightedCommitDetectors {
+		violated, _, _, _ := wd.Detector.Result()
+		body = append(body, strconv.Itoa(violated))
+	}
+
+	for _, wcd := range wk.WeightedCacheDetectors {
+		violated, _, _, _ := wcd.Detector.Result()
+		body = append(body, strconv.Itoa(violated))
+	}
+
+	err = w.Write(body)
+	if err != nil {
+		return fmt.Errorf("could not write body to csv file: %w", err)
+	}
+
+	w.Flush()
+
+	return nil
+}
+
+// Enable or disable detectors based on config.
+func configureDetectors(cfg *config.Config) ([]WeightedDetector, []WeightedCacheDetector) {
+	var weightedCommitDetectors []WeightedDetector
+	var weightedCacheDetectors []WeightedCacheDetector
+
+	for k := range cfg.Detectors {
+		// Check keys match between config and registry.
+		found := false
+		if val, ok := detectorRegistry[k]; ok {
+			weightedCommitDetectors = append(weightedCommitDetectors, WeightedDetector{
+				Detector: val,
+				Weight:   cfg.Detectors[k].Weight,
+			})
+			found = true
+		}
+
+		if val, ok := cacheDetectorRegistry[k]; ok {
+			if cfg.Detectors[k].Enabled {
+				weightedCacheDetectors = append(weightedCacheDetectors, WeightedCacheDetector{
+					Detector: val,
+					Weight:   cfg.Detectors[k].Weight,
+				})
+				found = true
+			}
+		}
+
+		if !found {
+			log.Printf("Detector \"%s\" from config not found", k)
+		}
+	}
+
+	return weightedCommitDetectors, weightedCacheDetectors
 }

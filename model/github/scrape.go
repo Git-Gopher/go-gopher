@@ -9,7 +9,6 @@ import (
 	"golang.org/x/oauth2"
 )
 
-// nolint: gochecknoglobals
 var githubQuerySize = 100
 
 type Scraper struct {
@@ -301,6 +300,7 @@ func (s *Scraper) FetchIssues(owner, name string) ([]*Issue, error) {
 	return all, nil
 }
 
+// Fetch all pull requests associated with the repository.
 func (s *Scraper) FetchPullRequests(owner, name string) ([]*PullRequest, error) {
 	var q struct {
 		Repository struct {
@@ -463,4 +463,25 @@ func (s *Scraper) FetchPullRequests(owner, name string) ([]*PullRequest, error) 
 	}
 
 	return all, nil
+}
+
+// Fetch basic information that doesn't require pagnation (url).
+// Although this can be constructed from the owner and name I would rather fetch it.
+func (s *Scraper) FetchURL(owner, name string) (string, error) {
+	var q struct {
+		Repository struct {
+			Url string
+		} `graphql:"repository(owner: $owner, name: $name)"`
+	}
+
+	variables := map[string]interface{}{
+		"owner": githubv4.String(owner),
+		"name":  githubv4.String(name),
+	}
+
+	if err := s.Client.Query(context.Background(), &q, variables); err != nil {
+		return "", fmt.Errorf("Failed to fetch pull requests: %w", err)
+	}
+
+	return q.Repository.Url, nil
 }

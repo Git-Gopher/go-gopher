@@ -7,6 +7,9 @@ import (
 
 type EnrichedModel struct {
 	// local.GitModel
+	Owner        string
+	Name         string
+	URL          string
 	Commits      []local.Commit
 	Branches     []local.Branch
 	MainGraph    *local.BranchGraph    // Graph representation of commits in the main branch
@@ -29,5 +32,8 @@ func NewEnrichedModel(local local.GitModel, github github.GithubModel) *Enriched
 		// github.GithubModel
 		PullRequests: github.PullRequests,
 		Issues:       github.Issues,
+		Owner:        github.Owner,
+		Name:         github.Name,
+		URL:          github.URL,
 	}
 }

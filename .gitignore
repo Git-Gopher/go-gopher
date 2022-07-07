@@ -1,4 +1,5 @@
-/go-gopher
 /.env
 **/cache.json
 **/__debug_bin
+**/*.csv
+/go-gopher
