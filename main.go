@@ -107,7 +107,7 @@ func main() {
 					log.Fatalf("Failed to analyze: %v\n", err)
 				}
 
-				workflowLog(violated, count, total, violations)
+				workflowSummary(violated, count, total, violations)
 
 				// Set action outputs to a markdown summary.
 				md := markup.NewMarkdown()
@@ -178,7 +178,7 @@ func main() {
 						v, co, t, vs := d.Result()
 
 						fmt.Printf("\n## Detector Type: %T ##\n", d)
-						workflowLog(v, co, t, vs)
+						workflowSummary(v, co, t, vs)
 
 						return nil
 					},
@@ -229,7 +229,7 @@ func main() {
 						v, co, t, vs := d.Result()
 
 						fmt.Printf("\n## Detector Type: %T ##\n", d)
-						workflowLog(v, co, t, vs)
+						workflowSummary(v, co, t, vs)
 
 						return nil
 					},
@@ -313,7 +313,7 @@ func main() {
 							log.Fatalf("Failed to analyze: %v\n", err)
 						}
 
-						workflowLog(violated, count, total, violations)
+						workflowSummary(violated, count, total, violations)
 
 						if ctx.Bool("csv") {
 							err = ghwf.Csv(workflow.DefaultCsvPath, enrichedModel.Name, enrichedModel.URL)
@@ -363,7 +363,7 @@ func main() {
 							log.Fatalf("Failed to analyze: %v\n", err)
 						}
 
-						workflowLog(v, c, t, vs)
+						workflowSummary(v, c, t, vs)
 						if ctx.Bool("csv") {
 							err = ghwf.Csv(workflow.DefaultCsvPath, enrichedModel.Name, enrichedModel.URL)
 							if err != nil {
@@ -382,6 +382,12 @@ func main() {
 						&cli.BoolFlag{
 							Name:     "csv",
 							Usage:    "csv summary of the workflow run",
+							Required: false,
+						},
+						&cli.BoolFlag{
+							Name:     "logging",
+							Aliases:  []string{"l"},
+							Usage:    "json log of the workflow run",
 							Required: false,
 						},
 					},
@@ -442,12 +448,19 @@ func main() {
 								log.Fatalf("Failed to analyze: %v\n", err)
 							}
 
-							workflowLog(v, c, t, vs)
+							workflowSummary(v, c, t, vs)
 							nameCsv := fmt.Sprintf("batch-%s.csv", filepath.Base(path))
 							if ctx.Bool("csv") {
 								err = ghwf.Csv(nameCsv, enrichedModel.Name, enrichedModel.URL)
 								if err != nil {
 									log.Fatalf("Could not create csv summary: %v", err)
+								}
+							}
+
+							if ctx.Bool("csv") {
+								err = ghwf.WriteLog(*enrichedModel)
+								if err != nil {
+									log.Fatalf("Could not write json log: %v", err)
 								}
 							}
 						}
@@ -464,7 +477,7 @@ func main() {
 }
 
 // Print violation summary to IO, Split by severity with author association.
-func workflowLog(v, c, t int, vs []violation.Violation) {
+func workflowSummary(v, c, t int, vs []violation.Violation) {
 	var violations, suggestions []violation.Violation
 	for _, v := range vs {
 		switch v.Severity() {

@@ -2,12 +2,15 @@ package workflow
 
 import (
 	"encoding/csv"
+	"encoding/json"
 	"fmt"
+	"io/ioutil"
 	"log"
 	"os"
 	"path/filepath"
 	"reflect"
 	"strconv"
+	"time"
 
 	"github.com/Git-Gopher/go-gopher/cache"
 	"github.com/Git-Gopher/go-gopher/config"
@@ -45,19 +48,22 @@ var (
 )
 
 type Workflow struct {
-	Name                    string
-	WeightedCommitDetectors []WeightedDetector
-	WeightedCacheDetectors  []WeightedCacheDetector
+	Name                    string                  `json:"Name"`
+	WeightedCommitDetectors []WeightedDetector      `json:"WeightedCommitDetectors"`
+	WeightedCacheDetectors  []WeightedCacheDetector `json:"WeightedCacheDetectors"`
+	Violations              []violation.Violation
+	Count                   int
+	Total                   int
 }
 
 type WeightedDetector struct {
-	Weight   int
-	Detector detector.Detector
+	Weight   int               `json:Weight`
+	Detector detector.Detector `json:"Detector"`
 }
 
 type WeightedCacheDetector struct {
-	Weight   int
-	Detector detector.CacheDetector
+	Weight   int                    `json:Weight`
+	Detector detector.CacheDetector `json:"Detector"`
 }
 
 func GithubFlowWorkflow(cfg *config.Config) *Workflow {
@@ -109,7 +115,18 @@ func (w *Workflow) Analyze(model *enriched.EnrichedModel, current *cache.Cache, 
 		log.Println("No cache loaded, skipping cache detectors")
 	}
 
+	w.Violations = violations
+	w.Count = count
+	w.Total = total
+
 	return violated, count, total, violations, nil
+}
+
+func (w *Workflow) Result() (
+	count,
+	total int,
+	violations []violation.Violation) {
+	return w.Count, w.Total, w.Violations
 }
 
 func (w *Workflow) RunWeightedDetectors(model *enriched.EnrichedModel) (
@@ -274,4 +291,29 @@ func configureDetectors(cfg *config.Config) ([]WeightedDetector, []WeightedCache
 	}
 
 	return weightedCommitDetectors, weightedCacheDetectors
+}
+
+// Write a JSON log of the workflow run. Assumes that the workflow is in a state that it has run to create a meaningful log.
+func (w *Workflow) WriteLog(em enriched.EnrichedModel) error {
+	type Log struct {
+		Date     time.Time `json:"Date"`
+		Workflow Workflow  `json:"Workflow"`
+	}
+
+	log := Log{
+		Date:     time.Now(),
+		Workflow: *w,
+	}
+
+	bytes, err := json.MarshalIndent(log, "", "")
+	if err != nil {
+		return fmt.Errorf("Failed to marshal workflow log: %w", err)
+	}
+
+	path := fmt.Sprintf("log-%s-%s.json", em.Name, time.Now().UTC())
+	if err := ioutil.WriteFile(filepath.Clean(path), bytes, 0o600); err != nil {
+		return fmt.Errorf("Error writing log to file: %w", err)
+	}
+
+	return nil
 }
