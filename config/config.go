@@ -8,12 +8,10 @@ import (
 	"path/filepath"
 )
 
-var (
-	DefaultConfigPath = "config.json"
+const DefaultConfigPath = "config.json"
 
-	//go:embed config.json
-	defaultConfig []byte
-)
+//go:embed config.json
+var defaultConfig []byte
 
 // Config for enabling and disabling detectors.
 type Config struct {
