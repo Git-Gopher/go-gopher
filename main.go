@@ -39,7 +39,7 @@ func main() {
 			Aliases: []string{"a"},
 			Usage:   "detect a workflow for current root",
 			Flags: []cli.Flag{
-				&cli.StringFlag{
+				&cli.BoolFlag{
 					Name:     "logging",
 					Usage:    "enable logging, output to the set file name",
 					Aliases:  []string{"l"},
@@ -126,6 +126,13 @@ func main() {
 					log.Fatalf("Could not create csv summary: %v", err)
 				}
 
+				if ctx.Bool("logging") {
+					err = ghwf.WriteLog(*enrichedModel)
+					if err != nil {
+						log.Fatalf("Could not write json log: %v", err)
+					}
+				}
+
 				return nil
 			},
 		},
@@ -136,13 +143,16 @@ func main() {
 			Subcommands: []*cli.Command{
 				{
 					Name:  "download",
-					Usage: "Download logs from workflow runs",
+					Usage: "Download artifact logs from workflow runs for a batch of repositories",
 					Action: func(ctx *cli.Context) error {
-						response, err := http.Get("http://pokeapi.co/api/v2/pokedex/kanto/")
+						owner := ctx.Args().Get(0)
+						repo := ctx.Args().Get(1)
+						list := fmt.Sprintf("https://api.github.com/repos/%s/%s/actions/artifacts", owner, repo)
+						// endpoint := fmt.Sprintf("https://api.github.com/repos/%s/%s/actions/artifacts/%s", owner, repo, artifactId)
+						response, err := http.Get(list)
 
 						if err != nil {
-							fmt.Print(err.Error())
-							os.Exit(1)
+							log.Fatal(err)
 						}
 
 						responseData, err := ioutil.ReadAll(response.Body)
@@ -479,7 +489,7 @@ func main() {
 								}
 							}
 
-							if ctx.Bool("csv") {
+							if ctx.Bool("logging") {
 								err = ghwf.WriteLog(*enrichedModel)
 								if err != nil {
 									log.Fatalf("Could not write json log: %v", err)
