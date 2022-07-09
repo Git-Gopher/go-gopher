@@ -29,8 +29,8 @@ jobs:
         uses: marocchino/sticky-pull-request-comment@v2
         with:
           message: "${{ steps.git-gopher.outputs.pr_summary }}"
-      - name: Artifact log
+      - name: Artifact Log
         uses: actions/upload-artifact@v3
         with:
-          name: log
+          name: log.json
           path: log-**.json
