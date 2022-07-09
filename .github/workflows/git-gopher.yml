@@ -32,5 +32,4 @@ jobs:
       - name: Artifact Log
         uses: actions/upload-artifact@v3
         with:
-          name: log.json
           path: log-**.json
