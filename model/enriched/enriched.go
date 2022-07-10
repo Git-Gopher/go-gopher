@@ -66,7 +66,7 @@ func PopulateAuthors(enriched *EnrichedModel, manualUsers ...struct{ email, logi
 		}
 
 		// Login is not always available.
-		if committer.Login != "" {
+		if committer.Login == "" {
 			unavailableMap[committer.Email] = struct{}{}
 
 			continue
