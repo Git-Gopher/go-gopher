@@ -84,6 +84,9 @@ func main() {
 
 				enrichedModel := enriched.NewEnrichedModel(*gitModel, *githubModel)
 
+				// Authors
+				authors := enriched.PopulateAuthors(enrichedModel)
+
 				// Cache
 				current := cache.NewCache(enrichedModel)
 				caches, err := cache.ReadCaches()
@@ -97,17 +100,16 @@ func main() {
 					}
 				} else if err != nil {
 					log.Fatalf("Failed to load caches: %v", err)
-				} else {
 				}
 
 				cfg := readConfig(ctx)
 				ghwf := workflow.GithubFlowWorkflow(cfg)
-				violated, count, total, violations, err := ghwf.Analyze(enrichedModel, current, caches)
+				violated, count, total, violations, err := ghwf.Analyze(enrichedModel, authors, current, caches)
 				if err != nil {
 					log.Fatalf("Failed to analyze: %v\n", err)
 				}
 
-				workflowLog(violated, count, total, violations)
+				workflowLog(authors, violated, count, total, violations)
 
 				// Set action outputs to a markdown summary.
 				md := markup.NewMarkdown()
@@ -178,7 +180,7 @@ func main() {
 						v, co, t, vs := d.Result()
 
 						fmt.Printf("\n## Detector Type: %T ##\n", d)
-						workflowLog(v, co, t, vs)
+						workflowLog(utils.NewAuthors(), v, co, t, vs)
 
 						return nil
 					},
@@ -229,7 +231,7 @@ func main() {
 						v, co, t, vs := d.Result()
 
 						fmt.Printf("\n## Detector Type: %T ##\n", d)
-						workflowLog(v, co, t, vs)
+						workflowLog(utils.NewAuthors(), v, co, t, vs)
 
 						return nil
 					},
@@ -290,6 +292,9 @@ func main() {
 						}
 						enrichedModel := enriched.NewEnrichedModel(*gitModel, *githubModel)
 
+						// Authors
+						authors := enriched.PopulateAuthors(enrichedModel)
+
 						// Cache
 						current := cache.NewCache(enrichedModel)
 						caches, err := cache.ReadCaches()
@@ -303,17 +308,16 @@ func main() {
 							}
 						} else if err != nil {
 							log.Fatalf("Failed to load caches: %v", err)
-						} else {
 						}
 
 						cfg := readConfig(ctx)
 						ghwf := workflow.GithubFlowWorkflow(cfg)
-						violated, count, total, violations, err := ghwf.Analyze(enrichedModel, current, caches)
+						violated, count, total, violations, err := ghwf.Analyze(enrichedModel, authors, current, caches)
 						if err != nil {
 							log.Fatalf("Failed to analyze: %v\n", err)
 						}
 
-						workflowLog(violated, count, total, violations)
+						workflowLog(authors, violated, count, total, violations)
 
 						if ctx.Bool("csv") {
 							err = ghwf.Csv(workflow.DefaultCsvPath, enrichedModel.Name, enrichedModel.URL)
@@ -356,14 +360,17 @@ func main() {
 
 						enrichedModel := enriched.NewEnrichedModel(*gitModel, *githubModel)
 
+						// Authors
+						authors := enriched.PopulateAuthors(enrichedModel)
+
 						cfg := readConfig(ctx)
 						ghwf := workflow.GithubFlowWorkflow(cfg)
-						v, c, t, vs, err := ghwf.Analyze(enrichedModel, nil, nil)
+						v, c, t, vs, err := ghwf.Analyze(enrichedModel, authors, nil, nil)
 						if err != nil {
 							log.Fatalf("Failed to analyze: %v\n", err)
 						}
 
-						workflowLog(v, c, t, vs)
+						workflowLog(utils.NewAuthors(), v, c, t, vs)
 						if ctx.Bool("csv") {
 							err = ghwf.Csv(workflow.DefaultCsvPath, enrichedModel.Name, enrichedModel.URL)
 							if err != nil {
@@ -437,12 +444,15 @@ func main() {
 
 							enrichedModel := enriched.NewEnrichedModel(*gitModel, *githubModel)
 
-							v, c, t, vs, err := ghwf.Analyze(enrichedModel, nil, nil)
+							// Authors
+							authors := enriched.PopulateAuthors(enrichedModel)
+
+							v, c, t, vs, err := ghwf.Analyze(enrichedModel, authors, nil, nil)
 							if err != nil {
 								log.Fatalf("Failed to analyze: %v\n", err)
 							}
 
-							workflowLog(v, c, t, vs)
+							workflowLog(authors, v, c, t, vs)
 							nameCsv := fmt.Sprintf("batch-%s.csv", filepath.Base(path))
 							if ctx.Bool("csv") {
 								err = ghwf.Csv(nameCsv, enrichedModel.Name, enrichedModel.URL)
@@ -464,7 +474,7 @@ func main() {
 }
 
 // Print violation summary to IO, Split by severity with author association.
-func workflowLog(v, c, t int, vs []violation.Violation) {
+func workflowLog(authors utils.Authors, v, c, t int, vs []violation.Violation) {
 	var violations, suggestions []violation.Violation
 	for _, v := range vs {
 		switch v.Severity() {
@@ -488,17 +498,18 @@ func workflowLog(v, c, t int, vs []violation.Violation) {
 	markup.Group("Suggestions", ssd)
 
 	var asd string
-	authors := make(map[string]int)
+	counts := make(map[string]int)
 	for _, v := range vs {
-		a, err := v.Author()
+		email := v.Email()
+		login, err := authors.Find(email)
 		if err != nil {
 			continue
 		}
-		authors[a.Login]++
+		counts[*login]++
 	}
 
-	for author, count := range authors {
-		asd += fmt.Sprintf("%s: %d\n", author, count)
+	for login, count := range counts {
+		asd += fmt.Sprintf("%s: %d\n", login, count)
 	}
 
 	asd += fmt.Sprintf("violated: %d\n", v)

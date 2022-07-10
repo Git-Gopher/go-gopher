@@ -44,8 +44,11 @@ func NewBranchNameConsistencyDetect() BranchCompareDetect {
 			}
 			// does not follow substring
 			if ranking[i] < 0.175*float64(len(branches)) { // 0.175 is an adjustable value
-				// not consistent with others
-				violations = append(violations, violation.NewBranchNameViolation(branch.Name, substring))
+				// not consistent with others.
+				violations = append(
+					violations,
+					violation.NewBranchNameViolation(branch.Name, substring, branch.Head.Committer.Email),
+				)
 			}
 
 			// TODO: warning not using substring

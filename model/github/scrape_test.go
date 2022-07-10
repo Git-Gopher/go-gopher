@@ -15,3 +15,13 @@ func TestScraper_FetchPullRequests(t *testing.T) {
 	}
 	t.Logf("prs: %v\n", prs)
 }
+
+func TestScraper_FetchCommitters(t *testing.T) {
+	utils.Environment("../../.env")
+	s := NewScraper()
+	committers, err := s.FetchCommitters("subquery", "subql")
+	if err != nil {
+		t.Error(err)
+	}
+	t.Logf("committers: %v\n", committers)
+}

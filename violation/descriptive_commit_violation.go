@@ -1,4 +1,3 @@
-// nolint:dupl
 package violation
 
 import (
@@ -10,12 +9,12 @@ import (
 
 func NewDescriptiveCommitViolation(
 	message string,
-	author string,
+	email string,
 ) *DescriptiveCommitViolation {
 	violation := &DescriptiveCommitViolation{
 		display: nil,
 		message: message,
-		author:  author,
+		email:   email,
 	}
 	violation.display = &display{violation}
 
@@ -26,7 +25,7 @@ func NewDescriptiveCommitViolation(
 type DescriptiveCommitViolation struct {
 	*display
 	message string
-	author  string
+	email   string
 }
 
 // Name implements Violation.
@@ -50,7 +49,8 @@ func (dvc *DescriptiveCommitViolation) Suggestion() (string, error) {
 // Author implements Violation.
 func (dvc *DescriptiveCommitViolation) Author() (*github.Author, error) {
 	return &github.Author{
-		Login:     dvc.author,
+		Email:     dvc.email,
+		Login:     "",
 		AvatarUrl: "",
 	}, nil
 }
@@ -66,6 +66,11 @@ func (dvc *DescriptiveCommitViolation) LineLocation() (int, error) {
 }
 
 // Severity implements Violation.
-func (p *DescriptiveCommitViolation) Severity() Severity {
+func (dvc *DescriptiveCommitViolation) Severity() Severity {
 	return Suggestion
+}
+
+// Email implements Violation.
+func (dvc *DescriptiveCommitViolation) Email() string {
+	return dvc.email
 }

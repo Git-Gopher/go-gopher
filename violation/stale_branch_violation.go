@@ -7,11 +7,12 @@ import (
 	"github.com/Git-Gopher/go-gopher/model/github"
 )
 
-func NewStaleBranchViolation(branch string, duration time.Duration) *StaleBranchViolation {
+func NewStaleBranchViolation(branch string, duration time.Duration, email string) *StaleBranchViolation {
 	stale := &StaleBranchViolation{
 		display:  nil,
 		branch:   branch,
 		duration: duration,
+		email:    email,
 	}
 	stale.display = &display{stale}
 
@@ -23,6 +24,7 @@ type StaleBranchViolation struct {
 	*display
 	branch   string
 	duration time.Duration
+	email    string
 }
 
 // Name returns the name of the Violation.
@@ -57,6 +59,11 @@ func (*StaleBranchViolation) Author() (*github.Author, error) {
 }
 
 // Severity implements Violation.
-func (p *StaleBranchViolation) Severity() Severity {
+func (sbv *StaleBranchViolation) Severity() Severity {
 	return Violated
+}
+
+// Email implements Violation.
+func (sbv *StaleBranchViolation) Email() string {
+	return sbv.email
 }
