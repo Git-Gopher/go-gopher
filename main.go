@@ -22,8 +22,10 @@ import (
 	"github.com/go-git/go-git/v5/plumbing"
 	githttp "github.com/go-git/go-git/v5/plumbing/transport/http"
 	"github.com/go-git/go-git/v5/storage/memory"
+	"github.com/google/go-github/v45/github"
 	"github.com/joho/godotenv"
 	"github.com/urfave/cli/v2"
+	"golang.org/x/oauth2"
 )
 
 //nolint
@@ -140,13 +142,42 @@ func main() {
 			Name:    "debug",
 			Aliases: []string{"d"},
 			Usage:   "debug/development subcommands",
+			Flags:   []cli.Flag{},
 			Subcommands: []*cli.Command{
 				{
 					Name:  "download",
 					Usage: "Download artifact logs from workflow runs for a batch of repositories",
 					Action: func(ctx *cli.Context) error {
+
+						token := os.Getenv("GITHUB_TOKEN")
 						// ownerUrl := ctx.Args().Get(0)
-						// client := githubv4.NewClient(nil)
+						ts := oauth2.StaticTokenSource(
+							&oauth2.Token{AccessToken: token},
+						)
+						tc := oauth2.NewClient(ctx.Context, ts)
+
+						client := github.NewClient(tc)
+
+						// list all repositories for the authenticated user
+						repos, _, err := client.Repositories.List(ctx.Context, "Git-Gopher", nil)
+						if err != nil {
+							fmt.Printf("err: %v\n", err)
+						}
+						for _, r := range repos {
+							// fmt.Printf("r.URL: %v\n", *r.URL)
+							list, res, err := client.Actions.ListArtifacts(ctx.Context, *r.Owner.Login, *r.Name, &github.ListOptions{Page: 100, PerPage: 100})
+							fmt.Printf("err: %v\n", err)
+							fmt.Printf("res: %v\n", *res)
+							fmt.Printf("list.GetTotalCount(): %v\n", list.GetTotalCount())
+						}
+
+						// Fetch each run id
+						// Fetch all artifacts
+						// Unzip jsons
+						// Clean repo
+						// Add progressions
+						// client.Actions.DownloadArtifact()
+						// fmt.Printf("repos: %v\n", repos)
 
 						return nil
 					},
