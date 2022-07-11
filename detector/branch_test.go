@@ -4,8 +4,8 @@ import (
 	"testing"
 
 	"github.com/Git-Gopher/go-gopher/model/enriched"
-	"github.com/Git-Gopher/go-gopher/model/github"
 	"github.com/Git-Gopher/go-gopher/model/local"
+	"github.com/Git-Gopher/go-gopher/model/remote"
 	"github.com/Git-Gopher/go-gopher/utils"
 )
 
@@ -26,7 +26,7 @@ func TestStaleBranchDetect(t *testing.T) {
 			}
 
 			detector := NewBranchDetector(StaleBranchDetect())
-			enrichedModel := enriched.NewEnrichedModel(*gitModel, github.GithubModel{})
+			enrichedModel := enriched.NewEnrichedModel(*gitModel, remote.RemoteModel{})
 			if err = detector.Run(enrichedModel); err != nil {
 				t.Errorf("TestStaleBranchDetect() run detector = %v", err)
 			}

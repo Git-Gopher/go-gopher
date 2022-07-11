@@ -3,8 +3,8 @@ package enriched
 import (
 	"log"
 
-	"github.com/Git-Gopher/go-gopher/model/github"
 	"github.com/Git-Gopher/go-gopher/model/local"
+	"github.com/Git-Gopher/go-gopher/model/remote"
 	"github.com/Git-Gopher/go-gopher/utils"
 )
 
@@ -18,14 +18,14 @@ type EnrichedModel struct {
 	MainGraph    *local.BranchGraph    // Graph representation of commits in the main branch
 	BranchMatrix []*local.BranchMatrix // Matrix representation by comparing branches
 
-	// github.GithubModel
-	PullRequests []*github.PullRequest
-	Issues       []*github.Issue
-	Committers   []github.Committer
+	// remote.RemoteModel
+	PullRequests []*remote.PullRequest
+	Issues       []*remote.Issue
+	Committers   []remote.Committer
 }
 
 // Create an enriched model by merging the local and GitHub model.
-func NewEnrichedModel(local local.GitModel, github github.GithubModel) *EnrichedModel {
+func NewEnrichedModel(local local.GitModel, github remote.RemoteModel) *EnrichedModel {
 	return &EnrichedModel{
 		// local.GitModel
 		Commits:      local.Commits,
@@ -33,7 +33,7 @@ func NewEnrichedModel(local local.GitModel, github github.GithubModel) *Enriched
 		MainGraph:    local.MainGraph,
 		BranchMatrix: local.BranchMatrix,
 
-		// github.GithubModel
+		// remote.RemoteModel
 		Name:         github.Name,
 		URL:          github.URL,
 		PullRequests: github.PullRequests,

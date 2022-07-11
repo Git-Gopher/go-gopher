@@ -4,7 +4,6 @@ import (
 	"testing"
 
 	"github.com/Git-Gopher/go-gopher/model/enriched"
-	"github.com/Git-Gopher/go-gopher/model/github"
 	"github.com/Git-Gopher/go-gopher/model/local"
 )
 

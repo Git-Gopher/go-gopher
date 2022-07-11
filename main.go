@@ -4,9 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"io/fs"
-	"io/ioutil"
 	"log"
-	"net/http"
 	"os"
 	"path/filepath"
 
@@ -15,8 +13,8 @@ import (
 	"github.com/Git-Gopher/go-gopher/detector"
 	"github.com/Git-Gopher/go-gopher/markup"
 	"github.com/Git-Gopher/go-gopher/model/enriched"
-	"github.com/Git-Gopher/go-gopher/model/github"
 	"github.com/Git-Gopher/go-gopher/model/local"
+	"github.com/Git-Gopher/go-gopher/model/remote"
 	"github.com/Git-Gopher/go-gopher/utils"
 	"github.com/Git-Gopher/go-gopher/violation"
 	"github.com/Git-Gopher/go-gopher/workflow"
@@ -79,12 +77,12 @@ func main() {
 					log.Fatalf("Could not get owner and name from URL: %v\n", err)
 				}
 
-				githubModel, err := github.ScrapeGithubModel(owner, name)
+				remoteModel, err := remote.ScrapeRemoteModel(owner, name)
 				if err != nil {
-					log.Fatalf("Could not create GithubModel: %v\n", err)
+					log.Fatalf("Could not create RemoteModel: %v\n", err)
 				}
 
-				enrichedModel := enriched.NewEnrichedModel(*gitModel, *githubModel)
+				enrichedModel := enriched.NewEnrichedModel(*gitModel, *remoteModel)
 
 				// Authors
 				authors := enriched.PopulateAuthors(enrichedModel)
@@ -147,20 +145,8 @@ func main() {
 					Name:  "download",
 					Usage: "Download artifact logs from workflow runs for a batch of repositories",
 					Action: func(ctx *cli.Context) error {
-						owner := ctx.Args().Get(0)
-						repo := ctx.Args().Get(1)
-						list := fmt.Sprintf("https://api.github.com/repos/%s/%s/actions/artifacts", owner, repo)
-						// endpoint := fmt.Sprintf("https://api.github.com/repos/%s/%s/actions/artifacts/%s", owner, repo, artifactId)
-						response, err := http.Get(list)
-						if err != nil {
-							log.Fatal(err)
-						}
-
-						responseData, err := ioutil.ReadAll(response.Body)
-						if err != nil {
-							log.Fatal(err)
-						}
-						fmt.Println(string(responseData))
+						// ownerUrl := ctx.Args().Get(0)
+						// client := githubv4.NewClient(nil)
 
 						return nil
 					},
@@ -202,7 +188,7 @@ func main() {
 							log.Fatalf("Could not create GitModel: %v\n", err)
 						}
 
-						enrichedModel := enriched.NewEnrichedModel(*gitModel, github.GithubModel{})
+						enrichedModel := enriched.NewEnrichedModel(*gitModel, remote.RemoteModel{})
 						authors := enriched.PopulateAuthors(enrichedModel)
 
 						d := detector.NewFeatureBranchDetector()
@@ -254,7 +240,7 @@ func main() {
 							log.Fatalf("Could not create GitModel: %v\n", err)
 						}
 
-						enrichedModel := enriched.NewEnrichedModel(*gitModel, github.GithubModel{})
+						enrichedModel := enriched.NewEnrichedModel(*gitModel, remote.RemoteModel{})
 						authors := enriched.PopulateAuthors(enrichedModel)
 
 						d := detector.NewCommitDistanceDetector(detector.DiffDistanceCalculation())
@@ -319,7 +305,7 @@ func main() {
 							log.Fatalf("Could not get owner and name from URL: %v\n", err)
 						}
 
-						githubModel, err := github.ScrapeGithubModel(owner, name)
+						githubModel, err := remote.ScrapeRemoteModel(owner, name)
 						if err != nil {
 							log.Fatalf("Could not scrape GithubModel: %v\n", err)
 						}
@@ -386,7 +372,7 @@ func main() {
 							log.Fatalf("Could get the owner and name from URL: %v", err)
 						}
 
-						githubModel, err := github.ScrapeGithubModel(owner, name)
+						githubModel, err := remote.ScrapeRemoteModel(owner, name)
 						if err != nil {
 							log.Fatalf("Could not create GithubModel: %v\n", err)
 						}
@@ -476,7 +462,7 @@ func main() {
 								log.Fatalf("Could get the owner and name from URL: %v", err)
 							}
 
-							githubModel, err := github.ScrapeGithubModel(owner, name)
+							githubModel, err := remote.ScrapeRemoteModel(owner, name)
 							if err != nil {
 								log.Fatalf("Could not create GithubModel: %v\n", err)
 							}

@@ -1,6 +1,6 @@
 package violation
 
-import "github.com/Git-Gopher/go-gopher/model/github"
+import "github.com/Git-Gopher/go-gopher/model/remote"
 
 func NewStaleCommitViolation(message string) *StaleCommitViolation {
 	common := &StaleCommitViolation{display: nil, message: message}
@@ -42,7 +42,7 @@ func (*StaleCommitViolation) Suggestion() (string, error) {
 }
 
 // Author implements Violation.
-func (p *StaleCommitViolation) Author() (*github.Author, error) {
+func (p *StaleCommitViolation) Author() (*remote.Author, error) {
 	return nil, ErrViolationMethodNotExist
 }
 

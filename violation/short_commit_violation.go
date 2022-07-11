@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/Git-Gopher/go-gopher/model/github"
+	"github.com/Git-Gopher/go-gopher/model/remote"
 )
 
 func NewShortCommitViolation(
@@ -46,7 +46,7 @@ func (sc *ShortCommitViolation) Suggestion() (string, error) {
 }
 
 // Author implements Violation.
-func (sc *ShortCommitViolation) Author() (*github.Author, error) {
+func (sc *ShortCommitViolation) Author() (*remote.Author, error) {
 	return nil, ErrViolationMethodNotExist
 }
 

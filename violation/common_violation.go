@@ -1,8 +1,10 @@
 package violation
 
-import "github.com/Git-Gopher/go-gopher/model/github"
+import (
+	"github.com/Git-Gopher/go-gopher/model/remote"
+)
 
-func NewCommonViolation(message string, author *github.Author) *CommonViolation {
+func NewCommonViolation(message string, author *remote.Author) *CommonViolation {
 	common := &CommonViolation{display: nil, message: message, author: author}
 	common.display = &display{common}
 
@@ -13,7 +15,7 @@ func NewCommonViolation(message string, author *github.Author) *CommonViolation 
 type CommonViolation struct {
 	*display
 	message string
-	author  *github.Author
+	author  *remote.Author
 }
 
 // Name returns the name of the Violation.
@@ -42,7 +44,7 @@ func (*CommonViolation) Suggestion() (string, error) {
 }
 
 // Author implements Violation.
-func (cv *CommonViolation) Author() (*github.Author, error) {
+func (cv *CommonViolation) Author() (*remote.Author, error) {
 	return cv.author, nil
 }
 

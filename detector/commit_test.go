@@ -7,8 +7,8 @@ import (
 	"time"
 
 	"github.com/Git-Gopher/go-gopher/model/enriched"
-	"github.com/Git-Gopher/go-gopher/model/github"
 	"github.com/Git-Gopher/go-gopher/model/local"
+	"github.com/Git-Gopher/go-gopher/model/remote"
 	"github.com/Git-Gopher/go-gopher/utils"
 	"github.com/go-git/go-billy/v5/memfs"
 	"github.com/go-git/go-git/v5"
@@ -33,7 +33,7 @@ func TestTwoParentsCommitDetect(t *testing.T) {
 				t.Errorf("TestTwoParentsCommitDetect() create model = %v", err)
 			}
 
-			enrichedModel := enriched.NewEnrichedModel(*gitModel, github.GithubModel{})
+			enrichedModel := enriched.NewEnrichedModel(*gitModel, remote.RemoteModel{})
 
 			detector := NewCommitDetector(BranchCommitDetect())
 			if err = detector.Run(enrichedModel); err != nil {
@@ -138,7 +138,7 @@ func TestTwoParentsCommitDetectGoGit(t *testing.T) {
 		t.Errorf("TestTwoParentsCommitDetectGoGit() model = %v", err)
 	}
 
-	enrichedModel := enriched.NewEnrichedModel(*gitModel, github.GithubModel{})
+	enrichedModel := enriched.NewEnrichedModel(*gitModel, remote.RemoteModel{})
 
 	detector := NewCommitDetector(BranchCommitDetect())
 	err = detector.Run(enrichedModel)
@@ -165,7 +165,7 @@ func TestDiffMatchesMessageDetect(t *testing.T) {
 				t.Errorf(" TestDiffMatchesMessageDetect() create model = %v", err)
 			}
 
-			enrichedModel := enriched.NewEnrichedModel(*gitModel, github.GithubModel{})
+			enrichedModel := enriched.NewEnrichedModel(*gitModel, remote.RemoteModel{})
 
 			detector := NewCommitDetector(DiffMatchesMessageDetect())
 			if err = detector.Run(enrichedModel); err != nil {
