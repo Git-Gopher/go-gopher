@@ -92,7 +92,12 @@ func LocalDetectors() []detector.Detector {
 }
 
 // Run analysis on the git project for all the detectors defined by the workflow.
-func (w *Workflow) Analyze(model *enriched.EnrichedModel, current *cache.Cache, caches []*cache.Cache) (violated int,
+func (w *Workflow) Analyze(
+	model *enriched.EnrichedModel,
+	authors utils.Authors,
+	current *cache.Cache,
+	caches []*cache.Cache,
+) (violated int,
 	count,
 	total int,
 	violations []violation.Violation,
@@ -106,7 +111,9 @@ func (w *Workflow) Analyze(model *enriched.EnrichedModel, current *cache.Cache, 
 
 	// Only run when we have a cache
 	if current != nil || caches != nil {
-		v, c, t, vs, err = w.RunCacheDetectors(current, caches)
+		// assumes irst commit is the current user
+		email := model.Commits[0].Committer.Email
+		v, c, t, vs, err = w.RunCacheDetectors(email, current, caches)
 		if err != nil {
 			return 0, 0, 0, nil, fmt.Errorf("Failed to analyze workflow: %w", err)
 		}
@@ -149,7 +156,7 @@ func (w *Workflow) RunWeightedDetectors(model *enriched.EnrichedModel) (
 }
 
 // All cache detectors share the same current and cache, treated as readonly.
-func (w *Workflow) RunCacheDetectors(current *cache.Cache, caches []*cache.Cache) (
+func (w *Workflow) RunCacheDetectors(email string, current *cache.Cache, caches []*cache.Cache) (
 	int,
 	int,
 	int,
@@ -159,7 +166,7 @@ func (w *Workflow) RunCacheDetectors(current *cache.Cache, caches []*cache.Cache
 	violated, count, total := 0, 0, 0
 	violations := []violation.Violation{}
 	for _, wd := range w.WeightedCacheDetectors {
-		if err := wd.Detector.Run(current, caches); err != nil {
+		if err := wd.Detector.Run(email, current, caches); err != nil {
 			return 0, 0, 0, nil, fmt.Errorf("Failed to analyze caches: %w", err)
 		}
 

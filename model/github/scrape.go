@@ -45,6 +45,9 @@ func (s *Scraper) FetchIssueComments(owner, name string, number int, cursor stri
 						Author struct {
 							Login     string
 							AvatarUrl string
+							User      struct {
+								Email string
+							} `graphql:"... on User"`
 						}
 					}
 					PageInfo PageInfo
@@ -63,7 +66,7 @@ func (s *Scraper) FetchIssueComments(owner, name string, number int, cursor stri
 	}
 
 	for {
-		if err := s.Client.Query(context.Background(), q, variables); err != nil {
+		if err := s.Client.Query(context.Background(), &q, variables); err != nil {
 			return nil, fmt.Errorf("Failed to fetch additional pull request closing issues references: %w", err)
 		}
 
@@ -74,6 +77,7 @@ func (s *Scraper) FetchIssueComments(owner, name string, number int, cursor stri
 				Author: &Author{
 					Login:     i.Author.Login,
 					AvatarUrl: i.Author.AvatarUrl,
+					Email:     i.Author.User.Email,
 				},
 			}
 
@@ -102,6 +106,9 @@ func (s *Scraper) FetchPullRequestClosingIssues(owner, name string, number int, 
 						Author struct {
 							Login     string
 							AvatarUrl string
+							User      struct {
+								Email string
+							} `graphql:"... on User"`
 						}
 					}
 					PageInfo PageInfo
@@ -132,6 +139,7 @@ func (s *Scraper) FetchPullRequestClosingIssues(owner, name string, number int, 
 				Author: &Author{
 					Login:     i.Author.Login,
 					AvatarUrl: i.Author.AvatarUrl,
+					Email:     i.Author.User.Email,
 				},
 			}
 
@@ -160,6 +168,9 @@ func (s *Scraper) FetchPullRequestComments(owner, name string, number int, curso
 						Author struct {
 							Login     string
 							AvatarUrl string
+							User      struct {
+								Email string
+							} `graphql:"... on User"`
 						}
 					}
 					PageInfo PageInfo
@@ -189,6 +200,7 @@ func (s *Scraper) FetchPullRequestComments(owner, name string, number int, curso
 				Author: &Author{
 					Login:     i.Author.Login,
 					AvatarUrl: i.Author.AvatarUrl,
+					Email:     i.Author.User.Email,
 				},
 			}
 
@@ -224,6 +236,9 @@ func (s *Scraper) FetchIssues(owner, name string) ([]*Issue, error) {
 							Author struct {
 								Login     string
 								AvatarUrl string
+								User      struct {
+									Email string
+								} `graphql:"... on User"`
 							}
 						}
 						PageInfo PageInfo
@@ -232,6 +247,9 @@ func (s *Scraper) FetchIssues(owner, name string) ([]*Issue, error) {
 					Author struct {
 						Login     string
 						AvatarUrl string
+						User      struct {
+							Email string
+						} `graphql:"... on User"`
 					}
 				}
 				PageInfo PageInfo
@@ -265,17 +283,25 @@ func (s *Scraper) FetchIssues(owner, name string) ([]*Issue, error) {
 				Body:        is.Body,
 				State:       is.State,
 				StateReason: is.StateReason,
-				Author:      (*Author)(&is.Author),
-				Comments:    nil,
+				Author: &Author{
+					Login:     is.Author.Login,
+					AvatarUrl: is.Author.AvatarUrl,
+					Email:     is.Author.User.Email,
+				},
+				Comments: nil,
 			}
 
 			// Comments
 			var cs []*Comment = make([]*Comment, len(is.Comments.Nodes))
 			for i, c := range is.Comments.Nodes {
 				cs[i] = &Comment{
-					Id:     c.Id,
-					Body:   c.Body,
-					Author: (*Author)(&c.Author),
+					Id:   c.Id,
+					Body: c.Body,
+					Author: &Author{
+						Login:     c.Author.Login,
+						AvatarUrl: c.Author.AvatarUrl,
+						Email:     c.Author.User.Email,
+					},
 				}
 			}
 
@@ -316,12 +342,18 @@ func (s *Scraper) FetchPullRequests(owner, name string) ([]*PullRequest, error) 
 					MergedBy       struct {
 						Login     string
 						AvatarUrl string
+						User      struct {
+							Email string
+						} `graphql:"... on User"`
 					}
 					Url string
 					// Author
 					Author struct {
 						Login     string
 						AvatarUrl string
+						User      struct {
+							Email string
+						} `graphql:"... on User"`
 					}
 					// Issues
 					ClosingIssuesReferences struct {
@@ -332,6 +364,9 @@ func (s *Scraper) FetchPullRequests(owner, name string) ([]*PullRequest, error) 
 							Author struct {
 								Login     string
 								AvatarUrl string
+								User      struct {
+									Email string
+								} `graphql:"... on User"`
 							}
 						}
 						PageInfo PageInfo
@@ -344,6 +379,9 @@ func (s *Scraper) FetchPullRequests(owner, name string) ([]*PullRequest, error) 
 							Author struct {
 								Login     string
 								AvatarUrl string
+								User      struct {
+									Email string
+								} `graphql:"... on User"`
 							}
 						}
 						PageInfo PageInfo
@@ -384,22 +422,34 @@ func (s *Scraper) FetchPullRequests(owner, name string) ([]*PullRequest, error) 
 				Body:           mpr.Body,
 				ReviewDecision: mpr.ReviewDecision,
 				Merged:         mpr.Merged,
-				MergedBy:       (*Author)(&mpr.MergedBy),
-				Url:            mpr.Url,
-				Author:         (*Author)(&mpr.Author),
-				ClosingIssues:  nil,
-				Comments:       nil,
-				ReviewThreads:  nil,
+				MergedBy: &Author{
+					Login:     mpr.MergedBy.Login,
+					AvatarUrl: mpr.MergedBy.AvatarUrl,
+					Email:     mpr.MergedBy.User.Email,
+				},
+				Url: mpr.Url,
+				Author: &Author{
+					Login:     mpr.Author.Login,
+					AvatarUrl: mpr.Author.AvatarUrl,
+					Email:     mpr.Author.User.Email,
+				},
+				ClosingIssues: nil,
+				Comments:      nil,
+				ReviewThreads: nil,
 			}
 
 			// Closing issues
 			var cis []*Issue = make([]*Issue, len(mpr.ClosingIssuesReferences.Nodes))
 			for i, ci := range mpr.ClosingIssuesReferences.Nodes {
 				cis[i] = &Issue{
-					Id:     ci.Id,
-					Title:  ci.Title,
-					Body:   ci.Body,
-					Author: (*Author)(&ci.Author),
+					Id:    ci.Id,
+					Title: ci.Title,
+					Body:  ci.Body,
+					Author: &Author{
+						Login:     ci.Author.Login,
+						AvatarUrl: ci.Author.AvatarUrl,
+						Email:     ci.Author.User.Email,
+					},
 				}
 			}
 
@@ -419,9 +469,13 @@ func (s *Scraper) FetchPullRequests(owner, name string) ([]*PullRequest, error) 
 			var cs []*Comment = make([]*Comment, len(mpr.Comments.Nodes))
 			for i, c := range mpr.Comments.Nodes {
 				cs[i] = &Comment{
-					Id:     c.Id,
-					Body:   c.Body,
-					Author: (*Author)(&c.Author),
+					Id:   c.Id,
+					Body: c.Body,
+					Author: &Author{
+						Login:     c.Author.Login,
+						AvatarUrl: c.Author.AvatarUrl,
+						Email:     c.Author.User.Email,
+					},
 				}
 			}
 
@@ -484,4 +538,76 @@ func (s *Scraper) FetchURL(owner, name string) (string, error) {
 	}
 
 	return q.Repository.Url, nil
+}
+
+// FetchCommitters, get all committers from a repo.
+func (s *Scraper) FetchCommitters(owner, name string) ([]Committer, error) {
+	var q struct {
+		Repository struct {
+			DefaultBranchRef struct {
+				Target struct {
+					Commit struct {
+						History struct {
+							Nodes []struct {
+								Id     string
+								Author struct {
+									Email string
+									User  struct {
+										Login string
+									}
+								}
+								Committer struct {
+									Email string
+									User  struct {
+										Login string
+									}
+								}
+							}
+							PageInfo PageInfo
+						} `graphql:"history(first: $first, after: $cursor)"`
+					} `graphql:"... on Commit"`
+				} `graphq:"target"`
+			} `graphql:"defaultBranchRef"`
+		} `graphql:"repository(owner: $owner, name: $name)"`
+	}
+
+	var all []Committer
+	variables := map[string]interface{}{
+		"first":  githubv4.Int(githubQuerySize),
+		"cursor": (*githubv4.String)(nil),
+		"owner":  githubv4.String(owner),
+		"name":   githubv4.String(name),
+	}
+
+	for {
+		if err := s.Client.Query(context.Background(), &q, variables); err != nil {
+			return nil, fmt.Errorf("Failed to fetch committers: %w", err)
+		}
+
+		for _, i := range q.Repository.DefaultBranchRef.Target.Commit.History.Nodes {
+			committer := Committer{
+				CommitId: i.Id,
+				Email:    i.Author.Email,
+				Login:    i.Author.User.Login,
+			}
+			all = append(all, committer)
+
+			if i.Author.Email != i.Committer.Email {
+				committer := Committer{
+					CommitId: i.Id,
+					Email:    i.Committer.Email,
+					Login:    i.Committer.User.Login,
+				}
+				all = append(all, committer)
+			}
+		}
+
+		if !q.Repository.DefaultBranchRef.Target.Commit.History.PageInfo.HasNextPage {
+			break
+		}
+
+		variables["cursor"] = githubv4.NewString(q.Repository.DefaultBranchRef.Target.Commit.History.PageInfo.EndCursor)
+	}
+
+	return all, nil
 }

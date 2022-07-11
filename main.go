@@ -86,6 +86,9 @@ func main() {
 
 				enrichedModel := enriched.NewEnrichedModel(*gitModel, *githubModel)
 
+				// Authors
+				authors := enriched.PopulateAuthors(enrichedModel)
+
 				// Cache
 				current := cache.NewCache(enrichedModel)
 				caches, err := cache.ReadCaches()
@@ -99,12 +102,11 @@ func main() {
 					}
 				} else if err != nil {
 					log.Fatalf("Failed to load caches: %v", err)
-				} else {
 				}
 
 				cfg := readConfig(ctx)
 				ghwf := workflow.GithubFlowWorkflow(cfg)
-				violated, count, total, violations, err := ghwf.Analyze(enrichedModel, current, caches)
+				violated, count, total, violations, err := ghwf.Analyze(enrichedModel, authors, current, caches)
 				if err != nil {
 					log.Fatalf("Failed to analyze: %v\n", err)
 				}
@@ -322,6 +324,9 @@ func main() {
 						}
 						enrichedModel := enriched.NewEnrichedModel(*gitModel, *githubModel)
 
+						// Authors
+						authors := enriched.PopulateAuthors(enrichedModel)
+
 						// Cache
 						current := cache.NewCache(enrichedModel)
 						caches, err := cache.ReadCaches()
@@ -335,12 +340,11 @@ func main() {
 							}
 						} else if err != nil {
 							log.Fatalf("Failed to load caches: %v", err)
-						} else {
 						}
 
 						cfg := readConfig(ctx)
 						ghwf := workflow.GithubFlowWorkflow(cfg)
-						violated, count, total, violations, err := ghwf.Analyze(enrichedModel, current, caches)
+						violated, count, total, violations, err := ghwf.Analyze(enrichedModel, authors, current, caches)
 						if err != nil {
 							log.Fatalf("Failed to analyze: %v\n", err)
 						}
@@ -388,9 +392,12 @@ func main() {
 
 						enrichedModel := enriched.NewEnrichedModel(*gitModel, *githubModel)
 
+						// Authors
+						authors := enriched.PopulateAuthors(enrichedModel)
+
 						cfg := readConfig(ctx)
 						ghwf := workflow.GithubFlowWorkflow(cfg)
-						v, c, t, vs, err := ghwf.Analyze(enrichedModel, nil, nil)
+						v, c, t, vs, err := ghwf.Analyze(enrichedModel, authors, nil, nil)
 						if err != nil {
 							log.Fatalf("Failed to analyze: %v\n", err)
 						}
@@ -475,7 +482,10 @@ func main() {
 
 							enrichedModel := enriched.NewEnrichedModel(*gitModel, *githubModel)
 
-							v, c, t, vs, err := ghwf.Analyze(enrichedModel, nil, nil)
+							// Authors
+							authors := enriched.PopulateAuthors(enrichedModel)
+
+							v, c, t, vs, err := ghwf.Analyze(enrichedModel, authors, nil, nil)
 							if err != nil {
 								log.Fatalf("Failed to analyze: %v\n", err)
 							}
@@ -533,17 +543,18 @@ func workflowSummary(v, c, t int, vs []violation.Violation) {
 	markup.Group("Suggestions", ssd)
 
 	var asd string
-	authors := make(map[string]int)
+	counts := make(map[string]int)
 	for _, v := range vs {
-		a, err := v.Author()
+		email := v.Email()
+		login, err := authors.Find(email)
 		if err != nil {
 			continue
 		}
-		authors[a.Login]++
+		counts[*login]++
 	}
 
-	for author, count := range authors {
-		asd += fmt.Sprintf("%s: %d\n", author, count)
+	for login, count := range counts {
+		asd += fmt.Sprintf("%s: %d\n", login, count)
 	}
 
 	asd += fmt.Sprintf("violated: %d\n", v)

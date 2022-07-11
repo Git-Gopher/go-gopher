@@ -13,6 +13,7 @@ func NewStaleCommitViolation(message string) *StaleCommitViolation {
 type StaleCommitViolation struct {
 	*display
 	message string
+	email   string
 }
 
 // Name returns the name of the Violation.
@@ -21,8 +22,8 @@ func (*StaleCommitViolation) Name() string {
 }
 
 // Message implements Violation.
-func (cv *StaleCommitViolation) Message() string {
-	return cv.message
+func (sc *StaleCommitViolation) Message() string {
+	return sc.message
 }
 
 // FileLocation implements Violation.
@@ -48,4 +49,9 @@ func (p *StaleCommitViolation) Author() (*github.Author, error) {
 // Severity implements Violation.
 func (p *StaleCommitViolation) Severity() Severity {
 	return Violated
+}
+
+// Email implements Violation.
+func (sc *StaleCommitViolation) Email() string {
+	return sc.email
 }

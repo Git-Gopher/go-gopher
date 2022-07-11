@@ -5,6 +5,7 @@ import "fmt"
 type Author struct {
 	Login     string
 	AvatarUrl string
+	Email     string
 }
 
 type Issue struct {
@@ -50,9 +51,15 @@ type GithubModel struct {
 	Owner        string
 	Name         string
 	URL          string
-	Author       *Author
 	PullRequests []*PullRequest
 	Issues       []*Issue
+	Committers   []Committer
+}
+
+type Committer struct {
+	CommitId string
+	Email    string
+	Login    string
 }
 
 // TODO: Issues, Author. Also handling the same issue multiple times, should we fetch it multiple
@@ -76,13 +83,18 @@ func ScrapeGithubModel(owner, name string) (*GithubModel, error) {
 		return nil, fmt.Errorf("Failed to fetch URL for GitHub model: %w", err)
 	}
 
+	committers, err := s.FetchCommitters(owner, name)
+	if err != nil {
+		return nil, fmt.Errorf("Failed to fetch committers for GitHub model: %w", err)
+	}
+
 	ghm := GithubModel{
 		Owner:        owner,
 		Name:         name,
 		URL:          url,
-		Author:       nil,
 		PullRequests: prs,
 		Issues:       issues,
+		Committers:   committers,
 	}
 
 	return &ghm, nil

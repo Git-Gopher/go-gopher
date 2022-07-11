@@ -10,12 +10,14 @@ func NewPrimaryBranchDirectCommitViolation(
 	primaryBranch string,
 	commitHash string,
 	parentHashes []string,
+	email string,
 ) *PrimaryBranchDirectCommitViolation {
 	violation := &PrimaryBranchDirectCommitViolation{
 		display:       nil,
 		parentHashes:  parentHashes,
 		primaryBranch: primaryBranch,
 		commitHash:    commitHash,
+		email:         email,
 	}
 	violation.display = &display{violation}
 
@@ -29,6 +31,7 @@ type PrimaryBranchDirectCommitViolation struct {
 	parentHashes  []string
 	primaryBranch string
 	commitHash    string
+	email         string
 }
 
 // FileLocation implements Violation.
@@ -66,4 +69,9 @@ func (p *PrimaryBranchDirectCommitViolation) Author() (*github.Author, error) {
 // Severity implements Violation.
 func (p *PrimaryBranchDirectCommitViolation) Severity() Severity {
 	return Violated
+}
+
+// Severity implements Violation.
+func (p *PrimaryBranchDirectCommitViolation) Email() string {
+	return p.email
 }
