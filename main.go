@@ -4,7 +4,9 @@ import (
 	"errors"
 	"fmt"
 	"io/fs"
+	"io/ioutil"
 	"log"
+	"net/http"
 	"os"
 	"path/filepath"
 
@@ -20,7 +22,7 @@ import (
 	"github.com/Git-Gopher/go-gopher/workflow"
 	"github.com/go-git/go-git/v5"
 	"github.com/go-git/go-git/v5/plumbing"
-	"github.com/go-git/go-git/v5/plumbing/transport/http"
+	githttp "github.com/go-git/go-git/v5/plumbing/transport/http"
 	"github.com/go-git/go-git/v5/storage/memory"
 	"github.com/joho/godotenv"
 	"github.com/urfave/cli/v2"
@@ -37,7 +39,7 @@ func main() {
 			Aliases: []string{"a"},
 			Usage:   "detect a workflow for current root",
 			Flags: []cli.Flag{
-				&cli.StringFlag{
+				&cli.BoolFlag{
 					Name:     "logging",
 					Usage:    "enable logging, output to the set file name",
 					Aliases:  []string{"l"},
@@ -109,7 +111,7 @@ func main() {
 					log.Fatalf("Failed to analyze: %v\n", err)
 				}
 
-				workflowLog(authors, violated, count, total, violations)
+				workflowSummary(authors, violated, count, total, violations)
 
 				// Set action outputs to a markdown summary.
 				md := markup.NewMarkdown()
@@ -126,6 +128,13 @@ func main() {
 					log.Fatalf("Could not create csv summary: %v", err)
 				}
 
+				if ctx.Bool("logging") {
+					err = ghwf.WriteLog(*enrichedModel)
+					if err != nil {
+						log.Fatalf("Could not write json log: %v", err)
+					}
+				}
+
 				return nil
 			},
 		},
@@ -134,6 +143,28 @@ func main() {
 			Aliases: []string{"d"},
 			Usage:   "debug/development subcommands",
 			Subcommands: []*cli.Command{
+				{
+					Name:  "download",
+					Usage: "Download artifact logs from workflow runs for a batch of repositories",
+					Action: func(ctx *cli.Context) error {
+						owner := ctx.Args().Get(0)
+						repo := ctx.Args().Get(1)
+						list := fmt.Sprintf("https://api.github.com/repos/%s/%s/actions/artifacts", owner, repo)
+						// endpoint := fmt.Sprintf("https://api.github.com/repos/%s/%s/actions/artifacts/%s", owner, repo, artifactId)
+						response, err := http.Get(list)
+						if err != nil {
+							log.Fatal(err)
+						}
+
+						responseData, err := ioutil.ReadAll(response.Body)
+						if err != nil {
+							log.Fatal(err)
+						}
+						fmt.Println(string(responseData))
+
+						return nil
+					},
+				},
 				{
 					Name:    "feature",
 					Aliases: []string{"feat", "features"},
@@ -155,7 +186,7 @@ func main() {
 						}
 
 						repo, err := git.Clone(memory.NewStorage(), nil, &git.CloneOptions{
-							Auth: &http.BasicAuth{
+							Auth: &githttp.BasicAuth{
 								Username: "non-empty",
 								Password: token,
 							},
@@ -172,6 +203,7 @@ func main() {
 						}
 
 						enrichedModel := enriched.NewEnrichedModel(*gitModel, github.GithubModel{})
+						authors := enriched.PopulateAuthors(enrichedModel)
 
 						d := detector.NewFeatureBranchDetector()
 						if err := d.Run(enrichedModel); err != nil {
@@ -180,7 +212,7 @@ func main() {
 						v, co, t, vs := d.Result()
 
 						fmt.Printf("\n## Detector Type: %T ##\n", d)
-						workflowLog(utils.NewAuthors(), v, co, t, vs)
+						workflowSummary(authors, v, co, t, vs)
 
 						return nil
 					},
@@ -206,7 +238,7 @@ func main() {
 						}
 
 						repo, err := git.Clone(memory.NewStorage(), nil, &git.CloneOptions{
-							Auth: &http.BasicAuth{
+							Auth: &githttp.BasicAuth{
 								Username: "non-empty",
 								Password: token,
 							},
@@ -223,6 +255,7 @@ func main() {
 						}
 
 						enrichedModel := enriched.NewEnrichedModel(*gitModel, github.GithubModel{})
+						authors := enriched.PopulateAuthors(enrichedModel)
 
 						d := detector.NewCommitDistanceDetector(detector.DiffDistanceCalculation())
 						if err := d.Run(enrichedModel); err != nil {
@@ -231,7 +264,7 @@ func main() {
 						v, co, t, vs := d.Result()
 
 						fmt.Printf("\n## Detector Type: %T ##\n", d)
-						workflowLog(utils.NewAuthors(), v, co, t, vs)
+						workflowSummary(authors, v, co, t, vs)
 
 						return nil
 					},
@@ -317,7 +350,7 @@ func main() {
 							log.Fatalf("Failed to analyze: %v\n", err)
 						}
 
-						workflowLog(authors, violated, count, total, violations)
+						workflowSummary(authors, violated, count, total, violations)
 
 						if ctx.Bool("csv") {
 							err = ghwf.Csv(workflow.DefaultCsvPath, enrichedModel.Name, enrichedModel.URL)
@@ -370,7 +403,7 @@ func main() {
 							log.Fatalf("Failed to analyze: %v\n", err)
 						}
 
-						workflowLog(utils.NewAuthors(), v, c, t, vs)
+						workflowSummary(authors, v, c, t, vs)
 						if ctx.Bool("csv") {
 							err = ghwf.Csv(workflow.DefaultCsvPath, enrichedModel.Name, enrichedModel.URL)
 							if err != nil {
@@ -389,6 +422,12 @@ func main() {
 						&cli.BoolFlag{
 							Name:     "csv",
 							Usage:    "csv summary of the workflow run",
+							Required: false,
+						},
+						&cli.BoolFlag{
+							Name:     "logging",
+							Aliases:  []string{"l"},
+							Usage:    "json log of the workflow run",
 							Required: false,
 						},
 					},
@@ -452,12 +491,19 @@ func main() {
 								log.Fatalf("Failed to analyze: %v\n", err)
 							}
 
-							workflowLog(authors, v, c, t, vs)
+							workflowSummary(authors, v, c, t, vs)
 							nameCsv := fmt.Sprintf("batch-%s.csv", filepath.Base(path))
 							if ctx.Bool("csv") {
 								err = ghwf.Csv(nameCsv, enrichedModel.Name, enrichedModel.URL)
 								if err != nil {
 									log.Fatalf("Could not create csv summary: %v", err)
+								}
+							}
+
+							if ctx.Bool("logging") {
+								err = ghwf.WriteLog(*enrichedModel)
+								if err != nil {
+									log.Fatalf("Could not write json log: %v", err)
 								}
 							}
 						}
@@ -474,7 +520,7 @@ func main() {
 }
 
 // Print violation summary to IO, Split by severity with author association.
-func workflowLog(authors utils.Authors, v, c, t int, vs []violation.Violation) {
+func workflowSummary(authors utils.Authors, v, c, t int, vs []violation.Violation) {
 	var violations, suggestions []violation.Violation
 	for _, v := range vs {
 		switch v.Severity() {

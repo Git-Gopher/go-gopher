@@ -27,3 +27,13 @@ integration:
 tidy:
 	@echo "tidy..."
 	go mod tidy
+
+.PHONY: clean
+clean:
+	find . -name 'log-*.json' -delete
+	find . -name '*.csv' -delete
+
+.PHONY: docker
+docker:
+	find . -name 'log-*.json' -delete
+	find . -name '*.csv' -delete

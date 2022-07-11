@@ -19,6 +19,10 @@ jobs:
         with:
           path: cache.json
           key: ${{ github.ref }}
+      # fetch latest binary
+      # run binary
+      # do the pr comment 
+      # artifact log from binary
       - name: Analyze Workflow
         uses: Git-Gopher/go-gopher-action@latest
         id: git-gopher
@@ -29,3 +33,7 @@ jobs:
         uses: marocchino/sticky-pull-request-comment@v2
         with:
           message: "${{ steps.git-gopher.outputs.pr_summary }}"
+      - name: Artifact Log
+        uses: actions/upload-artifact@v3
+        with:
+          path: log-**.json
