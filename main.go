@@ -111,7 +111,7 @@ func main() {
 					log.Fatalf("Failed to analyze: %v\n", err)
 				}
 
-				workflowSummary(violated, count, total, violations)
+				workflowSummary(authors, violated, count, total, violations)
 
 				// Set action outputs to a markdown summary.
 				md := markup.NewMarkdown()
@@ -204,6 +204,7 @@ func main() {
 						}
 
 						enrichedModel := enriched.NewEnrichedModel(*gitModel, github.GithubModel{})
+						authors := enriched.PopulateAuthors(enrichedModel)
 
 						d := detector.NewFeatureBranchDetector()
 						if err := d.Run(enrichedModel); err != nil {
@@ -212,7 +213,7 @@ func main() {
 						v, co, t, vs := d.Result()
 
 						fmt.Printf("\n## Detector Type: %T ##\n", d)
-						workflowSummary(v, co, t, vs)
+						workflowSummary(authors, v, co, t, vs)
 
 						return nil
 					},
@@ -255,6 +256,7 @@ func main() {
 						}
 
 						enrichedModel := enriched.NewEnrichedModel(*gitModel, github.GithubModel{})
+						authors := enriched.PopulateAuthors(enrichedModel)
 
 						d := detector.NewCommitDistanceDetector(detector.DiffDistanceCalculation())
 						if err := d.Run(enrichedModel); err != nil {
@@ -263,7 +265,7 @@ func main() {
 						v, co, t, vs := d.Result()
 
 						fmt.Printf("\n## Detector Type: %T ##\n", d)
-						workflowSummary(v, co, t, vs)
+						workflowSummary(authors, v, co, t, vs)
 
 						return nil
 					},
@@ -349,7 +351,7 @@ func main() {
 							log.Fatalf("Failed to analyze: %v\n", err)
 						}
 
-						workflowSummary(violated, count, total, violations)
+						workflowSummary(authors, violated, count, total, violations)
 
 						if ctx.Bool("csv") {
 							err = ghwf.Csv(workflow.DefaultCsvPath, enrichedModel.Name, enrichedModel.URL)
@@ -402,7 +404,7 @@ func main() {
 							log.Fatalf("Failed to analyze: %v\n", err)
 						}
 
-						workflowSummary(v, c, t, vs)
+						workflowSummary(authors, v, c, t, vs)
 						if ctx.Bool("csv") {
 							err = ghwf.Csv(workflow.DefaultCsvPath, enrichedModel.Name, enrichedModel.URL)
 							if err != nil {
@@ -490,7 +492,7 @@ func main() {
 								log.Fatalf("Failed to analyze: %v\n", err)
 							}
 
-							workflowSummary(v, c, t, vs)
+							workflowSummary(authors, v, c, t, vs)
 							nameCsv := fmt.Sprintf("batch-%s.csv", filepath.Base(path))
 							if ctx.Bool("csv") {
 								err = ghwf.Csv(nameCsv, enrichedModel.Name, enrichedModel.URL)
@@ -519,7 +521,7 @@ func main() {
 }
 
 // Print violation summary to IO, Split by severity with author association.
-func workflowSummary(v, c, t int, vs []violation.Violation) {
+func workflowSummary(authors utils.Authors, v, c, t int, vs []violation.Violation) {
 	var violations, suggestions []violation.Violation
 	for _, v := range vs {
 		switch v.Severity() {
