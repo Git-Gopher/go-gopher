@@ -25,16 +25,16 @@ jobs:
         run: go vet ./...
       - name: Run tests
         run: make test
-    - name: Release
-    - uses: "marvinpinto/action-automatic-releases@latest"
-      with:
-        repo_token: "${{ secrets.GITHUB_TOKEN }}"
-        automatic_release_tag: "latest"
-        prerelease: true
-        title: "go-gopher"
-        files: |
-          go-gopher
-      if: github.event_name == 'pull_request' && github.event.action == 'closed' && github.event.pull_request.merged == true
+      - name: Release
+        if: github.event_name == 'pull_request' && github.event.action == 'closed' && github.event.pull_request.merged == true
+      - uses: "marvinpinto/action-automatic-releases@latest"
+        with:
+          repo_token: "${{ secrets.GITHUB_TOKEN }}"
+          automatic_release_tag: "latest"
+          prerelease: true
+          title: "go-gopher"
+          files: |
+            go-gopher
   lint:
     name: lint
     runs-on: ubuntu-latest
