@@ -25,9 +25,9 @@ jobs:
         run: go vet ./...
       - name: Run tests
         run: make test
-      - name: Release
         if: github.event_name == 'pull_request' && github.event.action == 'closed' && github.event.pull_request.merged == true
       - uses: "marvinpinto/action-automatic-releases@latest"
+      - name: Release
         with:
           repo_token: "${{ secrets.GITHUB_TOKEN }}"
           automatic_release_tag: "latest"
