@@ -11,7 +11,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-      - name: Set up Go
+      - name: Setup Go
         uses: actions/setup-go@v3
         with:
           go-version: 1.18
@@ -27,11 +27,9 @@ jobs:
           version: v1.46.2
       - name: Run tests
         run: make test
-      - uses: "marvinpinto/action-automatic-releases@latest"
-        with:
-          repo_token: "${{ secrets.GITHUB_TOKEN }}"
-          automatic_release_tag: "latest"
-          prerelease: true
-          title: "go-gopher"
-          files: |
-            go-gopher
+      - name: Release
+        env:
+          GITHUB_TOKEN: "${{ secrets.RELEASE_REPO_SECRET }}"
+        run: |
+          gh release delete latest --yes -R https://github.com/Git-Gopher/go-gopher-action || true
+          gh release create latest go-gopher -R https://github.com/Git-Gopher/go-gopher-action --generate-notes
