@@ -19,6 +19,10 @@ jobs:
         with:
           path: cache.json
           key: ${{ github.ref }}
+      # fetch latest binary
+      # run binary
+      # do the pr comment 
+      # artifact log from binary
       - name: Analyze Workflow
         uses: Git-Gopher/go-gopher-action@latest
         id: git-gopher
