@@ -48,22 +48,22 @@ var (
 )
 
 type Workflow struct {
-	Name                    string                  `json:"Name"`
-	WeightedCommitDetectors []WeightedDetector      `json:"WeightedCommitDetectors"`
-	WeightedCacheDetectors  []WeightedCacheDetector `json:"WeightedCacheDetectors"`
+	Name                    string                  `json:"name"`
+	WeightedCommitDetectors []WeightedDetector      `json:"weightedCommitDetectors"`
+	WeightedCacheDetectors  []WeightedCacheDetector `json:"weightedCacheDetectors"`
 	Violations              []violation.Violation
 	Count                   int
 	Total                   int
 }
 
 type WeightedDetector struct {
-	Weight   int               `json:Weight`
-	Detector detector.Detector `json:"Detector"`
+	Weight   int               `json:"weight"`
+	Detector detector.Detector `json:"detector"`
 }
 
 type WeightedCacheDetector struct {
-	Weight   int                    `json:Weight`
-	Detector detector.CacheDetector `json:"Detector"`
+	Weight   int                    `json:"weight"`
+	Detector detector.CacheDetector `json:"detector"`
 }
 
 func GithubFlowWorkflow(cfg *config.Config) *Workflow {
@@ -132,7 +132,8 @@ func (w *Workflow) Analyze(
 func (w *Workflow) Result() (
 	count,
 	total int,
-	violations []violation.Violation) {
+	violations []violation.Violation,
+) {
 	return w.Count, w.Total, w.Violations
 }
 
@@ -300,11 +301,12 @@ func configureDetectors(cfg *config.Config) ([]WeightedDetector, []WeightedCache
 	return weightedCommitDetectors, weightedCacheDetectors
 }
 
-// Write a JSON log of the workflow run. Assumes that the workflow is in a state that it has run to create a meaningful log.
+// Write a JSON log of the workflow run.
+// Assumes that the workflow is in a state that it has run to create a meaningful log.
 func (w *Workflow) WriteLog(em enriched.EnrichedModel) error {
 	type Log struct {
-		Date     time.Time `json:"Date"`
-		Workflow Workflow  `json:"Workflow"`
+		Date     time.Time `json:"date"`
+		Workflow Workflow  `json:"workflow"`
 	}
 
 	log := Log{

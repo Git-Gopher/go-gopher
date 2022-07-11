@@ -152,7 +152,6 @@ func main() {
 						list := fmt.Sprintf("https://api.github.com/repos/%s/%s/actions/artifacts", owner, repo)
 						// endpoint := fmt.Sprintf("https://api.github.com/repos/%s/%s/actions/artifacts/%s", owner, repo, artifactId)
 						response, err := http.Get(list)
-
 						if err != nil {
 							log.Fatal(err)
 						}
