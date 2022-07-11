@@ -319,7 +319,7 @@ func (w *Workflow) WriteLog(em enriched.EnrichedModel) error {
 		return fmt.Errorf("Failed to marshal workflow log: %w", err)
 	}
 
-	path := fmt.Sprintf("log-%s-%s.json", em.Name, time.Now().UTC())
+	path := fmt.Sprintf("log-%s-%d.json", em.Name, time.Now().Unix())
 	if err := ioutil.WriteFile(filepath.Clean(path), bytes, 0o600); err != nil {
 		return fmt.Errorf("Error writing log to file: %w", err)
 	}
