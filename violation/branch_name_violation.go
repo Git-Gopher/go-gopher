@@ -9,11 +9,13 @@ import (
 func NewBranchNameViolation(
 	branchRef string,
 	substring string,
+	email string,
 ) *BranchNameViolation {
 	violation := &BranchNameViolation{
 		display:   nil,
 		branchRef: branchRef,
 		substring: substring,
+		email:     email,
 	}
 	violation.display = &display{violation}
 
@@ -26,6 +28,7 @@ type BranchNameViolation struct {
 	*display
 	branchRef string
 	substring string
+	email     string
 }
 
 // FileLocation implements Violation.
@@ -39,10 +42,10 @@ func (*BranchNameViolation) LineLocation() (int, error) {
 }
 
 // Message implements Violation.
-func (p *BranchNameViolation) Message() string {
+func (bn *BranchNameViolation) Message() string {
 	format := "Branch \"%s\" name is too inconsistent with other branch names"
 
-	return fmt.Sprintf(format, p.branchRef)
+	return fmt.Sprintf(format, bn.branchRef)
 }
 
 // Name implements Violation.
@@ -51,20 +54,25 @@ func (*BranchNameViolation) Name() string {
 }
 
 // Suggestion implements Violation.
-func (p *BranchNameViolation) Suggestion() (string, error) {
-	if p.substring == "" {
+func (bn *BranchNameViolation) Suggestion() (string, error) {
+	if bn.substring == "" {
 		return "", ErrViolationMethodNotExist
 	}
 
-	return fmt.Sprintf("All branch names should consistent with the substring \"%s\" ", p.substring), nil
+	return fmt.Sprintf("All branch names should consistent with the substring \"%s\" ", bn.substring), nil
 }
 
 // Author implements Violation.
-func (p *BranchNameViolation) Author() (*github.Author, error) {
+func (bn *BranchNameViolation) Author() (*github.Author, error) {
 	return nil, ErrViolationMethodNotExist
 }
 
 // Severity implements Violation.
-func (p *BranchNameViolation) Severity() Severity {
+func (bn *BranchNameViolation) Severity() Severity {
 	return Suggestion
+}
+
+// Email implements Violation.
+func (bn *BranchNameViolation) Email() string {
+	return bn.email
 }

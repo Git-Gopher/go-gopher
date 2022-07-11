@@ -124,6 +124,7 @@ func (bs *FeatureBranchDetector) checkNext(c *local.CommitGraph) *local.CommitGr
 		bs.primaryBranch,
 		c.Hash,
 		[]string{c.ParentCommits[0].Hash},
+		c.Committer.Email,
 	))
 	bs.violated++
 
@@ -156,6 +157,7 @@ func (bs *FeatureBranchDetector) checkEnd(
 		bs.primaryBranch,
 		c.Hash,
 		[]string{c.ParentCommits[0].Hash},
+		c.Committer.Email,
 	))
 
 	return bs.checkEnd(c.ParentCommits[0], v)

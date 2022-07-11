@@ -8,7 +8,7 @@ import (
 	"github.com/Git-Gopher/go-gopher/violation"
 )
 
-type CommitCacheDetect func(current *cache.Cache, cache *cache.Cache) (bool, []violation.Violation, error)
+type CommitCacheDetect func(email string, current *cache.Cache, cache *cache.Cache) (bool, []violation.Violation, error)
 
 type CommitCacheDetector struct {
 	violated   int
@@ -20,7 +20,7 @@ type CommitCacheDetector struct {
 }
 
 // TODO: We should change this to the enriched model.
-func (cd *CommitCacheDetector) Run(current *cache.Cache, cache []*cache.Cache) error {
+func (cd *CommitCacheDetector) Run(email string, current *cache.Cache, cache []*cache.Cache) error {
 	// Struct should be reset before each run, incase we are running it with a different model.
 	cd.violated = 0
 	cd.found = 0
@@ -28,7 +28,7 @@ func (cd *CommitCacheDetector) Run(current *cache.Cache, cache []*cache.Cache) e
 	cd.violations = make([]violation.Violation, 0)
 
 	for _, c := range cache {
-		found, vlns, err := cd.detect(current, c)
+		found, vlns, err := cd.detect(email, current, c)
 		if err != nil {
 			return fmt.Errorf("Error running cache detector: %w", err)
 		}
@@ -59,7 +59,7 @@ func NewCommitCacheDetector(detect CommitCacheDetect) *CommitCacheDetector {
 
 // GithubWorklow: Force pushes are not allowed.
 func ForcePushDetect() CommitCacheDetect {
-	return func(current *cache.Cache, cache *cache.Cache) (bool, []violation.Violation, error) {
+	return func(email string, current *cache.Cache, cache *cache.Cache) (bool, []violation.Violation, error) {
 		lhs := make([]string, 0)
 		for _, cuh := range current.Hashes {
 			for _, cah := range cache.Hashes {
@@ -72,7 +72,7 @@ func ForcePushDetect() CommitCacheDetect {
 			lhs = append(lhs, lh)
 		}
 
-		violations := [1]violation.Violation{violation.NewForcePushViolation(lhs)}
+		violations := [1]violation.Violation{violation.NewForcePushViolation(lhs, email)}
 
 		return true, violations[:], nil
 	}

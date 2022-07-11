@@ -41,12 +41,17 @@ func (*CommonViolation) Suggestion() (string, error) {
 	return "", ErrViolationMethodNotExist
 }
 
-// Suggestion implements Violation.
+// Author implements Violation.
 func (cv *CommonViolation) Author() (*github.Author, error) {
 	return cv.author, nil
 }
 
 // Severity implements Violation.
-func (p *CommonViolation) Severity() Severity {
+func (*CommonViolation) Severity() Severity {
 	return Suggestion
+}
+
+// Email implements Violation.
+func (cv *CommonViolation) Email() string {
+	return cv.author.Email
 }

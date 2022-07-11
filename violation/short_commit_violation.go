@@ -1,4 +1,3 @@
-// nolint:dupl
 package violation
 
 import (
@@ -10,12 +9,12 @@ import (
 
 func NewShortCommitViolation(
 	message string,
-	author string,
+	email string,
 ) *ShortCommitViolation {
 	violation := &ShortCommitViolation{
 		display: nil,
 		message: message,
-		author:  author,
+		email:   email,
 	}
 	violation.display = &display{violation}
 
@@ -26,45 +25,47 @@ func NewShortCommitViolation(
 type ShortCommitViolation struct {
 	*display
 	message string
-	author  string
+	email   string
 }
 
 // Name implements Violation.
-func (dvc *ShortCommitViolation) Name() string {
+func (sc *ShortCommitViolation) Name() string {
 	return "ShortCommitViolation"
 }
 
 // Message implements Violation.
-func (dvc *ShortCommitViolation) Message() string {
-	message := strings.ReplaceAll(dvc.message, "\n", " ")
+func (sc *ShortCommitViolation) Message() string {
+	message := strings.ReplaceAll(sc.message, "\n", " ")
 
 	return fmt.Sprintf(`Commit message \"%s\" is too short`, message)
 }
 
 // Suggestion implements Violation.
-func (dvc *ShortCommitViolation) Suggestion() (string, error) {
+func (sc *ShortCommitViolation) Suggestion() (string, error) {
 	return "Commit message is too short", nil
 }
 
 // Author implements Violation.
-func (dvc *ShortCommitViolation) Author() (*github.Author, error) {
-	return &github.Author{
-		Login:     dvc.author,
-		AvatarUrl: "",
-	}, nil
+func (sc *ShortCommitViolation) Author() (*github.Author, error) {
+	return nil, ErrViolationMethodNotExist
 }
 
 // FileLocation implements Violation.
-func (dvc *ShortCommitViolation) FileLocation() (string, error) {
+func (sc *ShortCommitViolation) FileLocation() (string, error) {
 	return "", ErrViolationMethodNotExist
 }
 
 // LineLocation implements Violation.
-func (dvc *ShortCommitViolation) LineLocation() (int, error) {
+func (sc *ShortCommitViolation) LineLocation() (int, error) {
 	return 0, ErrViolationMethodNotExist
 }
 
 // Severity implements Violation.
-func (p *ShortCommitViolation) Severity() Severity {
+func (sc *ShortCommitViolation) Severity() Severity {
 	return Suggestion
+}
+
+// Email implements Violation.
+func (sc *ShortCommitViolation) Email() string {
+	return sc.email
 }

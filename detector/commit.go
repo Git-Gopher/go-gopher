@@ -83,7 +83,7 @@ func DiffMatchesMessageDetect() CommitDetect {
 			}
 		}
 
-		return false, violation.NewDescriptiveCommitViolation(commit.Message, commit.Author.Name), nil
+		return false, violation.NewDescriptiveCommitViolation(commit.Message, commit.Author.Email), nil
 	}
 }
 
@@ -102,7 +102,7 @@ func ShortCommitMessageDetect() CommitDetect {
 
 		words := strings.Split(commit.Message, " ")
 		if len(words) < 3 {
-			return false, violation.NewShortCommitViolation(commit.Message, commit.Author.Name), nil
+			return false, violation.NewShortCommitViolation(commit.Message, commit.Author.Email), nil
 		}
 
 		return true, nil, nil

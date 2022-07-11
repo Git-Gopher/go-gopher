@@ -16,6 +16,10 @@ type BranchGraph struct {
 type CommitGraph struct {
 	// Hash of the commit
 	Hash string
+	// Author
+	Author Signature
+	// Committer
+	Committer Signature
 	// Parent commits represented as a CommitGraph
 	ParentCommits []*CommitGraph
 }
@@ -34,13 +38,21 @@ func FetchBranchGraph(head *object.Commit) *BranchGraph {
 
 	// head of the graph
 	hash := head.Hash.String()
-	headGraph := &CommitGraph{Hash: hash}
+	headGraph := &CommitGraph{
+		Hash:      hash,
+		Author:    *NewSignature(&head.Author),
+		Committer: *NewSignature(&head.Committer),
+	}
 	branchGraph.Head = headGraph
 
 	err := head.Parents().ForEach(
 		func(c *object.Commit) error {
 			hash := c.Hash.String()
-			commit := &CommitGraph{Hash: hash}
+			commit := &CommitGraph{
+				Hash:      hash,
+				Author:    *NewSignature(&head.Author),
+				Committer: *NewSignature(&head.Committer),
+			}
 
 			// add commit to stack and cache
 			commitRefs = append(commitRefs, c)
@@ -80,7 +92,11 @@ func FetchBranchGraph(head *object.Commit) *BranchGraph {
 				}
 
 				// add parent to stack to be processed
-				parent := &CommitGraph{Hash: hash}
+				parent := &CommitGraph{
+					Hash:      hash,
+					Author:    *NewSignature(&head.Author),
+					Committer: *NewSignature(&head.Committer),
+				}
 				commitRefs = append(commitRefs, c)
 				commitGraphRefs = append(commitGraphRefs, parent)
 				commitGraphMap[hash] = parent

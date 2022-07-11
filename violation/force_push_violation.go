@@ -8,10 +8,12 @@ import (
 
 func NewForcePushViolation(
 	lostCommits []string,
+	email string,
 ) *ForcePushViolation {
 	violation := &ForcePushViolation{
 		display:     nil,
 		lostCommits: lostCommits,
+		email:       email,
 	}
 	violation.display = &display{violation}
 
@@ -23,6 +25,7 @@ func NewForcePushViolation(
 type ForcePushViolation struct {
 	*display
 	lostCommits []string
+	email       string
 }
 
 // FileLocation implements Violation.
@@ -58,6 +61,11 @@ func (f *ForcePushViolation) Author() (*github.Author, error) {
 }
 
 // Severity implements Violation.
-func (p *ForcePushViolation) Severity() Severity {
+func (f *ForcePushViolation) Severity() Severity {
 	return Violated
+}
+
+// Email implements Violation.
+func (f *ForcePushViolation) Email() string {
+	return f.email
 }

@@ -68,7 +68,9 @@ func StaleBranchDetect() BranchDetect {
 
 	return func(branch *local.Branch) (bool, violation.Violation, error) {
 		if time.Since(branch.Head.Committer.When) > StaleBranchTime {
-			return true, violation.NewStaleBranchViolation(branch.Name, StaleBranchTime), nil
+			email := branch.Head.Committer.Email
+
+			return true, violation.NewStaleBranchViolation(branch.Name, StaleBranchTime, email), nil
 		}
 
 		return false, nil, nil
