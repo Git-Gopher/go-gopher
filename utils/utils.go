@@ -132,31 +132,30 @@ func Exists(name string) (bool, error) {
 	return false, fmt.Errorf("Could not check file exists status: %w", err)
 }
 
-func DownloadFile(filepath string, url string) error {
-
-	// Get the data
+func DownloadFile(path string, url string) error {
 	resp, err := http.Get(url)
 	if err != nil {
-		return err
+		return fmt.Errorf("failed GET url: %w", err)
 	}
 	defer resp.Body.Close()
 
 	// Create the file
-	out, err := os.Create(filepath)
+	out, err := os.Create(filepath.Clean(path))
 	if err != nil {
-		return err
+		return fmt.Errorf("failed create file: %w", err)
 	}
 	defer out.Close()
 
 	// Write the body to file
 	_, err = io.Copy(out, resp.Body)
+
 	return err
 }
 
 func Unzip(src, dest string) error {
 	r, err := zip.OpenReader(src)
 	if err != nil {
-		return err
+		return fmt.Errorf("failed to open zip: %w", err)
 	}
 	defer func() {
 		if err := r.Close(); err != nil {
@@ -170,7 +169,7 @@ func Unzip(src, dest string) error {
 	extractAndWriteFile := func(f *zip.File) error {
 		rc, err := f.Open()
 		if err != nil {
-			return err
+			return fmt.Errorf("could not open file: %w", err)
 		}
 		defer func() {
 			if err := rc.Close(); err != nil {
@@ -189,21 +188,23 @@ func Unzip(src, dest string) error {
 			os.MkdirAll(path, f.Mode())
 		} else {
 			os.MkdirAll(filepath.Dir(path), f.Mode())
-			f, err := os.OpenFile(path, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, f.Mode())
+			f, err := os.OpenFile(filepath.Clean(path), os.O_WRONLY|os.O_CREATE|os.O_TRUNC, f.Mode())
 			if err != nil {
-				return err
+				return fmt.Errorf("failed to open file: %w", err)
 			}
 			defer func() {
-				if err := f.Close(); err != nil {
+				if err = f.Close(); err != nil {
 					panic(err)
 				}
 			}()
 
+			// nolint: gosec
 			_, err = io.Copy(f, rc)
 			if err != nil {
-				return err
+				return fmt.Errorf("failed copy bytes to file: %w", err)
 			}
 		}
+
 		return nil
 	}
 
