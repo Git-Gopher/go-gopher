@@ -1,9 +1,11 @@
 package main
 
 import (
+	"encoding/json"
 	"errors"
 	"fmt"
 	"io/fs"
+	"io/ioutil"
 	"log"
 	"os"
 	"path/filepath"
@@ -142,46 +144,7 @@ func main() {
 			Name:    "debug",
 			Aliases: []string{"d"},
 			Usage:   "debug/development subcommands",
-			Flags:   []cli.Flag{},
 			Subcommands: []*cli.Command{
-				{
-					Name:  "download",
-					Usage: "Download artifact logs from workflow runs for a batch of repositories",
-					Action: func(ctx *cli.Context) error {
-
-						token := os.Getenv("GITHUB_TOKEN")
-						// ownerUrl := ctx.Args().Get(0)
-						ts := oauth2.StaticTokenSource(
-							&oauth2.Token{AccessToken: token},
-						)
-						tc := oauth2.NewClient(ctx.Context, ts)
-
-						client := github.NewClient(tc)
-
-						// list all repositories for the authenticated user
-						repos, _, err := client.Repositories.List(ctx.Context, "Git-Gopher", nil)
-						if err != nil {
-							fmt.Printf("err: %v\n", err)
-						}
-						for _, r := range repos {
-							// fmt.Printf("r.URL: %v\n", *r.URL)
-							list, res, err := client.Actions.ListArtifacts(ctx.Context, *r.Owner.Login, *r.Name, &github.ListOptions{Page: 100, PerPage: 100})
-							fmt.Printf("err: %v\n", err)
-							fmt.Printf("res: %v\n", *res)
-							fmt.Printf("list.GetTotalCount(): %v\n", list.GetTotalCount())
-						}
-
-						// Fetch each run id
-						// Fetch all artifacts
-						// Unzip jsons
-						// Clean repo
-						// Add progressions
-						// client.Actions.DownloadArtifact()
-						// fmt.Printf("repos: %v\n", repos)
-
-						return nil
-					},
-				},
 				{
 					Name:    "feature",
 					Aliases: []string{"feat", "features"},
@@ -286,6 +249,106 @@ func main() {
 						return nil
 					},
 				},
+			},
+		},
+		{
+			Name:  "download",
+			Usage: "Download artifact logs from workflow runs for a batch of repositories",
+			Flags: []cli.Flag{
+				&cli.BoolFlag{
+					Name:     "dirty",
+					Usage:    "do not clean up, leaving zips and raw logs",
+					Required: false,
+				},
+			},
+			Action: func(ctx *cli.Context) error {
+				org := ctx.Args().Get(0)
+				ts := oauth2.StaticTokenSource(
+					&oauth2.Token{AccessToken: os.Getenv("GITHUB_TOKEN")},
+				)
+				tc := oauth2.NewClient(ctx.Context, ts)
+				client := github.NewClient(tc)
+
+				var logs []interface{}
+
+				log.Printf("Fetching repositories for organisation %s...\n", org)
+				repos, _, err := client.Repositories.ListByOrg(ctx.Context, org, nil)
+				if err != nil {
+					log.Fatalf("Could not fetch orginisation repositories: %v", err)
+				}
+
+				for _, r := range repos {
+					arts, _, err := client.Actions.ListArtifacts(ctx.Context, org, *r.Name, nil)
+					if err != nil {
+						log.Fatalf("Could not fetch artifact list: %v", err)
+					}
+
+					for _, a := range arts.Artifacts {
+						log.Printf("Downloading artifacts for %s/%s...\n", org, *r.Name)
+						url, _, err := client.Actions.DownloadArtifact(ctx.Context, org, *r.Name, *a.ID, true)
+						if err != nil {
+							log.Fatalf("could not fetch artifact url: %v", err)
+						}
+
+						pathZip := fmt.Sprintf("output/log-%s-%s-%d.zip", org, *r.Name, *a.ID)
+						pathJson := fmt.Sprintf("output/log-%s-%s-%d", org, *r.Name, *a.ID)
+
+						log.Printf("Downloading artifact %s...\n", pathZip)
+						err = utils.DownloadFile(pathZip, url.String())
+						if err != nil {
+							log.Fatalf("could not download artifact: %v", err)
+						}
+
+						log.Printf("Unzipping %s...\n", pathZip)
+						utils.Unzip(pathZip, pathJson)
+					}
+				}
+
+				logCount := 0
+				filepath.Walk("output", func(path string, info fs.FileInfo, err error) error {
+					if err != nil {
+						return err
+					}
+					if info.IsDir() {
+						return nil
+					}
+
+					if matched, err := filepath.Match("*.json", filepath.Base(path)); err != nil {
+						return err
+					} else if matched {
+						logCount++
+
+						log.Printf("Appending %s to merged log...", path)
+						file, err := ioutil.ReadFile(path)
+						if err != nil {
+							log.Fatalf("Could not read log file: %v", err)
+						}
+
+						var data interface{}
+						json.Unmarshal(file, &data)
+						logs = append(logs, data)
+					}
+					return nil
+				})
+
+				bytes, err := json.MarshalIndent(logs, "", " ")
+				if err != nil {
+					return fmt.Errorf("error marshaling merged log: %w", err)
+				}
+
+				logPath := fmt.Sprintf("output/merged-log-%s.json", "Git-Gopher")
+				if err := ioutil.WriteFile(logPath, bytes, 0o600); err != nil {
+					return fmt.Errorf("error writing merged log: %w", err)
+				}
+
+				log.Printf("Downloaded %d logs from %s and merged to %s", logCount, "Git-Gopher", logPath)
+
+				// TODO: Clean up output
+				if !ctx.Bool("dirty") {
+					log.Print("dirty")
+				}
+
+				return nil
 			},
 		},
 		{
