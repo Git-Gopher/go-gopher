@@ -9,7 +9,12 @@ import (
 	"github.com/Git-Gopher/go-gopher/violation"
 )
 
-type CommitCacheDetect func(c *common, email string, current *cache.Cache, cache *cache.Cache) (bool, []violation.Violation, error)
+type CommitCacheDetect func(
+	c *common,
+	email string,
+	current *cache.Cache,
+	cache *cache.Cache,
+) (bool, []violation.Violation, error)
 
 type CommitCacheDetector struct {
 	violated   int

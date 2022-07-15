@@ -10,7 +10,7 @@ import (
 
 var ErrNotImplemented = fmt.Errorf("Not implemented")
 
-// common - common variables that are shared with all detectors
+// common - common variables that are shared with all detectors.
 type common struct {
 	owner string
 	repo  string
