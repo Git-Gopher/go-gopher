@@ -113,7 +113,7 @@ func (w *Workflow) Analyze(
 	if current != nil || caches != nil {
 		// assumes irst commit is the current user
 		email := model.Commits[0].Committer.Email
-		v, c, t, vs, err = w.RunCacheDetectors(email, current, caches)
+		v, c, t, vs, err = w.RunCacheDetectors(model.Owner, model.Name, email, current, caches)
 		if err != nil {
 			return 0, 0, 0, nil, fmt.Errorf("Failed to analyze workflow: %w", err)
 		}
@@ -157,7 +157,7 @@ func (w *Workflow) RunWeightedDetectors(model *enriched.EnrichedModel) (
 }
 
 // All cache detectors share the same current and cache, treated as readonly.
-func (w *Workflow) RunCacheDetectors(email string, current *cache.Cache, caches []*cache.Cache) (
+func (w *Workflow) RunCacheDetectors(owner, repo, email string, current *cache.Cache, caches []*cache.Cache) (
 	int,
 	int,
 	int,
@@ -167,7 +167,7 @@ func (w *Workflow) RunCacheDetectors(email string, current *cache.Cache, caches 
 	violated, count, total := 0, 0, 0
 	violations := []violation.Violation{}
 	for _, wd := range w.WeightedCacheDetectors {
-		if err := wd.Detector.Run(email, current, caches); err != nil {
+		if err := wd.Detector.Run(owner, repo, email, current, caches); err != nil {
 			return 0, 0, 0, nil, fmt.Errorf("Failed to analyze caches: %w", err)
 		}
 

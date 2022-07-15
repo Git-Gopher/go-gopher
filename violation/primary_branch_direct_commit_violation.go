@@ -3,13 +3,14 @@ package violation
 import (
 	"fmt"
 
+	"github.com/Git-Gopher/go-gopher/markup"
 	"github.com/Git-Gopher/go-gopher/model/remote"
 )
 
 func NewPrimaryBranchDirectCommitViolation(
-	primaryBranch string,
-	commitHash string,
-	parentHashes []string,
+	primaryBranch markup.Branch,
+	commitHash markup.Commit,
+	parentHashes []markup.Commit,
 	email string,
 ) *PrimaryBranchDirectCommitViolation {
 	violation := &PrimaryBranchDirectCommitViolation{
@@ -28,9 +29,9 @@ func NewPrimaryBranchDirectCommitViolation(
 // from feature branches.
 type PrimaryBranchDirectCommitViolation struct {
 	*display
-	parentHashes  []string
-	primaryBranch string
-	commitHash    string
+	primaryBranch markup.Branch
+	parentHashes  []markup.Commit
+	commitHash    markup.Commit
 	email         string
 }
 
@@ -48,7 +49,7 @@ func (*PrimaryBranchDirectCommitViolation) LineLocation() (int, error) {
 func (p *PrimaryBranchDirectCommitViolation) Message() string {
 	format := "Commit \"%s\" has been directly committed to the primary branch \"%s\""
 
-	return fmt.Sprintf(format, p.commitHash, p.primaryBranch)
+	return fmt.Sprintf(format, p.commitHash.Link(), p.primaryBranch.Link())
 }
 
 // Name implements Violation.
@@ -58,7 +59,7 @@ func (*PrimaryBranchDirectCommitViolation) Name() string {
 
 // Suggestion implements Violation.
 func (p *PrimaryBranchDirectCommitViolation) Suggestion() (string, error) {
-	return fmt.Sprintf("All commits should be merged in to the branch \"%s\" ", p.primaryBranch), nil
+	return fmt.Sprintf("All commits should be merged in to the branch \"%s\" ", p.primaryBranch.Link()), nil
 }
 
 // Author implements Violation.

@@ -3,12 +3,13 @@ package detector
 import (
 	"strings"
 
+	"github.com/Git-Gopher/go-gopher/markup"
 	"github.com/Git-Gopher/go-gopher/model/enriched"
 	"github.com/Git-Gopher/go-gopher/model/local"
 	"github.com/Git-Gopher/go-gopher/violation"
 )
 
-type CommitDetect func(commit *local.Commit) (bool, violation.Violation, error)
+type CommitDetect func(c *common, commit *local.Commit) (bool, violation.Violation, error)
 
 type CommitDetector struct {
 	violated   int
@@ -20,15 +21,21 @@ type CommitDetector struct {
 }
 
 func (cd *CommitDetector) Run(model *enriched.EnrichedModel) error {
+	if model == nil {
+		return nil
+	}
+
 	// Struct should be reset before each run, incase we are running it with a different model.
 	cd.violated = 0
 	cd.found = 0
 	cd.total = 0
 	cd.violations = make([]violation.Violation, 0)
 
-	for _, c := range model.Commits {
-		c := c
-		detected, violation, err := cd.detect(&c)
+	c := common{owner: model.Owner, repo: model.Name}
+
+	for _, co := range model.Commits {
+		co := co
+		detected, violation, err := cd.detect(&c, &co)
 		cd.total++
 		if err != nil {
 			return err
@@ -61,7 +68,7 @@ func NewCommitDetector(detect CommitDetect) *CommitDetector {
 // All commits on the main branch for github flow should be merged in,
 // meaning that they have two parents(the main branch and the feature branch).
 func BranchCommitDetect() CommitDetect {
-	return func(commit *local.Commit) (bool, violation.Violation, error) {
+	return func(c *common, commit *local.Commit) (bool, violation.Violation, error) {
 		if len(commit.ParentHashes) >= 2 {
 			return true, nil, nil
 		}
@@ -72,7 +79,7 @@ func BranchCommitDetect() CommitDetect {
 
 // XXX: Very very lazy. I am a true software engineer.
 func DiffMatchesMessageDetect() CommitDetect {
-	return func(commit *local.Commit) (bool, violation.Violation, error) {
+	return func(c *common, commit *local.Commit) (bool, violation.Violation, error) {
 		words := strings.Split(commit.Message, " ")
 		for _, diff := range commit.DiffToParents {
 			for _, word := range words {
@@ -83,13 +90,19 @@ func DiffMatchesMessageDetect() CommitDetect {
 			}
 		}
 
-		return false, violation.NewDescriptiveCommitViolation(commit.Message, commit.Author.Email), nil
+		return false, violation.NewDescriptiveCommitViolation(markup.Commit{
+			Hash: commit.Hash.String(),
+			GitHubLink: markup.GitHubLink{
+				Owner: c.owner,
+				Repo:  c.repo,
+			},
+		}, commit.Message, commit.Author.Email), nil
 	}
 }
 
 // Check if commit is less than 3 words.
 func ShortCommitMessageDetect() CommitDetect {
-	return func(commit *local.Commit) (bool, violation.Violation, error) {
+	return func(c *common, commit *local.Commit) (bool, violation.Violation, error) {
 		exclusions := []string{
 			"first commit",
 			"initial commit",
@@ -102,7 +115,17 @@ func ShortCommitMessageDetect() CommitDetect {
 
 		words := strings.Split(commit.Message, " ")
 		if len(words) < 3 {
-			return false, violation.NewShortCommitViolation(commit.Message, commit.Author.Email), nil
+			return false, violation.NewShortCommitViolation(
+				markup.Commit{
+					Hash: commit.Hash.String(),
+					GitHubLink: markup.GitHubLink{
+						Owner: c.owner,
+						Repo:  c.repo,
+					},
+				},
+				commit.Message,
+				commit.Author.Email,
+			), nil
 		}
 
 		return true, nil, nil

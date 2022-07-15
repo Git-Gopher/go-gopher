@@ -4,10 +4,11 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/Git-Gopher/go-gopher/markup"
 	"github.com/Git-Gopher/go-gopher/model/remote"
 )
 
-func NewStaleBranchViolation(branch string, duration time.Duration, email string) *StaleBranchViolation {
+func NewStaleBranchViolation(branch markup.Branch, duration time.Duration, email string) *StaleBranchViolation {
 	stale := &StaleBranchViolation{
 		display:  nil,
 		branch:   branch,
@@ -22,7 +23,7 @@ func NewStaleBranchViolation(branch string, duration time.Duration, email string
 // Example violation.
 type StaleBranchViolation struct {
 	*display
-	branch   string
+	branch   markup.Branch
 	duration time.Duration
 	email    string
 }
@@ -34,7 +35,11 @@ func (*StaleBranchViolation) Name() string {
 
 // Message implements Violation.
 func (sbv *StaleBranchViolation) Message() string {
-	return fmt.Sprintf("Branch \"%s\" is stale due it not being committed to for over %d months", sbv.branch, sbv.duration)
+	return fmt.Sprintf(
+		"Branch \"%s\" is stale due it not being committed to for over %d months",
+		sbv.branch.Link(),
+		sbv.duration,
+	)
 }
 
 // FileLocation implements Violation.

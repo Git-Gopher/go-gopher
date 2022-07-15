@@ -11,7 +11,7 @@ import (
 )
 
 // Branch name.
-type BranchCompareDetect func(branches []local.Branch) (int, []violation.Violation, error)
+type BranchCompareDetect func(c *common, branches []local.Branch) (int, []violation.Violation, error)
 
 // BranchCompareDetector is used to run a detector on multiple branch and compare each branch.
 type BranchCompareDetector struct {
@@ -24,17 +24,18 @@ type BranchCompareDetector struct {
 }
 
 func (b *BranchCompareDetector) Run(model *enriched.EnrichedModel) error {
-	b.violated = 0
-	b.found = 0
-	b.total = 0
-	b.violations = make([]violation.Violation, 0)
-
 	if model == nil {
 		return nil
 	}
 
+	b.violated = 0
+	b.found = 0
+	b.total = 0
+	b.violations = make([]violation.Violation, 0)
+	c := common{owner: model.Owner, repo: model.Name}
+
 	var err error
-	b.found, b.violations, err = b.detect(model.Branches)
+	b.found, b.violations, err = b.detect(&c, model.Branches)
 	if err != nil {
 		return fmt.Errorf("Error BranchCompareDetector: %w", err)
 	}
@@ -59,7 +60,7 @@ func NewBranchCompareDetector(detect BranchCompareDetect) *BranchCompareDetector
 // Deprecated: this detect is a demo
 // NewFeatureBranchNewDetect is used to detect if a branch has the prefix feature or feat.
 func NewFeatureBranchNameDetect() BranchCompareDetect {
-	return func(branches []local.Branch) (int, []violation.Violation, error) {
+	return func(c *common, branches []local.Branch) (int, []violation.Violation, error) {
 		branchRefs := []string{}
 		featureNames := [...]string{"feature", "feat"}
 
