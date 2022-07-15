@@ -255,14 +255,18 @@ func main() {
 			Name:  "download",
 			Usage: "Download artifact logs from workflow runs for a batch of repositories",
 			Flags: []cli.Flag{
-				&cli.BoolFlag{
-					Name:     "dirty",
-					Usage:    "do not clean up, leaving zips and raw logs",
-					Required: false,
+				&cli.StringFlag{
+					Name:        "output",
+					Aliases:     []string{"o"},
+					Usage:       "output directory",
+					DefaultText: "output",
+					Value:       "output",
+					Required:    false,
 				},
 			},
 			Action: func(ctx *cli.Context) error {
 				org := ctx.Args().Get(0)
+				out := ctx.String("output")
 				ts := oauth2.StaticTokenSource(
 					&oauth2.Token{AccessToken: os.Getenv("GITHUB_TOKEN")},
 				)
@@ -270,6 +274,10 @@ func main() {
 				client := github.NewClient(tc)
 
 				var logs []interface{}
+				err := os.MkdirAll(out, 0o755)
+				if err != nil {
+					log.Fatalf("Failed to create output directory: %v", err)
+				}
 
 				log.Printf("Fetching repositories for organisation %s...\n", org)
 				repos, _, err := client.Repositories.ListByOrg(ctx.Context, org, nil)
@@ -290,8 +298,8 @@ func main() {
 							log.Fatalf("could not fetch artifact url: %v", err)
 						}
 
-						pathZip := fmt.Sprintf("output/log-%s-%s-%d.zip", org, *r.Name, *a.ID)
-						pathJson := fmt.Sprintf("output/log-%s-%s-%d", org, *r.Name, *a.ID)
+						pathZip := fmt.Sprintf("%s/log-%s-%s-%d.zip", out, org, *r.Name, *a.ID)
+						pathJson := fmt.Sprintf("%s/log-%s-%s-%d", out, org, *r.Name, *a.ID)
 
 						log.Printf("Downloading artifact %s...\n", pathZip)
 						err = utils.DownloadFile(pathZip, url.String())
@@ -305,7 +313,7 @@ func main() {
 				}
 
 				logCount := 0
-				filepath.Walk("output", func(path string, info fs.FileInfo, err error) error {
+				filepath.Walk(out, func(path string, info fs.FileInfo, err error) error {
 					if err != nil {
 						return err
 					}
@@ -336,17 +344,12 @@ func main() {
 					return fmt.Errorf("error marshaling merged log: %w", err)
 				}
 
-				logPath := fmt.Sprintf("output/merged-log-%s.json", "Git-Gopher")
+				logPath := fmt.Sprintf("%s/merged-log-%s.json", out, org)
 				if err := ioutil.WriteFile(logPath, bytes, 0o600); err != nil {
 					return fmt.Errorf("error writing merged log: %w", err)
 				}
 
 				log.Printf("Downloaded %d logs from %s and merged to %s", logCount, "Git-Gopher", logPath)
-
-				// TODO: Clean up output
-				if !ctx.Bool("dirty") {
-					log.Print("dirty")
-				}
 
 				return nil
 			},

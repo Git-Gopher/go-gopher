@@ -22,7 +22,8 @@ import (
 
 var (
 	ErrUnsupportedSchema = errors.New("unsupported schema")
-	ErrRepo              = errors.New("Repository is nil")
+	ErrIllegalPath       = errors.New("illegal path")
+	ErrRepo              = errors.New("repository is nil")
 )
 
 // Load the environment variables from the .env file.
@@ -133,10 +134,12 @@ func Exists(name string) (bool, error) {
 }
 
 func DownloadFile(path string, url string) error {
+	// nolint: gosec
 	resp, err := http.Get(url)
 	if err != nil {
 		return fmt.Errorf("failed GET url: %w", err)
 	}
+	//nolint: errcheck
 	defer resp.Body.Close()
 
 	// Create the file
@@ -144,12 +147,17 @@ func DownloadFile(path string, url string) error {
 	if err != nil {
 		return fmt.Errorf("failed create file: %w", err)
 	}
+
+	//nolint: errcheck, gosec
 	defer out.Close()
 
 	// Write the body to file
 	_, err = io.Copy(out, resp.Body)
+	if err != nil {
+		return fmt.Errorf("failed to copy body buffer: %w", err)
+	}
 
-	return err
+	return nil
 }
 
 func Unzip(src, dest string) error {
@@ -158,12 +166,15 @@ func Unzip(src, dest string) error {
 		return fmt.Errorf("failed to open zip: %w", err)
 	}
 	defer func() {
-		if err := r.Close(); err != nil {
+		if err = r.Close(); err != nil {
 			panic(err)
 		}
 	}()
 
-	os.MkdirAll(dest, 0755)
+	err = os.MkdirAll(dest, 0o750)
+	if err != nil {
+		return fmt.Errorf("failed to create destination directory: %w", err)
+	}
 
 	// Closure to address file descriptors issue with all the deferred .Close() methods
 	extractAndWriteFile := func(f *zip.File) error {
@@ -172,22 +183,30 @@ func Unzip(src, dest string) error {
 			return fmt.Errorf("could not open file: %w", err)
 		}
 		defer func() {
-			if err := rc.Close(); err != nil {
+			if err = rc.Close(); err != nil {
 				panic(err)
 			}
 		}()
 
+		// nolint: gosec
 		path := filepath.Join(dest, f.Name)
 
 		// Check for ZipSlip (Directory traversal)
 		if !strings.HasPrefix(path, filepath.Clean(dest)+string(os.PathSeparator)) {
-			return fmt.Errorf("illegal file path: %s", path)
+			return fmt.Errorf("%w: %v", ErrIllegalPath, path)
 		}
 
+		// nolint: nestif
 		if f.FileInfo().IsDir() {
-			os.MkdirAll(path, f.Mode())
+			err = os.MkdirAll(path, f.Mode())
+			if err != nil {
+				return fmt.Errorf("failed to create directories: %w", err)
+			}
 		} else {
-			os.MkdirAll(filepath.Dir(path), f.Mode())
+			err = os.MkdirAll(filepath.Dir(path), f.Mode())
+			if err != nil {
+				return fmt.Errorf("failed to create directories: %w", err)
+			}
 			f, err := os.OpenFile(filepath.Clean(path), os.O_WRONLY|os.O_CREATE|os.O_TRUNC, f.Mode())
 			if err != nil {
 				return fmt.Errorf("failed to open file: %w", err)
