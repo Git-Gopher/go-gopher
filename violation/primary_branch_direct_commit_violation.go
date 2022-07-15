@@ -25,7 +25,6 @@ func NewPrimaryBranchDirectCommitViolation(
 		parentHashes:  parentHashes,
 		primaryBranch: primaryBranch,
 		commitHash:    commitHash,
-		email:         email,
 	}
 	violation.display = &display{violation}
 
@@ -40,7 +39,6 @@ type PrimaryBranchDirectCommitViolation struct {
 	primaryBranch markup.Branch
 	parentHashes  []markup.Commit
 	commitHash    markup.Commit
-	email         string
 }
 
 // Message implements Violation.

@@ -21,7 +21,6 @@ func NewForcePushViolation(
 			severity: Violated,
 		},
 		lostCommits: lostCommits,
-		email:       email,
 	}
 	violation.display = &display{violation}
 
@@ -34,7 +33,6 @@ type ForcePushViolation struct {
 	violation
 	*display
 	lostCommits []markup.Commit
-	email       string
 }
 
 // Message implements Violation.

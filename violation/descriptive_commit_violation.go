@@ -36,7 +36,6 @@ type DescriptiveCommitViolation struct {
 	*display
 	commit  markup.Commit
 	message string
-	email   string
 }
 
 // Message implements Violation.
