@@ -24,15 +24,15 @@ type BranchCompareDetector struct {
 }
 
 func (b *BranchCompareDetector) Run(model *enriched.EnrichedModel) error {
+	if model == nil {
+		return nil
+	}
+
 	b.violated = 0
 	b.found = 0
 	b.total = 0
 	b.violations = make([]violation.Violation, 0)
 	c := common{owner: model.Owner, repo: model.Name}
-
-	if model == nil {
-		return nil
-	}
 
 	var err error
 	b.found, b.violations, err = b.detect(&c, model.Branches)

@@ -47,6 +47,7 @@ func (bs *FeatureBranchDetector) Run(model *enriched.EnrichedModel) error {
 	bs.found = 0
 	bs.total = 0
 	bs.violations = make([]violation.Violation, 0)
+
 	c := common{owner: model.Owner, repo: model.Name}
 
 	bs.primaryBranch = model.MainGraph.BranchName

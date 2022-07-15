@@ -21,11 +21,16 @@ type CommitDetector struct {
 }
 
 func (cd *CommitDetector) Run(model *enriched.EnrichedModel) error {
+	if model == nil {
+		return nil
+	}
+
 	// Struct should be reset before each run, incase we are running it with a different model.
 	cd.violated = 0
 	cd.found = 0
 	cd.total = 0
 	cd.violations = make([]violation.Violation, 0)
+
 	c := common{owner: model.Owner, repo: model.Name}
 
 	for _, co := range model.Commits {

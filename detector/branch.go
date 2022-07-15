@@ -23,6 +23,10 @@ type BranchDetector struct {
 }
 
 func (bd *BranchDetector) Run(model *enriched.EnrichedModel) error {
+	if model == nil {
+		return nil
+	}
+
 	bd.violated = 0
 	bd.found = 0
 	bd.total = 0
