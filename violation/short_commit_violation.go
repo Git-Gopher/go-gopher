@@ -4,12 +4,12 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/Git-Gopher/go-gopher/markup"
 	"github.com/Git-Gopher/go-gopher/model/remote"
-	"github.com/Git-Gopher/go-gopher/utils"
 )
 
 func NewShortCommitViolation(
-	commit utils.Commit,
+	commit markup.Commit,
 	message string,
 	email string,
 ) *ShortCommitViolation {
@@ -27,7 +27,7 @@ func NewShortCommitViolation(
 // from feature branches.
 type ShortCommitViolation struct {
 	*display
-	commit  utils.Commit
+	commit  markup.Commit
 	message string
 	email   string
 }

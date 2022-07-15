@@ -4,8 +4,8 @@ import (
 	"sort"
 	"strings"
 
+	"github.com/Git-Gopher/go-gopher/markup"
 	"github.com/Git-Gopher/go-gopher/model/local"
-	"github.com/Git-Gopher/go-gopher/utils"
 	"github.com/Git-Gopher/go-gopher/violation"
 	"github.com/adrg/strutil"
 	"github.com/adrg/strutil/metrics"
@@ -48,9 +48,9 @@ func NewBranchNameConsistencyDetect() BranchCompareDetect {
 				// not consistent with others.
 				violations = append(
 					violations,
-					violation.NewBranchNameViolation(utils.Branch{
+					violation.NewBranchNameViolation(markup.Branch{
 						Name: branch.Name,
-						GitHubLink: utils.GitHubLink{
+						GitHubLink: markup.GitHubLink{
 							Owner: c.owner,
 							Repo:  c.repo,
 						},

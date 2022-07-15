@@ -3,9 +3,9 @@ package detector
 import (
 	"strings"
 
+	"github.com/Git-Gopher/go-gopher/markup"
 	"github.com/Git-Gopher/go-gopher/model/enriched"
 	"github.com/Git-Gopher/go-gopher/model/local"
-	"github.com/Git-Gopher/go-gopher/utils"
 	"github.com/Git-Gopher/go-gopher/violation"
 )
 
@@ -90,9 +90,9 @@ func DiffMatchesMessageDetect() CommitDetect {
 			}
 		}
 
-		return false, violation.NewDescriptiveCommitViolation(utils.Commit{
+		return false, violation.NewDescriptiveCommitViolation(markup.Commit{
 			Hash: commit.Hash.String(),
-			GitHubLink: utils.GitHubLink{
+			GitHubLink: markup.GitHubLink{
 				Owner: c.owner,
 				Repo:  c.repo,
 			},
@@ -116,9 +116,9 @@ func ShortCommitMessageDetect() CommitDetect {
 		words := strings.Split(commit.Message, " ")
 		if len(words) < 3 {
 			return false, violation.NewShortCommitViolation(
-				utils.Commit{
+				markup.Commit{
 					Hash: commit.Hash.String(),
-					GitHubLink: utils.GitHubLink{
+					GitHubLink: markup.GitHubLink{
 						Owner: c.owner,
 						Repo:  c.repo,
 					},

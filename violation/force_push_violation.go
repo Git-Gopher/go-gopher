@@ -4,12 +4,12 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/Git-Gopher/go-gopher/markup"
 	"github.com/Git-Gopher/go-gopher/model/remote"
-	"github.com/Git-Gopher/go-gopher/utils"
 )
 
 func NewForcePushViolation(
-	lostCommits []utils.Commit,
+	lostCommits []markup.Commit,
 	email string,
 ) *ForcePushViolation {
 	violation := &ForcePushViolation{
@@ -26,7 +26,7 @@ func NewForcePushViolation(
 // from feature branches.
 type ForcePushViolation struct {
 	*display
-	lostCommits []utils.Commit
+	lostCommits []markup.Commit
 	email       string
 }
 

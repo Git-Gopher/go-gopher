@@ -4,12 +4,12 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/Git-Gopher/go-gopher/markup"
 	"github.com/Git-Gopher/go-gopher/model/remote"
-	"github.com/Git-Gopher/go-gopher/utils"
 )
 
 func NewDescriptiveCommitViolation(
-	commit utils.Commit,
+	commit markup.Commit,
 	message string,
 	email string,
 ) *DescriptiveCommitViolation {
@@ -27,7 +27,7 @@ func NewDescriptiveCommitViolation(
 // from feature branches.
 type DescriptiveCommitViolation struct {
 	*display
-	commit  utils.Commit
+	commit  markup.Commit
 	message string
 	email   string
 }

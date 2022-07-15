@@ -4,9 +4,9 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/Git-Gopher/go-gopher/markup"
 	"github.com/Git-Gopher/go-gopher/model/enriched"
 	"github.com/Git-Gopher/go-gopher/model/local"
-	"github.com/Git-Gopher/go-gopher/utils"
 	"github.com/Git-Gopher/go-gopher/violation"
 )
 
@@ -76,9 +76,9 @@ func StaleBranchDetect() BranchDetect {
 		if time.Since(branch.Head.Committer.When) > StaleBranchTime {
 			email := branch.Head.Committer.Email
 
-			return true, violation.NewStaleBranchViolation(utils.Branch{
+			return true, violation.NewStaleBranchViolation(markup.Branch{
 				Name: branch.Name,
-				GitHubLink: utils.GitHubLink{
+				GitHubLink: markup.GitHubLink{
 					Owner: c.owner,
 					Repo:  c.repo,
 				},

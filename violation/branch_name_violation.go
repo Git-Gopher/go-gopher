@@ -3,12 +3,12 @@ package violation
 import (
 	"fmt"
 
+	"github.com/Git-Gopher/go-gopher/markup"
 	"github.com/Git-Gopher/go-gopher/model/remote"
-	"github.com/Git-Gopher/go-gopher/utils"
 )
 
 func NewBranchNameViolation(
-	branchRef utils.Branch,
+	branchRef markup.Branch,
 	substring string,
 	email string,
 ) *BranchNameViolation {
@@ -27,7 +27,7 @@ func NewBranchNameViolation(
 // from feature branches.
 type BranchNameViolation struct {
 	*display
-	branchRef utils.Branch
+	branchRef markup.Branch
 	substring string
 	email     string
 }

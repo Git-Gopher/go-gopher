@@ -4,11 +4,11 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/Git-Gopher/go-gopher/markup"
 	"github.com/Git-Gopher/go-gopher/model/remote"
-	"github.com/Git-Gopher/go-gopher/utils"
 )
 
-func NewStaleBranchViolation(branch utils.Branch, duration time.Duration, email string) *StaleBranchViolation {
+func NewStaleBranchViolation(branch markup.Branch, duration time.Duration, email string) *StaleBranchViolation {
 	stale := &StaleBranchViolation{
 		display:  nil,
 		branch:   branch,
@@ -23,7 +23,7 @@ func NewStaleBranchViolation(branch utils.Branch, duration time.Duration, email 
 // Example violation.
 type StaleBranchViolation struct {
 	*display
-	branch   utils.Branch
+	branch   markup.Branch
 	duration time.Duration
 	email    string
 }

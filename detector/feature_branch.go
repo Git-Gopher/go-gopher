@@ -4,9 +4,9 @@ import (
 	"errors"
 	"math"
 
+	"github.com/Git-Gopher/go-gopher/markup"
 	"github.com/Git-Gopher/go-gopher/model/enriched"
 	"github.com/Git-Gopher/go-gopher/model/local"
-	"github.com/Git-Gopher/go-gopher/utils"
 	"github.com/Git-Gopher/go-gopher/violation"
 )
 
@@ -124,23 +124,23 @@ func (bs *FeatureBranchDetector) checkNext(c *common, cg *local.CommitGraph) *lo
 
 	// only one parent (violation)
 	bs.violations = append(bs.violations, violation.NewPrimaryBranchDirectCommitViolation(
-		utils.Branch{
+		markup.Branch{
 			Name: bs.primaryBranch,
-			GitHubLink: utils.GitHubLink{
+			GitHubLink: markup.GitHubLink{
 				Owner: c.owner,
 				Repo:  c.repo,
 			},
 		},
-		utils.Commit{
+		markup.Commit{
 			Hash: cg.Hash,
-			GitHubLink: utils.GitHubLink{
+			GitHubLink: markup.GitHubLink{
 				Owner: c.owner,
 				Repo:  c.repo,
 			},
 		},
-		[]utils.Commit{{
+		[]markup.Commit{{
 			Hash: cg.ParentCommits[0].Hash,
-			GitHubLink: utils.GitHubLink{
+			GitHubLink: markup.GitHubLink{
 				Owner: c.owner,
 				Repo:  c.repo,
 			},
@@ -176,23 +176,23 @@ func (bs *FeatureBranchDetector) checkEnd(
 
 	// The parent has one commit
 	v = append(v, violation.NewPrimaryBranchDirectCommitViolation(
-		utils.Branch{
+		markup.Branch{
 			Name: bs.primaryBranch,
-			GitHubLink: utils.GitHubLink{
+			GitHubLink: markup.GitHubLink{
 				Owner: c.owner,
 				Repo:  c.repo,
 			},
 		},
-		utils.Commit{
+		markup.Commit{
 			Hash: cg.Hash,
-			GitHubLink: utils.GitHubLink{
+			GitHubLink: markup.GitHubLink{
 				Owner: c.owner,
 				Repo:  c.repo,
 			},
 		},
-		[]utils.Commit{{
+		[]markup.Commit{{
 			Hash: cg.ParentCommits[0].Hash,
-			GitHubLink: utils.GitHubLink{
+			GitHubLink: markup.GitHubLink{
 				Owner: c.owner,
 				Repo:  c.repo,
 			},

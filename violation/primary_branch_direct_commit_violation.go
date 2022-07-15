@@ -3,14 +3,14 @@ package violation
 import (
 	"fmt"
 
+	"github.com/Git-Gopher/go-gopher/markup"
 	"github.com/Git-Gopher/go-gopher/model/remote"
-	"github.com/Git-Gopher/go-gopher/utils"
 )
 
 func NewPrimaryBranchDirectCommitViolation(
-	primaryBranch utils.Branch,
-	commitHash utils.Commit,
-	parentHashes []utils.Commit,
+	primaryBranch markup.Branch,
+	commitHash markup.Commit,
+	parentHashes []markup.Commit,
 	email string,
 ) *PrimaryBranchDirectCommitViolation {
 	violation := &PrimaryBranchDirectCommitViolation{
@@ -29,9 +29,9 @@ func NewPrimaryBranchDirectCommitViolation(
 // from feature branches.
 type PrimaryBranchDirectCommitViolation struct {
 	*display
-	primaryBranch utils.Branch
-	parentHashes  []utils.Commit
-	commitHash    utils.Commit
+	primaryBranch markup.Branch
+	parentHashes  []markup.Commit
+	commitHash    markup.Commit
 	email         string
 }
 
