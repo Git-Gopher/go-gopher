@@ -2,21 +2,26 @@ package violation
 
 import (
 	"fmt"
+	"time"
 
 	"github.com/Git-Gopher/go-gopher/markup"
-	"github.com/Git-Gopher/go-gopher/model/remote"
 )
 
 func NewBranchNameViolation(
 	branchRef markup.Branch,
 	substring string,
 	email string,
+	time time.Time,
 ) *BranchNameViolation {
 	violation := &BranchNameViolation{
-		display:   nil,
+		violation: violation{
+			name:     "BranchNameViolation",
+			email:    email,
+			time:     time,
+			severity: Suggestion,
+		},
 		branchRef: branchRef,
 		substring: substring,
-		email:     email,
 	}
 	violation.display = &display{violation}
 
@@ -26,20 +31,10 @@ func NewBranchNameViolation(
 // BranchNameViolation is violation when a branch name is inconsistent with others.
 // from feature branches.
 type BranchNameViolation struct {
+	violation
 	*display
 	branchRef markup.Branch
 	substring string
-	email     string
-}
-
-// FileLocation implements Violation.
-func (*BranchNameViolation) FileLocation() (string, error) {
-	return "", ErrViolationMethodNotExist
-}
-
-// LineLocation implements Violation.
-func (*BranchNameViolation) LineLocation() (int, error) {
-	return 0, ErrViolationMethodNotExist
 }
 
 // Message implements Violation.
@@ -49,11 +44,6 @@ func (bn *BranchNameViolation) Message() string {
 	return fmt.Sprintf(format, bn.branchRef.Link())
 }
 
-// Name implements Violation.
-func (*BranchNameViolation) Name() string {
-	return "BranchNameViolation"
-}
-
 // Suggestion implements Violation.
 func (bn *BranchNameViolation) Suggestion() (string, error) {
 	if bn.substring == "" {
@@ -61,19 +51,4 @@ func (bn *BranchNameViolation) Suggestion() (string, error) {
 	}
 
 	return fmt.Sprintf("All branch names should consistent with the substring \"%s\" ", bn.substring), nil
-}
-
-// Author implements Violation.
-func (bn *BranchNameViolation) Author() (*remote.Author, error) {
-	return nil, ErrViolationMethodNotExist
-}
-
-// Severity implements Violation.
-func (bn *BranchNameViolation) Severity() Severity {
-	return Suggestion
-}
-
-// Email implements Violation.
-func (bn *BranchNameViolation) Email() string {
-	return bn.email
 }

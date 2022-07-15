@@ -2,9 +2,9 @@ package violation
 
 import (
 	"fmt"
+	"time"
 
 	"github.com/Git-Gopher/go-gopher/markup"
-	"github.com/Git-Gopher/go-gopher/model/remote"
 )
 
 func NewPrimaryBranchDirectCommitViolation(
@@ -12,8 +12,15 @@ func NewPrimaryBranchDirectCommitViolation(
 	commitHash markup.Commit,
 	parentHashes []markup.Commit,
 	email string,
+	time time.Time,
 ) *PrimaryBranchDirectCommitViolation {
 	violation := &PrimaryBranchDirectCommitViolation{
+		violation: violation{
+			name:     "PrimaryBranchDirectCommitViolation",
+			email:    email,
+			time:     time,
+			severity: Violated,
+		},
 		display:       nil,
 		parentHashes:  parentHashes,
 		primaryBranch: primaryBranch,
@@ -28,21 +35,12 @@ func NewPrimaryBranchDirectCommitViolation(
 // PrimaryBranchDirectCommitViolation is violation when a commit is done directly to primary branch without merging
 // from feature branches.
 type PrimaryBranchDirectCommitViolation struct {
+	violation
 	*display
 	primaryBranch markup.Branch
 	parentHashes  []markup.Commit
 	commitHash    markup.Commit
 	email         string
-}
-
-// FileLocation implements Violation.
-func (*PrimaryBranchDirectCommitViolation) FileLocation() (string, error) {
-	return "", ErrViolationMethodNotExist
-}
-
-// LineLocation implements Violation.
-func (*PrimaryBranchDirectCommitViolation) LineLocation() (int, error) {
-	return 0, ErrViolationMethodNotExist
 }
 
 // Message implements Violation.
@@ -52,27 +50,7 @@ func (p *PrimaryBranchDirectCommitViolation) Message() string {
 	return fmt.Sprintf(format, p.commitHash.Link(), p.primaryBranch.Link())
 }
 
-// Name implements Violation.
-func (*PrimaryBranchDirectCommitViolation) Name() string {
-	return "PrimaryBranchDirectCommitViolation"
-}
-
 // Suggestion implements Violation.
 func (p *PrimaryBranchDirectCommitViolation) Suggestion() (string, error) {
 	return fmt.Sprintf("All commits should be merged in to the branch \"%s\" ", p.primaryBranch.Link()), nil
-}
-
-// Author implements Violation.
-func (p *PrimaryBranchDirectCommitViolation) Author() (*remote.Author, error) {
-	return nil, ErrViolationMethodNotExist
-}
-
-// Severity implements Violation.
-func (p *PrimaryBranchDirectCommitViolation) Severity() Severity {
-	return Violated
-}
-
-// Severity implements Violation.
-func (p *PrimaryBranchDirectCommitViolation) Email() string {
-	return p.email
 }

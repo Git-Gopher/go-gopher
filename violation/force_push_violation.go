@@ -3,17 +3,23 @@ package violation
 import (
 	"fmt"
 	"strings"
+	"time"
 
 	"github.com/Git-Gopher/go-gopher/markup"
-	"github.com/Git-Gopher/go-gopher/model/remote"
 )
 
 func NewForcePushViolation(
 	lostCommits []markup.Commit,
 	email string,
+	time time.Time,
 ) *ForcePushViolation {
 	violation := &ForcePushViolation{
-		display:     nil,
+		violation: violation{
+			name:     "ForcePushViolation",
+			email:    email,
+			time:     time,
+			severity: Violated,
+		},
 		lostCommits: lostCommits,
 		email:       email,
 	}
@@ -25,19 +31,10 @@ func NewForcePushViolation(
 // Force push violation occurs whenever a branch is force pushed to, losing a series of commits
 // from feature branches.
 type ForcePushViolation struct {
+	violation
 	*display
 	lostCommits []markup.Commit
 	email       string
-}
-
-// FileLocation implements Violation.
-func (*ForcePushViolation) FileLocation() (string, error) {
-	return "", ErrViolationMethodNotExist
-}
-
-// LineLocation implements Violation.
-func (*ForcePushViolation) LineLocation() (int, error) {
-	return 0, ErrViolationMethodNotExist
 }
 
 // Message implements Violation.
@@ -51,11 +48,6 @@ func (f *ForcePushViolation) Message() string {
 	return fmt.Sprintf(format, strings.Join(commits, ",\n"))
 }
 
-// Name implements Violation.
-func (*ForcePushViolation) Name() string {
-	return "ForcePushViolation"
-}
-
 // Suggestion implements Violation.
 func (f *ForcePushViolation) Suggestion() (string, error) {
 	format := "Restore the following commits to restore the work lost on the branch:\n%s"
@@ -65,19 +57,4 @@ func (f *ForcePushViolation) Suggestion() (string, error) {
 	}
 
 	return fmt.Sprintf(format, strings.Join(commits, ",\n")), nil
-}
-
-// Author implements Violation.
-func (f *ForcePushViolation) Author() (*remote.Author, error) {
-	return nil, ErrViolationMethodNotExist
-}
-
-// Severity implements Violation.
-func (f *ForcePushViolation) Severity() Severity {
-	return Violated
-}
-
-// Email implements Violation.
-func (f *ForcePushViolation) Email() string {
-	return f.email
 }
