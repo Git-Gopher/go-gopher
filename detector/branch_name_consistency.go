@@ -48,13 +48,18 @@ func NewBranchNameConsistencyDetect() BranchCompareDetect {
 				// not consistent with others.
 				violations = append(
 					violations,
-					violation.NewBranchNameViolation(markup.Branch{
-						Name: branch.Name,
-						GitHubLink: markup.GitHubLink{
-							Owner: c.owner,
-							Repo:  c.repo,
+					violation.NewBranchNameViolation(
+						markup.Branch{
+							Name: branch.Name,
+							GitHubLink: markup.GitHubLink{
+								Owner: c.owner,
+								Repo:  c.repo,
+							},
 						},
-					}, substring, branch.Head.Committer.Email),
+						substring,
+						branch.Head.Committer.Email,
+						branch.Head.Committer.When,
+					),
 				)
 			}
 

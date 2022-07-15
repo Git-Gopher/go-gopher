@@ -90,30 +90,51 @@ func DiffMatchesMessageDetect() CommitDetect {
 			}
 		}
 
-		return false, violation.NewDescriptiveCommitViolation(markup.Commit{
-			Hash: commit.Hash.String(),
-			GitHubLink: markup.GitHubLink{
-				Owner: c.owner,
-				Repo:  c.repo,
+		return false, violation.NewDescriptiveCommitViolation(
+			markup.Commit{
+				Hash: commit.Hash.String(),
+				GitHubLink: markup.GitHubLink{
+					Owner: c.owner,
+					Repo:  c.repo,
+				},
 			},
-		}, commit.Message, commit.Author.Email), nil
+			commit.Message,
+			commit.Author.Email,
+			commit.Author.When,
+		), nil
 	}
 }
 
-// XXX: Very very lazy. I am a true software engineer.
+// UnresolvedDetect checks if a commit is unresolved.
 func UnresolvedDetect() CommitDetect {
-	return func(commit *local.Commit) (bool, violation.Violation, error) {
+	return func(common *common, commit *local.Commit) (bool, violation.Violation, error) {
 		for _, diff := range commit.DiffToParents {
 			lines := strings.Split(strings.ReplaceAll(diff.Addition, "\r\n", "\n"), "\n")
 			for _, line := range lines {
 				line = strings.TrimSpace(line)
 				if strings.HasPrefix(line, "<<<<<<") {
-					violation.NewUnresolvedMergeViolation(commit.Hash.String())
+					return true, violation.NewUnresolvedMergeViolation(
+						markup.Line{
+							File: markup.File{
+								Commit: markup.Commit{
+									GitHubLink: markup.GitHubLink{
+										Owner: common.owner,
+										Repo:  common.repo,
+									},
+									Hash: commit.Hash.String(),
+								},
+								Filepath: diff.Name,
+							},
+							Start: int(diff.Points[0].NewPosition),
+						},
+						commit.Author.Email,
+						commit.Author.When,
+					), nil
 				}
 			}
 		}
 
-		return false, violation.NewDescriptiveCommitViolation(commit.Message, commit.Author.Email), nil
+		return false, nil, nil
 	}
 }
 
@@ -142,6 +163,7 @@ func ShortCommitMessageDetect() CommitDetect {
 				},
 				commit.Message,
 				commit.Author.Email,
+				commit.Author.When,
 			), nil
 		}
 

@@ -85,7 +85,7 @@ func ForcePushDetect() CommitCacheDetect {
 			lhs = append(lhs, lh)
 		}
 
-		violations := [1]violation.Violation{violation.NewForcePushViolation(lhs, email)}
+		violations := [1]violation.Violation{violation.NewForcePushViolation(lhs, email, cache.Created)}
 
 		return true, violations[:], nil
 	}

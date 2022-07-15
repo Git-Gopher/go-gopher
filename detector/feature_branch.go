@@ -146,6 +146,7 @@ func (bs *FeatureBranchDetector) checkNext(c *common, cg *local.CommitGraph) *lo
 			},
 		}},
 		cg.Committer.Email,
+		cg.Committer.When,
 	))
 	bs.violated++
 
@@ -198,6 +199,7 @@ func (bs *FeatureBranchDetector) checkEnd(
 			},
 		}},
 		cg.Committer.Email,
+		cg.Committer.When,
 	))
 
 	return bs.checkEnd(c, cg.ParentCommits[0], v)
