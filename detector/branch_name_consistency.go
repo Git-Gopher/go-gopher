@@ -5,6 +5,7 @@ import (
 	"strings"
 
 	"github.com/Git-Gopher/go-gopher/model/local"
+	"github.com/Git-Gopher/go-gopher/utils"
 	"github.com/Git-Gopher/go-gopher/violation"
 	"github.com/adrg/strutil"
 	"github.com/adrg/strutil/metrics"
@@ -15,7 +16,7 @@ import (
 // Research: https://stackoverflow.com/questions/29476737/similarities-in-strings-for-name-matching
 // Methods: q-grams, longest common substring and longest common subsequence.
 func NewBranchNameConsistencyDetect() BranchCompareDetect {
-	return func(branches []local.Branch) (int, []violation.Violation, error) {
+	return func(c *common, branches []local.Branch) (int, []violation.Violation, error) {
 		branchRefs := make([]string, len(branches))
 		for i, branch := range branches {
 			branchRefs[i] = branch.Name
@@ -47,7 +48,13 @@ func NewBranchNameConsistencyDetect() BranchCompareDetect {
 				// not consistent with others.
 				violations = append(
 					violations,
-					violation.NewBranchNameViolation(branch.Name, substring, branch.Head.Committer.Email),
+					violation.NewBranchNameViolation(utils.Branch{
+						Name: branch.Name,
+						GitHubLink: utils.GitHubLink{
+							Owner: c.owner,
+							Repo:  c.repo,
+						},
+					}, substring, branch.Head.Committer.Email),
 				)
 			}
 

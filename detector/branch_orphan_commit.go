@@ -11,7 +11,7 @@ import (
 // - If branch has fallen behind primary branch by a certain amount then it has been failed to be maintained.
 // Use CreateIndependentCommits.
 func NewOrphanCommitDetector() BranchDetect {
-	return func(branch *local.Branch) (bool, violation.Violation, error) {
+	return func(c *common, branch *local.Branch) (bool, violation.Violation, error) {
 		// Run the detector on each branch and look for orphan commits
 
 		return false, nil, nil

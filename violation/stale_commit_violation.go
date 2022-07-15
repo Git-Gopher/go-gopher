@@ -1,9 +1,16 @@
 package violation
 
-import "github.com/Git-Gopher/go-gopher/model/remote"
+import (
+	"github.com/Git-Gopher/go-gopher/model/remote"
+	"github.com/Git-Gopher/go-gopher/utils"
+)
 
-func NewStaleCommitViolation(message string) *StaleCommitViolation {
-	common := &StaleCommitViolation{display: nil, message: message}
+func NewStaleCommitViolation(commit utils.Commit, message string) *StaleCommitViolation {
+	common := &StaleCommitViolation{
+		display: nil,
+		commit:  commit,
+		message: message,
+	}
 	common.display = &display{common}
 
 	return common
@@ -12,6 +19,7 @@ func NewStaleCommitViolation(message string) *StaleCommitViolation {
 // Example violation.
 type StaleCommitViolation struct {
 	*display
+	commit  utils.Commit
 	message string
 	email   string
 }

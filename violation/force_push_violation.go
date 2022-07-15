@@ -2,12 +2,14 @@ package violation
 
 import (
 	"fmt"
+	"strings"
 
 	"github.com/Git-Gopher/go-gopher/model/remote"
+	"github.com/Git-Gopher/go-gopher/utils"
 )
 
 func NewForcePushViolation(
-	lostCommits []string,
+	lostCommits []utils.Commit,
 	email string,
 ) *ForcePushViolation {
 	violation := &ForcePushViolation{
@@ -24,7 +26,7 @@ func NewForcePushViolation(
 // from feature branches.
 type ForcePushViolation struct {
 	*display
-	lostCommits []string
+	lostCommits []utils.Commit
 	email       string
 }
 
@@ -40,9 +42,13 @@ func (*ForcePushViolation) LineLocation() (int, error) {
 
 // Message implements Violation.
 func (f *ForcePushViolation) Message() string {
-	format := "The following commits have been lost: %v"
+	format := "The following commits have been lost:\n%s"
+	commits := make([]string, len(f.lostCommits))
+	for i, commit := range f.lostCommits {
+		commits[i] = commit.Link()
+	}
 
-	return fmt.Sprintf(format, f.lostCommits)
+	return fmt.Sprintf(format, strings.Join(commits, ",\n"))
 }
 
 // Name implements Violation.
@@ -52,7 +58,13 @@ func (*ForcePushViolation) Name() string {
 
 // Suggestion implements Violation.
 func (f *ForcePushViolation) Suggestion() (string, error) {
-	return fmt.Sprintf("Restore the following commits to restore the work lost on the branch: \"%v\" ", f.lostCommits), nil
+	format := "Restore the following commits to restore the work lost on the branch:\n%s"
+	commits := make([]string, len(f.lostCommits))
+	for i, commit := range f.lostCommits {
+		commits[i] = commit.Link()
+	}
+
+	return fmt.Sprintf(format, strings.Join(commits, ",\n")), nil
 }
 
 // Author implements Violation.

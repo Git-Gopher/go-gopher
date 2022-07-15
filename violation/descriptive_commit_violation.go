@@ -5,14 +5,17 @@ import (
 	"strings"
 
 	"github.com/Git-Gopher/go-gopher/model/remote"
+	"github.com/Git-Gopher/go-gopher/utils"
 )
 
 func NewDescriptiveCommitViolation(
+	commit utils.Commit,
 	message string,
 	email string,
 ) *DescriptiveCommitViolation {
 	violation := &DescriptiveCommitViolation{
 		display: nil,
+		commit:  commit,
 		message: message,
 		email:   email,
 	}
@@ -24,6 +27,7 @@ func NewDescriptiveCommitViolation(
 // from feature branches.
 type DescriptiveCommitViolation struct {
 	*display
+	commit  utils.Commit
 	message string
 	email   string
 }
@@ -37,8 +41,8 @@ func (dvc *DescriptiveCommitViolation) Name() string {
 func (dvc *DescriptiveCommitViolation) Message() string {
 	message := strings.ReplaceAll(dvc.message, "\n", " ")
 
-	return fmt.Sprintf(`The commit message \"%s\" may not be 
-		descriptive enough`, message)
+	return fmt.Sprintf(`The commit message \"%s\" on \"%s\" may not be 
+		descriptive enough`, message, dvc.commit.Link())
 }
 
 // Suggestion implements Violation.

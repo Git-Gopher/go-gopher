@@ -4,10 +4,11 @@ import (
 	"fmt"
 
 	"github.com/Git-Gopher/go-gopher/model/remote"
+	"github.com/Git-Gopher/go-gopher/utils"
 )
 
 func NewBranchNameViolation(
-	branchRef string,
+	branchRef utils.Branch,
 	substring string,
 	email string,
 ) *BranchNameViolation {
@@ -26,7 +27,7 @@ func NewBranchNameViolation(
 // from feature branches.
 type BranchNameViolation struct {
 	*display
-	branchRef string
+	branchRef utils.Branch
 	substring string
 	email     string
 }
@@ -45,7 +46,7 @@ func (*BranchNameViolation) LineLocation() (int, error) {
 func (bn *BranchNameViolation) Message() string {
 	format := "Branch \"%s\" name is too inconsistent with other branch names"
 
-	return fmt.Sprintf(format, bn.branchRef)
+	return fmt.Sprintf(format, bn.branchRef.Link())
 }
 
 // Name implements Violation.

@@ -6,6 +6,7 @@ import (
 
 	"github.com/Git-Gopher/go-gopher/model/enriched"
 	"github.com/Git-Gopher/go-gopher/model/local"
+	"github.com/Git-Gopher/go-gopher/utils"
 	"github.com/Git-Gopher/go-gopher/violation"
 )
 
@@ -46,10 +47,11 @@ func (bs *FeatureBranchDetector) Run(model *enriched.EnrichedModel) error {
 	bs.found = 0
 	bs.total = 0
 	bs.violations = make([]violation.Violation, 0)
+	c := common{owner: model.Owner, repo: model.Name}
 
 	bs.primaryBranch = model.MainGraph.BranchName
 
-	bs.checkNext(model.MainGraph.Head)
+	bs.checkNext(&c, model.MainGraph.Head)
 
 	return nil
 }
@@ -60,7 +62,7 @@ func (bs *FeatureBranchDetector) Run(model *enriched.EnrichedModel) error {
 // If the commit has one parent check if all commits after this commit has one parent.
 // If the commit has one parent and one parent after it has multiple parents,
 // this commit is a direct commit not from a feature branch (violation).
-func (bs *FeatureBranchDetector) checkNext(c *local.CommitGraph) *local.CommitGraph {
+func (bs *FeatureBranchDetector) checkNext(c *common, cg *local.CommitGraph) *local.CommitGraph {
 	if c == nil {
 		return nil
 	}
@@ -68,18 +70,18 @@ func (bs *FeatureBranchDetector) checkNext(c *local.CommitGraph) *local.CommitGr
 	bs.total += 1
 
 	// if it has no parents
-	if len(c.ParentCommits) == 0 {
+	if len(cg.ParentCommits) == 0 {
 		return nil
 	}
 
 	// if it has multiple parents
-	if len(c.ParentCommits) > 1 {
-		for _, child := range c.ParentCommits {
+	if len(cg.ParentCommits) > 1 {
+		for _, child := range cg.ParentCommits {
 			if len(child.ParentCommits) > 1 {
 				bs.found += 1
 				// skip other branch
 
-				return bs.checkNext(child)
+				return bs.checkNext(c, child)
 			}
 		}
 
@@ -89,8 +91,8 @@ func (bs *FeatureBranchDetector) checkNext(c *local.CommitGraph) *local.CommitGr
 		var violations []violation.Violation
 		var nextCommit *local.CommitGraph
 
-		for _, child := range c.ParentCommits {
-			next, v := bs.checkEnd(child, []violation.Violation{})
+		for _, child := range cg.ParentCommits {
+			next, v := bs.checkEnd(c, child, []violation.Violation{})
 			if next == nil {
 				// no more commits to check
 				bs.violations = append(bs.violations, v...)
@@ -107,10 +109,10 @@ func (bs *FeatureBranchDetector) checkNext(c *local.CommitGraph) *local.CommitGr
 
 		bs.violations = append(bs.violations, violations...)
 
-		return bs.checkNext(nextCommit)
+		return bs.checkNext(c, nextCommit)
 	}
 
-	next, v := bs.checkEnd(c.ParentCommits[0], []violation.Violation{})
+	next, v := bs.checkEnd(c, cg.ParentCommits[0], []violation.Violation{})
 	if next == nil {
 		// no more commits to check
 		bs.violations = append(bs.violations, v...)
@@ -121,20 +123,39 @@ func (bs *FeatureBranchDetector) checkNext(c *local.CommitGraph) *local.CommitGr
 
 	// only one parent (violation)
 	bs.violations = append(bs.violations, violation.NewPrimaryBranchDirectCommitViolation(
-		bs.primaryBranch,
-		c.Hash,
-		[]string{c.ParentCommits[0].Hash},
-		c.Committer.Email,
+		utils.Branch{
+			Name: bs.primaryBranch,
+			GitHubLink: utils.GitHubLink{
+				Owner: c.owner,
+				Repo:  c.repo,
+			},
+		},
+		utils.Commit{
+			Hash: cg.Hash,
+			GitHubLink: utils.GitHubLink{
+				Owner: c.owner,
+				Repo:  c.repo,
+			},
+		},
+		[]utils.Commit{{
+			Hash: cg.ParentCommits[0].Hash,
+			GitHubLink: utils.GitHubLink{
+				Owner: c.owner,
+				Repo:  c.repo,
+			},
+		}},
+		cg.Committer.Email,
 	))
 	bs.violated++
 
-	return bs.checkNext(c.ParentCommits[0])
+	return bs.checkNext(c, cg.ParentCommits[0])
 }
 
 // Check if the commit is made as the start of the branch
 // if not return last commit with two parent and associated violations.
 func (bs *FeatureBranchDetector) checkEnd(
-	c *local.CommitGraph,
+	c *common,
+	cg *local.CommitGraph,
 	v []violation.Violation,
 ) (*local.CommitGraph, []violation.Violation) {
 	if c == nil {
@@ -142,25 +163,43 @@ func (bs *FeatureBranchDetector) checkEnd(
 	}
 
 	// No more commits to recursive check
-	if len(c.ParentCommits) == 0 {
+	if len(cg.ParentCommits) == 0 {
 		// All violations are removed as the start of the branch
 		return nil, []violation.Violation{}
 	}
 
 	// The parent has two commits
-	if len(c.ParentCommits) > 1 {
-		return c, v
+	if len(cg.ParentCommits) > 1 {
+		return cg, v
 	}
 
 	// The parent has one commit
 	v = append(v, violation.NewPrimaryBranchDirectCommitViolation(
-		bs.primaryBranch,
-		c.Hash,
-		[]string{c.ParentCommits[0].Hash},
-		c.Committer.Email,
+		utils.Branch{
+			Name: bs.primaryBranch,
+			GitHubLink: utils.GitHubLink{
+				Owner: c.owner,
+				Repo:  c.repo,
+			},
+		},
+		utils.Commit{
+			Hash: cg.Hash,
+			GitHubLink: utils.GitHubLink{
+				Owner: c.owner,
+				Repo:  c.repo,
+			},
+		},
+		[]utils.Commit{{
+			Hash: cg.ParentCommits[0].Hash,
+			GitHubLink: utils.GitHubLink{
+				Owner: c.owner,
+				Repo:  c.repo,
+			},
+		}},
+		cg.Committer.Email,
 	))
 
-	return bs.checkEnd(c.ParentCommits[0], v)
+	return bs.checkEnd(c, cg.ParentCommits[0], v)
 }
 
 func (bs *FeatureBranchDetector) Result() (int, int, int, []violation.Violation) {

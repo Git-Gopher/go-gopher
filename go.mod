@@ -10,6 +10,7 @@ require (
 	github.com/google/go-github/v45 v45.2.0
 	github.com/joho/godotenv v1.4.0
 	github.com/montanaflynn/stats v0.6.6
+	github.com/savioxavier/termlink v1.2.1
 	github.com/shurcooL/githubv4 v0.0.0-20220520033151-0b4e3294ff00
 	github.com/urfave/cli/v2 v2.8.1
 	github.com/whilp/git-urls v1.0.0
@@ -28,6 +29,7 @@ require (
 	github.com/google/go-querystring v1.1.0 // indirect
 	github.com/imdario/mergo v0.3.12 // indirect
 	github.com/jbenet/go-context v0.0.0-20150711004518-d14ea06fba99 // indirect
+	github.com/jwalton/go-supportscolor v1.1.0 // indirect
 	github.com/kevinburke/ssh_config v0.0.0-20201106050909-4977a11b4351 // indirect
 	github.com/mitchellh/go-homedir v1.1.0 // indirect
 	github.com/russross/blackfriday/v2 v2.1.0 // indirect
@@ -38,6 +40,7 @@ require (
 	golang.org/x/crypto v0.0.0-20210817164053-32db794688a5 // indirect
 	golang.org/x/net v0.0.0-20220526153639-5463443f8c37 // indirect
 	golang.org/x/sys v0.0.0-20220520151302-bc2c85ada10a // indirect
+	golang.org/x/term v0.0.0-20210927222741-03fcf44c2211 // indirect
 	google.golang.org/appengine v1.6.7 // indirect
 	google.golang.org/protobuf v1.25.0 // indirect
 	gopkg.in/warnings.v0 v0.1.2 // indirect

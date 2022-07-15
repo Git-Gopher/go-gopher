@@ -5,14 +5,17 @@ import (
 	"strings"
 
 	"github.com/Git-Gopher/go-gopher/model/remote"
+	"github.com/Git-Gopher/go-gopher/utils"
 )
 
 func NewShortCommitViolation(
+	commit utils.Commit,
 	message string,
 	email string,
 ) *ShortCommitViolation {
 	violation := &ShortCommitViolation{
 		display: nil,
+		commit:  commit,
 		message: message,
 		email:   email,
 	}
@@ -24,6 +27,7 @@ func NewShortCommitViolation(
 // from feature branches.
 type ShortCommitViolation struct {
 	*display
+	commit  utils.Commit
 	message string
 	email   string
 }
@@ -37,7 +41,7 @@ func (sc *ShortCommitViolation) Name() string {
 func (sc *ShortCommitViolation) Message() string {
 	message := strings.ReplaceAll(sc.message, "\n", " ")
 
-	return fmt.Sprintf(`Commit message \"%s\" is too short`, message)
+	return fmt.Sprintf(`Commit message \"%s\" on \"%s\" is too short`, message, sc.commit.Link())
 }
 
 // Suggestion implements Violation.
