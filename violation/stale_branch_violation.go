@@ -17,7 +17,6 @@ func NewStaleBranchViolation(branch markup.Branch, duration time.Duration, email
 		},
 		branch:   branch,
 		duration: duration,
-		email:    email,
 	}
 	stale.display = &display{stale}
 
@@ -30,7 +29,6 @@ type StaleBranchViolation struct {
 	*display
 	branch   markup.Branch
 	duration time.Duration
-	email    string
 }
 
 // Message implements Violation.

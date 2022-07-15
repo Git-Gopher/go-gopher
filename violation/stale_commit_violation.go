@@ -29,7 +29,6 @@ type StaleCommitViolation struct {
 	*display
 	commit  markup.Commit
 	message string
-	email   string
 }
 
 // Name returns the name of the Violation.

@@ -19,7 +19,6 @@ func NewUnresolvedMergeViolation(
 			time:     time,
 			severity: Suggestion,
 		},
-		email: email,
 	}
 	violation.display = &display{violation}
 
@@ -30,8 +29,7 @@ func NewUnresolvedMergeViolation(
 type UnresolvedMergeViolation struct {
 	violation
 	*display
-	line  markup.Line
-	email string
+	line markup.Line
 }
 
 // Message implements Violation.

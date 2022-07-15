@@ -23,7 +23,6 @@ func NewShortCommitViolation(
 		},
 		commit:  commit,
 		message: message,
-		email:   email,
 	}
 	violation.display = &display{violation}
 
@@ -36,7 +35,6 @@ type ShortCommitViolation struct {
 	*display
 	commit  markup.Commit
 	message string
-	email   string
 }
 
 // Message implements Violation.
