@@ -16,6 +16,7 @@ import (
 	"github.com/Git-Gopher/go-gopher/config"
 	"github.com/Git-Gopher/go-gopher/detector"
 	"github.com/Git-Gopher/go-gopher/model/enriched"
+	"github.com/Git-Gopher/go-gopher/model/remote"
 	"github.com/Git-Gopher/go-gopher/utils"
 	"github.com/Git-Gopher/go-gopher/violation"
 )
@@ -48,22 +49,22 @@ var (
 )
 
 type Workflow struct {
-	Name                    string                  `json:"name"`
-	WeightedCommitDetectors []WeightedDetector      `json:"weightedCommitDetectors"`
-	WeightedCacheDetectors  []WeightedCacheDetector `json:"weightedCacheDetectors"`
-	Violations              []violation.Violation
+	Name                    string
+	WeightedCommitDetectors []WeightedDetector      `json:"-"`
+	WeightedCacheDetectors  []WeightedCacheDetector `json:"-"`
+	Violations              []violation.Violation   `json:"-"`
 	Count                   int
 	Total                   int
 }
 
 type WeightedDetector struct {
-	Weight   int               `json:"weight"`
-	Detector detector.Detector `json:"detector"`
+	Weight   int
+	Detector detector.Detector
 }
 
 type WeightedCacheDetector struct {
-	Weight   int                    `json:"weight"`
-	Detector detector.CacheDetector `json:"detector"`
+	Weight   int
+	Detector detector.CacheDetector
 }
 
 func GithubFlowWorkflow(cfg *config.Config) *Workflow {
@@ -303,15 +304,56 @@ func configureDetectors(cfg *config.Config) ([]WeightedDetector, []WeightedCache
 
 // Write a JSON log of the workflow run.
 // Assumes that the workflow is in a state that it has run to create a meaningful log.
-func (w *Workflow) WriteLog(em enriched.EnrichedModel) error {
+func (w *Workflow) WriteLog(em enriched.EnrichedModel, cfg *config.Config) error {
+	// Interface types within workflwo mean we need to reconsume the interface to get the concrete type.
+	type LogViolation struct {
+		Name         string
+		Message      string
+		Suggestion   string
+		Email        string
+		Author       remote.Author
+		FileLocation string
+		LineLocation int
+		Severity     int
+	}
+
 	type Log struct {
-		Date     time.Time `json:"date"`
-		Workflow Workflow  `json:"workflow"`
+		Date       time.Time
+		Workflow   Workflow
+		Config     config.Config
+		Violations []LogViolation
+		Model      enriched.EnrichedModel
+	}
+
+	LogViolations := make([]LogViolation, len(w.Violations))
+
+	for i, v := range w.Violations {
+		suggestion, _ := v.Suggestion()
+		author, err := v.Author()
+		if err != nil {
+			author = &remote.Author{}
+		}
+
+		fileLocation, _ := v.FileLocation()
+		lineLocation, _ := v.LineLocation()
+		LogViolations[i] = LogViolation{
+			Name:         v.Name(),
+			Message:      v.Message(),
+			Suggestion:   suggestion,
+			Email:        v.Email(),
+			Author:       *author,
+			FileLocation: fileLocation,
+			LineLocation: lineLocation,
+			Severity:     int(v.Severity()),
+		}
 	}
 
 	log := Log{
-		Date:     time.Now(),
-		Workflow: *w,
+		Date:       time.Now(),
+		Workflow:   *w,
+		Config:     *cfg,
+		Violations: LogViolations,
+		Model:      em,
 	}
 
 	bytes, err := json.MarshalIndent(log, "", "")

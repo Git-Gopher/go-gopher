@@ -10,18 +10,18 @@ import (
 
 type EnrichedModel struct {
 	// local.GitModel
-	Owner        string
-	Name         string
-	URL          string
-	Commits      []local.Commit
-	Branches     []local.Branch
-	MainGraph    *local.BranchGraph    // Graph representation of commits in the main branch
-	BranchMatrix []*local.BranchMatrix // Matrix representation by comparing branches
+	Owner        string                `json:"owner"`
+	Name         string                `json:"name"`
+	URL          string                `json:"url"`
+	Commits      []local.Commit        `json:"commits"`
+	Branches     []local.Branch        `json:"branches"`
+	MainGraph    *local.BranchGraph    `json:"mainGraph"`    // Graph representation of commits in the main branch
+	BranchMatrix []*local.BranchMatrix `json:"branchMatrix"` // Matrix representation by comparing branches
 
 	// remote.RemoteModel
-	PullRequests []*remote.PullRequest
-	Issues       []*remote.Issue
-	Committers   []remote.Committer
+	PullRequests []*remote.PullRequest `json:"pullRequests"`
+	Issues       []*remote.Issue       `json:"issues"`
+	Committers   []remote.Committer    `json:"committers"`
 }
 
 // Create an enriched model by merging the local and GitHub model.

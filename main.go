@@ -131,7 +131,7 @@ func main() {
 				}
 
 				if ctx.Bool("logging") {
-					err = ghwf.WriteLog(*enrichedModel)
+					err = ghwf.WriteLog(*enrichedModel, cfg)
 					if err != nil {
 						log.Fatalf("Could not write json log: %v", err)
 					}
@@ -385,7 +385,12 @@ func main() {
 					Action: func(ctx *cli.Context) error {
 						url := ctx.Args().Get(0)
 
+						token := os.Getenv("GITHUB_TOKEN")
 						repo, err := git.Clone(memory.NewStorage(), nil, &git.CloneOptions{
+							Auth: &githttp.BasicAuth{
+								Username: "non-empty",
+								Password: token,
+							},
 							URL: url,
 						})
 						if err != nil {
@@ -441,6 +446,14 @@ func main() {
 								log.Fatalf("Could not create csv summary: %v", err)
 							}
 						}
+
+						if ctx.Bool("logging") {
+							err = ghwf.WriteLog(*enrichedModel, cfg)
+							if err != nil {
+								log.Fatalf("Could not write json log: %v", err)
+							}
+						}
+
 						return nil
 					},
 				},
@@ -491,6 +504,13 @@ func main() {
 							err = ghwf.Csv(workflow.DefaultCsvPath, enrichedModel.Name, enrichedModel.URL)
 							if err != nil {
 								log.Fatalf("Could not create csv summary: %v", err)
+							}
+						}
+
+						if ctx.Bool("logging") {
+							err = ghwf.WriteLog(*enrichedModel, cfg)
+							if err != nil {
+								log.Fatalf("Could not write json log: %v", err)
 							}
 						}
 
@@ -584,7 +604,7 @@ func main() {
 							}
 
 							if ctx.Bool("logging") {
-								err = ghwf.WriteLog(*enrichedModel)
+								err = ghwf.WriteLog(*enrichedModel, cfg)
 								if err != nil {
 									log.Fatalf("Could not write json log: %v", err)
 								}
@@ -658,9 +678,8 @@ func readConfig(ctx *cli.Context) *config.Config {
 		if err != nil {
 			log.Fatalf("Failed to read custom config: %v", err)
 		}
-	} else
-	// Use default config
-	{
+	} else {
+		// Default config
 		cfg, err = config.Default()
 		if err != nil {
 			log.Fatalf("Failed to read default config: %v", err)
