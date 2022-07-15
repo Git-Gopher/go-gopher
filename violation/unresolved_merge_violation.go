@@ -41,5 +41,5 @@ func (um *UnresolvedMergeViolation) Message() string {
 
 // Suggestion implements Violation.
 func (um *UnresolvedMergeViolation) Suggestion() (string, error) {
-	return "Resolve conflicts before commiting", nil
+	return "Resolve conflicts before committing", nil
 }
