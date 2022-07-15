@@ -100,6 +100,23 @@ func DiffMatchesMessageDetect() CommitDetect {
 	}
 }
 
+// XXX: Very very lazy. I am a true software engineer.
+func UnresolvedDetect() CommitDetect {
+	return func(commit *local.Commit) (bool, violation.Violation, error) {
+		for _, diff := range commit.DiffToParents {
+			lines := strings.Split(strings.ReplaceAll(diff.Addition, "\r\n", "\n"), "\n")
+			for _, line := range lines {
+				line = strings.TrimSpace(line)
+				if strings.HasPrefix(line, "<<<<<<") {
+					violation.NewUnresolvedMergeViolation(commit.Hash.String())
+				}
+			}
+		}
+
+		return false, violation.NewDescriptiveCommitViolation(commit.Message, commit.Author.Email), nil
+	}
+}
+
 // Check if commit is less than 3 words.
 func ShortCommitMessageDetect() CommitDetect {
 	return func(c *common, commit *local.Commit) (bool, violation.Violation, error) {
