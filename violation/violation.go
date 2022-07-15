@@ -4,7 +4,7 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/Git-Gopher/go-gopher/model/github"
+	"github.com/Git-Gopher/go-gopher/model/remote"
 )
 
 type Severity int
@@ -23,7 +23,7 @@ type Violation interface {
 	Display() string             // required: Formal display line of the violation.
 	Email() string               // required: Email address of the violator.
 	// XXX: Use enriched model instead.
-	Author() (*github.Author, error) // optional: User which caused the violation the.
+	Author() (*remote.Author, error) // optional: User which caused the violation the.
 	FileLocation() (string, error)
 	LineLocation() (int, error)
 	Severity() Severity

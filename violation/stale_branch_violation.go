@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/Git-Gopher/go-gopher/model/github"
+	"github.com/Git-Gopher/go-gopher/model/remote"
 )
 
 func NewStaleBranchViolation(branch string, duration time.Duration, email string) *StaleBranchViolation {
@@ -54,7 +54,7 @@ func (sbv *StaleBranchViolation) Suggestion() (string, error) {
 }
 
 // Author implements Violation.
-func (*StaleBranchViolation) Author() (*github.Author, error) {
+func (*StaleBranchViolation) Author() (*remote.Author, error) {
 	return nil, ErrViolationMethodNotExist
 }
 

@@ -3,7 +3,7 @@ package violation
 import (
 	"fmt"
 
-	"github.com/Git-Gopher/go-gopher/model/github"
+	"github.com/Git-Gopher/go-gopher/model/remote"
 )
 
 func NewForcePushViolation(
@@ -56,7 +56,7 @@ func (f *ForcePushViolation) Suggestion() (string, error) {
 }
 
 // Author implements Violation.
-func (f *ForcePushViolation) Author() (*github.Author, error) {
+func (f *ForcePushViolation) Author() (*remote.Author, error) {
 	return nil, ErrViolationMethodNotExist
 }
 

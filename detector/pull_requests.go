@@ -2,11 +2,11 @@ package detector
 
 import (
 	"github.com/Git-Gopher/go-gopher/model/enriched"
-	"github.com/Git-Gopher/go-gopher/model/github"
+	"github.com/Git-Gopher/go-gopher/model/remote"
 	"github.com/Git-Gopher/go-gopher/violation"
 )
 
-type PullRequestDetect func(pullRequest *github.PullRequest) (bool, violation.Violation, error)
+type PullRequestDetect func(pullRequest *remote.PullRequest) (bool, violation.Violation, error)
 
 // XXX: violated, found, total should be contained within a struct and then added to this instead as a composite struct.
 type PullRequestDetector struct {
@@ -52,7 +52,7 @@ func (pd *PullRequestDetector) Run(model *enriched.EnrichedModel) error {
 
 // Github Workflow: Pull requests must have at least one associated issue.
 func PullRequestIssueDetector() PullRequestDetect {
-	return func(pullRequest *github.PullRequest) (bool, violation.Violation, error) {
+	return func(pullRequest *remote.PullRequest) (bool, violation.Violation, error) {
 		if len(pullRequest.ClosingIssues) == 0 {
 			return false, nil, nil
 		}
@@ -62,7 +62,7 @@ func PullRequestIssueDetector() PullRequestDetect {
 }
 
 func PullRequestApprovalDetector() PullRequestDetect {
-	return func(pullRequest *github.PullRequest) (bool, violation.Violation, error) {
+	return func(pullRequest *remote.PullRequest) (bool, violation.Violation, error) {
 		// Ignore unmerged pull requests.
 		if pullRequest.Merged {
 			return true, nil, nil
@@ -79,7 +79,7 @@ func PullRequestApprovalDetector() PullRequestDetect {
 
 // All reviews threads should be marked as resolved before merging.
 func PullRequestReviewThreadDetector() PullRequestDetect {
-	return func(pullRequest *github.PullRequest) (bool, violation.Violation, error) {
+	return func(pullRequest *remote.PullRequest) (bool, violation.Violation, error) {
 		// Ignore unmerged pull requests.
 		if pullRequest.Merged {
 			return true, nil, nil

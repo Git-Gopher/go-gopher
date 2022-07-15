@@ -3,7 +3,7 @@ package violation
 import (
 	"fmt"
 
-	"github.com/Git-Gopher/go-gopher/model/github"
+	"github.com/Git-Gopher/go-gopher/model/remote"
 )
 
 func NewPrimaryBranchDirectCommitViolation(
@@ -62,7 +62,7 @@ func (p *PrimaryBranchDirectCommitViolation) Suggestion() (string, error) {
 }
 
 // Author implements Violation.
-func (p *PrimaryBranchDirectCommitViolation) Author() (*github.Author, error) {
+func (p *PrimaryBranchDirectCommitViolation) Author() (*remote.Author, error) {
 	return nil, ErrViolationMethodNotExist
 }
 

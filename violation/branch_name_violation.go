@@ -3,7 +3,7 @@ package violation
 import (
 	"fmt"
 
-	"github.com/Git-Gopher/go-gopher/model/github"
+	"github.com/Git-Gopher/go-gopher/model/remote"
 )
 
 func NewBranchNameViolation(
@@ -63,7 +63,7 @@ func (bn *BranchNameViolation) Suggestion() (string, error) {
 }
 
 // Author implements Violation.
-func (bn *BranchNameViolation) Author() (*github.Author, error) {
+func (bn *BranchNameViolation) Author() (*remote.Author, error) {
 	return nil, ErrViolationMethodNotExist
 }
 

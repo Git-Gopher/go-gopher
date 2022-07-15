@@ -32,6 +32,7 @@ tidy:
 clean:
 	find . -name 'log-*.json' -delete
 	find . -name '*.csv' -delete
+	rm -rf output
 
 .PHONY: docker
 docker:

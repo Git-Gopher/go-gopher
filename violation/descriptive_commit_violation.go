@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/Git-Gopher/go-gopher/model/github"
+	"github.com/Git-Gopher/go-gopher/model/remote"
 )
 
 func NewDescriptiveCommitViolation(
@@ -47,8 +47,8 @@ func (dvc *DescriptiveCommitViolation) Suggestion() (string, error) {
 }
 
 // Author implements Violation.
-func (dvc *DescriptiveCommitViolation) Author() (*github.Author, error) {
-	return &github.Author{
+func (dvc *DescriptiveCommitViolation) Author() (*remote.Author, error) {
+	return &remote.Author{
 		Email:     dvc.email,
 		Login:     "",
 		AvatarUrl: "",

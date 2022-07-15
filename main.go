@@ -1,12 +1,12 @@
 package main
 
 import (
+	"encoding/json"
 	"errors"
 	"fmt"
 	"io/fs"
 	"io/ioutil"
 	"log"
-	"net/http"
 	"os"
 	"path/filepath"
 
@@ -15,8 +15,8 @@ import (
 	"github.com/Git-Gopher/go-gopher/detector"
 	"github.com/Git-Gopher/go-gopher/markup"
 	"github.com/Git-Gopher/go-gopher/model/enriched"
-	"github.com/Git-Gopher/go-gopher/model/github"
 	"github.com/Git-Gopher/go-gopher/model/local"
+	"github.com/Git-Gopher/go-gopher/model/remote"
 	"github.com/Git-Gopher/go-gopher/utils"
 	"github.com/Git-Gopher/go-gopher/violation"
 	"github.com/Git-Gopher/go-gopher/workflow"
@@ -24,8 +24,10 @@ import (
 	"github.com/go-git/go-git/v5/plumbing"
 	githttp "github.com/go-git/go-git/v5/plumbing/transport/http"
 	"github.com/go-git/go-git/v5/storage/memory"
+	"github.com/google/go-github/v45/github"
 	"github.com/joho/godotenv"
 	"github.com/urfave/cli/v2"
+	"golang.org/x/oauth2"
 )
 
 //nolint
@@ -79,12 +81,12 @@ func main() {
 					log.Fatalf("Could not get owner and name from URL: %v\n", err)
 				}
 
-				githubModel, err := github.ScrapeGithubModel(owner, name)
+				remoteModel, err := remote.ScrapeRemoteModel(owner, name)
 				if err != nil {
-					log.Fatalf("Could not create GithubModel: %v\n", err)
+					log.Fatalf("Could not create RemoteModel: %v\n", err)
 				}
 
-				enrichedModel := enriched.NewEnrichedModel(*gitModel, *githubModel)
+				enrichedModel := enriched.NewEnrichedModel(*gitModel, *remoteModel)
 
 				// Authors
 				authors := enriched.PopulateAuthors(enrichedModel)
@@ -144,28 +146,6 @@ func main() {
 			Usage:   "debug/development subcommands",
 			Subcommands: []*cli.Command{
 				{
-					Name:  "download",
-					Usage: "Download artifact logs from workflow runs for a batch of repositories",
-					Action: func(ctx *cli.Context) error {
-						owner := ctx.Args().Get(0)
-						repo := ctx.Args().Get(1)
-						list := fmt.Sprintf("https://api.github.com/repos/%s/%s/actions/artifacts", owner, repo)
-						// endpoint := fmt.Sprintf("https://api.github.com/repos/%s/%s/actions/artifacts/%s", owner, repo, artifactId)
-						response, err := http.Get(list)
-						if err != nil {
-							log.Fatal(err)
-						}
-
-						responseData, err := ioutil.ReadAll(response.Body)
-						if err != nil {
-							log.Fatal(err)
-						}
-						fmt.Println(string(responseData))
-
-						return nil
-					},
-				},
-				{
 					Name:    "feature",
 					Aliases: []string{"feat", "features"},
 					Usage:   "detect a feature branching",
@@ -202,7 +182,7 @@ func main() {
 							log.Fatalf("Could not create GitModel: %v\n", err)
 						}
 
-						enrichedModel := enriched.NewEnrichedModel(*gitModel, github.GithubModel{})
+						enrichedModel := enriched.NewEnrichedModel(*gitModel, remote.RemoteModel{})
 						authors := enriched.PopulateAuthors(enrichedModel)
 
 						d := detector.NewFeatureBranchDetector()
@@ -254,7 +234,7 @@ func main() {
 							log.Fatalf("Could not create GitModel: %v\n", err)
 						}
 
-						enrichedModel := enriched.NewEnrichedModel(*gitModel, github.GithubModel{})
+						enrichedModel := enriched.NewEnrichedModel(*gitModel, remote.RemoteModel{})
 						authors := enriched.PopulateAuthors(enrichedModel)
 
 						d := detector.NewCommitDistanceDetector(detector.DiffDistanceCalculation())
@@ -269,6 +249,109 @@ func main() {
 						return nil
 					},
 				},
+			},
+		},
+		{
+			Name:  "download",
+			Usage: "Download artifact logs from workflow runs for a batch of repositories",
+			Flags: []cli.Flag{
+				&cli.StringFlag{
+					Name:        "output",
+					Aliases:     []string{"o"},
+					Usage:       "output directory",
+					DefaultText: "output",
+					Value:       "output",
+					Required:    false,
+				},
+			},
+			Action: func(ctx *cli.Context) error {
+				org := ctx.Args().Get(0)
+				out := ctx.String("output")
+				ts := oauth2.StaticTokenSource(
+					&oauth2.Token{AccessToken: os.Getenv("GITHUB_TOKEN")},
+				)
+				tc := oauth2.NewClient(ctx.Context, ts)
+				client := github.NewClient(tc)
+
+				var logs []interface{}
+				err := os.MkdirAll(out, 0o755)
+				if err != nil {
+					log.Fatalf("Failed to create output directory: %v", err)
+				}
+
+				log.Printf("Fetching repositories for organisation %s...\n", org)
+				repos, _, err := client.Repositories.ListByOrg(ctx.Context, org, nil)
+				if err != nil {
+					log.Fatalf("Could not fetch orginisation repositories: %v", err)
+				}
+
+				for _, r := range repos {
+					arts, _, err := client.Actions.ListArtifacts(ctx.Context, org, *r.Name, nil)
+					if err != nil {
+						log.Fatalf("Could not fetch artifact list: %v", err)
+					}
+
+					for _, a := range arts.Artifacts {
+						log.Printf("Downloading artifacts for %s/%s...\n", org, *r.Name)
+						url, _, err := client.Actions.DownloadArtifact(ctx.Context, org, *r.Name, *a.ID, true)
+						if err != nil {
+							log.Fatalf("could not fetch artifact url: %v", err)
+						}
+
+						pathZip := fmt.Sprintf("%s/log-%s-%s-%d.zip", out, org, *r.Name, *a.ID)
+						pathJson := fmt.Sprintf("%s/log-%s-%s-%d", out, org, *r.Name, *a.ID)
+
+						log.Printf("Downloading artifact %s...\n", pathZip)
+						err = utils.DownloadFile(pathZip, url.String())
+						if err != nil {
+							log.Fatalf("could not download artifact: %v", err)
+						}
+
+						log.Printf("Unzipping %s...\n", pathZip)
+						utils.Unzip(pathZip, pathJson)
+					}
+				}
+
+				logCount := 0
+				filepath.Walk(out, func(path string, info fs.FileInfo, err error) error {
+					if err != nil {
+						return err
+					}
+					if info.IsDir() {
+						return nil
+					}
+
+					if matched, err := filepath.Match("*.json", filepath.Base(path)); err != nil {
+						return err
+					} else if matched {
+						logCount++
+
+						log.Printf("Appending %s to merged log...", path)
+						file, err := ioutil.ReadFile(path)
+						if err != nil {
+							log.Fatalf("Could not read log file: %v", err)
+						}
+
+						var data interface{}
+						json.Unmarshal(file, &data)
+						logs = append(logs, data)
+					}
+					return nil
+				})
+
+				bytes, err := json.MarshalIndent(logs, "", " ")
+				if err != nil {
+					return fmt.Errorf("error marshaling merged log: %w", err)
+				}
+
+				logPath := fmt.Sprintf("%s/merged-log-%s.json", out, org)
+				if err := ioutil.WriteFile(logPath, bytes, 0o600); err != nil {
+					return fmt.Errorf("error writing merged log: %w", err)
+				}
+
+				log.Printf("Downloaded %d logs from %s and merged to %s", logCount, "Git-Gopher", logPath)
+
+				return nil
 			},
 		},
 		{
@@ -319,7 +402,7 @@ func main() {
 							log.Fatalf("Could not get owner and name from URL: %v\n", err)
 						}
 
-						githubModel, err := github.ScrapeGithubModel(owner, name)
+						githubModel, err := remote.ScrapeRemoteModel(owner, name)
 						if err != nil {
 							log.Fatalf("Could not scrape GithubModel: %v\n", err)
 						}
@@ -386,7 +469,7 @@ func main() {
 							log.Fatalf("Could get the owner and name from URL: %v", err)
 						}
 
-						githubModel, err := github.ScrapeGithubModel(owner, name)
+						githubModel, err := remote.ScrapeRemoteModel(owner, name)
 						if err != nil {
 							log.Fatalf("Could not create GithubModel: %v\n", err)
 						}
@@ -476,7 +559,7 @@ func main() {
 								log.Fatalf("Could get the owner and name from URL: %v", err)
 							}
 
-							githubModel, err := github.ScrapeGithubModel(owner, name)
+							githubModel, err := remote.ScrapeRemoteModel(owner, name)
 							if err != nil {
 								log.Fatalf("Could not create GithubModel: %v\n", err)
 							}

@@ -1,16 +1,20 @@
 package utils
 
 import (
+	"archive/zip"
 	"errors"
 	"fmt"
+	"io"
 	"log"
+	"net/http"
 	"os"
+	"path/filepath"
 	"strings"
 	"testing"
 
 	"github.com/go-git/go-git/v5"
 	"github.com/go-git/go-git/v5/plumbing"
-	"github.com/go-git/go-git/v5/plumbing/transport/http"
+	githttp "github.com/go-git/go-git/v5/plumbing/transport/http"
 	"github.com/go-git/go-git/v5/storage/memory"
 	"github.com/joho/godotenv"
 	giturls "github.com/whilp/git-urls"
@@ -18,7 +22,8 @@ import (
 
 var (
 	ErrUnsupportedSchema = errors.New("unsupported schema")
-	ErrRepo              = errors.New("Repository is nil")
+	ErrIllegalPath       = errors.New("illegal path")
+	ErrRepo              = errors.New("repository is nil")
 )
 
 // Load the environment variables from the .env file.
@@ -76,7 +81,7 @@ func FetchRepository(t *testing.T, remote, branch string) *git.Repository {
 	}
 
 	r, err := git.Clone(memory.NewStorage(), nil, &git.CloneOptions{
-		Auth: &http.BasicAuth{
+		Auth: &githttp.BasicAuth{
 			Username: "non-empty",
 			Password: token,
 		},
@@ -126,4 +131,108 @@ func Exists(name string) (bool, error) {
 	}
 
 	return false, fmt.Errorf("Could not check file exists status: %w", err)
+}
+
+func DownloadFile(path string, url string) error {
+	// nolint: gosec
+	resp, err := http.Get(url)
+	if err != nil {
+		return fmt.Errorf("failed GET url: %w", err)
+	}
+	//nolint: errcheck
+	defer resp.Body.Close()
+
+	// Create the file
+	out, err := os.Create(filepath.Clean(path))
+	if err != nil {
+		return fmt.Errorf("failed create file: %w", err)
+	}
+
+	//nolint: errcheck, gosec
+	defer out.Close()
+
+	// Write the body to file
+	_, err = io.Copy(out, resp.Body)
+	if err != nil {
+		return fmt.Errorf("failed to copy body buffer: %w", err)
+	}
+
+	return nil
+}
+
+func Unzip(src, dest string) error {
+	r, err := zip.OpenReader(src)
+	if err != nil {
+		return fmt.Errorf("failed to open zip: %w", err)
+	}
+	defer func() {
+		if err = r.Close(); err != nil {
+			panic(err)
+		}
+	}()
+
+	err = os.MkdirAll(dest, 0o750)
+	if err != nil {
+		return fmt.Errorf("failed to create destination directory: %w", err)
+	}
+
+	// Closure to address file descriptors issue with all the deferred .Close() methods
+	extractAndWriteFile := func(f *zip.File) error {
+		rc, err := f.Open()
+		if err != nil {
+			return fmt.Errorf("could not open file: %w", err)
+		}
+		defer func() {
+			if err = rc.Close(); err != nil {
+				panic(err)
+			}
+		}()
+
+		// nolint: gosec
+		path := filepath.Join(dest, f.Name)
+
+		// Check for ZipSlip (Directory traversal)
+		if !strings.HasPrefix(path, filepath.Clean(dest)+string(os.PathSeparator)) {
+			return fmt.Errorf("%w: %v", ErrIllegalPath, path)
+		}
+
+		// nolint: nestif
+		if f.FileInfo().IsDir() {
+			err = os.MkdirAll(path, f.Mode())
+			if err != nil {
+				return fmt.Errorf("failed to create directories: %w", err)
+			}
+		} else {
+			err = os.MkdirAll(filepath.Dir(path), f.Mode())
+			if err != nil {
+				return fmt.Errorf("failed to create directories: %w", err)
+			}
+			f, err := os.OpenFile(filepath.Clean(path), os.O_WRONLY|os.O_CREATE|os.O_TRUNC, f.Mode())
+			if err != nil {
+				return fmt.Errorf("failed to open file: %w", err)
+			}
+			defer func() {
+				if err = f.Close(); err != nil {
+					panic(err)
+				}
+			}()
+
+			// nolint: gosec
+			_, err = io.Copy(f, rc)
+			if err != nil {
+				return fmt.Errorf("failed copy bytes to file: %w", err)
+			}
+		}
+
+		return nil
+	}
+
+	for _, f := range r.File {
+		err := extractAndWriteFile(f)
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
 }

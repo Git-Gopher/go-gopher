@@ -1,4 +1,4 @@
-package github
+package remote
 
 import "fmt"
 
@@ -47,7 +47,7 @@ type PullRequest struct {
 	ReviewThreads  []*ReviewThread
 }
 
-type GithubModel struct {
+type RemoteModel struct {
 	Owner        string
 	Name         string
 	URL          string
@@ -66,7 +66,7 @@ type Committer struct {
 // times or put in memory and search? The former is more memory efficient and is a 'better solution'
 // where we can use pointers within our structs, the second is easier in terms of managing complexity
 // but also might add complexity in constructing objects multiple times?
-func ScrapeGithubModel(owner, name string) (*GithubModel, error) {
+func ScrapeRemoteModel(owner, name string) (*RemoteModel, error) {
 	s := NewScraper()
 	prs, err := s.FetchPullRequests(owner, name)
 	if err != nil {
@@ -88,7 +88,7 @@ func ScrapeGithubModel(owner, name string) (*GithubModel, error) {
 		return nil, fmt.Errorf("Failed to fetch committers for GitHub model: %w", err)
 	}
 
-	ghm := GithubModel{
+	ghm := RemoteModel{
 		Owner:        owner,
 		Name:         name,
 		URL:          url,
