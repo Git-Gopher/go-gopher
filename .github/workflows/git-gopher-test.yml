@@ -1,0 +1,52 @@
+name: git-gopher-test
+on:
+  pull_request:
+    branches: main
+
+env:
+  GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+      - name: Setup Go
+        uses: actions/setup-go@v3
+        with:
+          go-version: 1.18
+      - name: Verify dependencies
+        run: go mod verify
+      - name: Build
+        run: go build -o go-gopher -v ./cmd/github-action 
+      - name: Run go vet
+        run: go vet ./...
+      - name: lint
+        uses: golangci/golangci-lint-action@v3
+        with:
+          version: v1.46.2
+      - name: Run tests
+        run: make test
+      - name: Use Cache
+        uses: actions/cache@v3
+        with:
+          path: cache.json
+          key: ${{ github.ref }}
+      - name: Analyze Workflow
+        id: go-gopher
+        run: |
+          chmod +x ./go-gopher
+          ./go-gopher
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Add PR Comment
+        uses: marocchino/sticky-pull-request-comment@v2
+        with:
+          message: "${{ steps.go-gopher.outputs.pr_summary }}"
+      - name: Artifact Log
+        uses: actions/upload-artifact@v3
+        with:
+          path: log-**.json
