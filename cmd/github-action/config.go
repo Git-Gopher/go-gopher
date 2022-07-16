@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"fmt"
 	"log"
 
 	"github.com/Git-Gopher/go-gopher/config"
@@ -23,7 +24,7 @@ type githubConfig struct {
 func loadEnv(ctx context.Context) (*githubConfig, error) {
 	var c githubConfig
 	if err := envconfig.Process(ctx, &c); err != nil {
-		return nil, err
+		return nil, fmt.Errorf("load env: %w", err)
 	}
 
 	return &c, nil

@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"log"
 	"os"
 
@@ -13,7 +12,6 @@ func main() {
 		Name:  "boom",
 		Usage: "make an explosive entrance",
 		Action: func(*cli.Context) error {
-			fmt.Println("boom! I say!")
 			return nil
 		},
 	}
