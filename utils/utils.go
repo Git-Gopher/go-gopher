@@ -236,8 +236,3 @@ func Unzip(src, dest string) error {
 
 	return nil
 }
-
-// Create, or update a PR comment containing a summary of the violations that exist in the repository.
-func PrComment() error {
-	return nil
-}

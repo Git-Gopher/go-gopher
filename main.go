@@ -146,7 +146,6 @@ func main() {
 						log.Fatalf("Could not write json log: %v", err)
 					}
 				}
-				fmt.Printf("%v\n", md.String())
 
 				return nil
 			},
