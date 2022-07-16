@@ -38,4 +38,4 @@ jobs:
           path: log-**.json
       - name: Dump event
         run: |
-          echo "{{ github.event }}"
+          echo ${{ github.event }}
