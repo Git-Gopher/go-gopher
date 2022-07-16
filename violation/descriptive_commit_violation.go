@@ -23,7 +23,6 @@ func NewDescriptiveCommitViolation(
 		},
 		commit:  commit,
 		message: message,
-		email:   email,
 	}
 	violation.display = &display{violation}
 

@@ -113,7 +113,7 @@ func (l Line) String() string {
 
 	return fmt.Sprintf(
 		"%s#L%d-L%d",
-		l.File.String(),
+		l.File.Filepath,
 		l.Start,
 		l.End,
 	)
