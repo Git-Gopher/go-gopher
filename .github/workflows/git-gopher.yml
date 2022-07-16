@@ -36,3 +36,6 @@ jobs:
         uses: actions/upload-artifact@v3
         with:
           path: log-**.json
+      - name: Dump event
+        run: |
+          echo "{{ github.event }}"

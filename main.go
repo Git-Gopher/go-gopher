@@ -115,14 +115,24 @@ func main() {
 
 				workflowSummary(authors, violated, count, total, violations)
 
+				var vsd []string
+				var ssd []string
+				for _, v := range ghwf.Violations {
+					if v.Severity() == violation.Violated {
+						vsd = append(vsd, v.Display())
+					}
+
+					if v.Severity() == violation.Suggestion {
+						ssd = append(ssd, v.Display())
+					}
+				}
+
 				// Set action outputs to a markdown summary.
 				md := markup.NewMarkdown()
 				md.
 					Title("Workflow Summary").
-					Collapsible("Violations", markup.NewMarkdown().Text("Stub!")).
-					Collapsible("Suggestions", markup.NewMarkdown().Text("Stub!")).
-					Collapsible("Authors", markup.NewMarkdown().Text("Stub!"))
-
+					Collapsible("Violations", markup.NewMarkdown().Table(vsd)).
+					Collapsible("Suggestions", markup.NewMarkdown().Table(ssd))
 				markup.Outputs("pr_summary", md.String())
 
 				err = ghwf.Csv(workflow.DefaultCsvPath, enrichedModel.Name, enrichedModel.URL)
@@ -136,6 +146,7 @@ func main() {
 						log.Fatalf("Could not write json log: %v", err)
 					}
 				}
+				fmt.Printf("%v\n", md.String())
 
 				return nil
 			},
