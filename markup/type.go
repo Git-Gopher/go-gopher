@@ -42,7 +42,7 @@ func (c Commit) String() string {
 }
 
 func (c Commit) Link() string {
-	return termlink.Link(c.String(), fmt.Sprintf("%s/%s", c.GitHubLink.Link(), c.Hash))
+	return termlink.Link(c.String(), fmt.Sprintf("https://github.com/%s/commit/%s", c.GitHubLink.String(), c.Hash))
 }
 
 // Branch - Branch link.
@@ -56,7 +56,7 @@ func (b Branch) String() string {
 }
 
 func (b Branch) Link() string {
-	return termlink.Link(b.String(), fmt.Sprintf("%s/tree/%s", b.GitHubLink.Link(), b.Name))
+	return termlink.Link(b.String(), fmt.Sprintf("https://github.com/%s/tree/%s", b.GitHubLink.String(), b.Name))
 }
 
 // PR - Pull request link.
@@ -70,7 +70,7 @@ func (p PR) String() string {
 }
 
 func (p PR) Link() string {
-	return termlink.Link(p.String(), fmt.Sprintf("%s/pull/%d", p.GitHubLink.Link(), p.Number))
+	return termlink.Link(p.String(), fmt.Sprintf("https://github.com/%s/pull/%d", p.GitHubLink.String(), p.Number))
 }
 
 // File - File link.
@@ -86,8 +86,8 @@ func (f File) String() string {
 func (f File) Link() string {
 	return termlink.Link(
 		f.String(),
-		fmt.Sprintf("%s/tree/%s/%s",
-			f.Commit.GitHubLink.Link(),
+		fmt.Sprintf("https://github.com/%s/tree/%s/%s",
+			f.Commit.GitHubLink.String(),
 			f.Commit.Hash,
 			f.Filepath,
 		),
@@ -123,12 +123,25 @@ func (l Line) Link() string {
 	if l.End == nil {
 		return termlink.Link(
 			l.String(),
-			fmt.Sprintf("%s#L%d", l.File.Link(), l.Start),
+			fmt.Sprintf(
+				"https://github.com/%s/tree/%s/%s#L%d",
+				l.File.Commit.GitHubLink.String(),
+				l.File.Commit.Hash,
+				l.File.Filepath,
+				l.Start,
+			),
 		)
 	}
 
 	return termlink.Link(
 		l.String(),
-		fmt.Sprintf("%s#L%d-L%d", l.File.Link(), l.Start, l.End),
+		fmt.Sprintf(
+			"https://github.com/%s/tree/%s/%s#L%d-L%d",
+			l.File.Commit.GitHubLink.String(),
+			l.File.Commit.Hash,
+			l.File.Filepath,
+			l.Start,
+			l.End,
+		),
 	)
 }
