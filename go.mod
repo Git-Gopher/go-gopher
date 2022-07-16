@@ -11,6 +11,7 @@ require (
 	github.com/joho/godotenv v1.4.0
 	github.com/montanaflynn/stats v0.6.6
 	github.com/savioxavier/termlink v1.2.1
+	github.com/sethvargo/go-envconfig v0.8.0
 	github.com/shurcooL/githubv4 v0.0.0-20220520033151-0b4e3294ff00
 	github.com/urfave/cli/v2 v2.8.1
 	github.com/whilp/git-urls v1.0.0
