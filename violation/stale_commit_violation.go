@@ -1,12 +1,19 @@
 package violation
 
 import (
+	"time"
+
 	"github.com/Git-Gopher/go-gopher/markup"
-	"github.com/Git-Gopher/go-gopher/model/remote"
 )
 
-func NewStaleCommitViolation(commit markup.Commit, message string) *StaleCommitViolation {
+func NewStaleCommitViolation(commit markup.Commit, message string, email string, time time.Time) *StaleCommitViolation {
 	common := &StaleCommitViolation{
+		violation: violation{
+			name:     "StaleCommitViolation",
+			email:    email,
+			time:     time,
+			severity: Violated,
+		},
 		display: nil,
 		commit:  commit,
 		message: message,
@@ -18,10 +25,10 @@ func NewStaleCommitViolation(commit markup.Commit, message string) *StaleCommitV
 
 // Example violation.
 type StaleCommitViolation struct {
+	violation
 	*display
 	commit  markup.Commit
 	message string
-	email   string
 }
 
 // Name returns the name of the Violation.
@@ -32,34 +39,4 @@ func (*StaleCommitViolation) Name() string {
 // Message implements Violation.
 func (sc *StaleCommitViolation) Message() string {
 	return sc.message
-}
-
-// FileLocation implements Violation.
-func (*StaleCommitViolation) FileLocation() (string, error) {
-	return "", ErrViolationMethodNotExist
-}
-
-// LineLocation implements Violation.
-func (*StaleCommitViolation) LineLocation() (int, error) {
-	return 0, ErrViolationMethodNotExist
-}
-
-// Suggestion implements Violation.
-func (*StaleCommitViolation) Suggestion() (string, error) {
-	return "", ErrViolationMethodNotExist
-}
-
-// Author implements Violation.
-func (p *StaleCommitViolation) Author() (*remote.Author, error) {
-	return nil, ErrViolationMethodNotExist
-}
-
-// Severity implements Violation.
-func (p *StaleCommitViolation) Severity() Severity {
-	return Violated
-}
-
-// Email implements Violation.
-func (sc *StaleCommitViolation) Email() string {
-	return sc.email
 }

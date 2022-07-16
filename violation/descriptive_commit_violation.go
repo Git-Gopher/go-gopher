@@ -3,21 +3,26 @@ package violation
 import (
 	"fmt"
 	"strings"
+	"time"
 
 	"github.com/Git-Gopher/go-gopher/markup"
-	"github.com/Git-Gopher/go-gopher/model/remote"
 )
 
 func NewDescriptiveCommitViolation(
 	commit markup.Commit,
 	message string,
 	email string,
+	time time.Time,
 ) *DescriptiveCommitViolation {
 	violation := &DescriptiveCommitViolation{
-		display: nil,
+		violation: violation{
+			name:     "DescriptiveCommitViolation",
+			email:    email,
+			time:     time,
+			severity: Suggestion,
+		},
 		commit:  commit,
 		message: message,
-		email:   email,
 	}
 	violation.display = &display{violation}
 
@@ -26,15 +31,10 @@ func NewDescriptiveCommitViolation(
 
 // from feature branches.
 type DescriptiveCommitViolation struct {
+	violation
 	*display
 	commit  markup.Commit
 	message string
-	email   string
-}
-
-// Name implements Violation.
-func (dvc *DescriptiveCommitViolation) Name() string {
-	return "DescriptiveCommitViolation"
 }
 
 // Message implements Violation.
@@ -48,33 +48,4 @@ func (dvc *DescriptiveCommitViolation) Message() string {
 // Suggestion implements Violation.
 func (dvc *DescriptiveCommitViolation) Suggestion() (string, error) {
 	return "Try to add more detail to commit messages that relate to the content of a commit", nil
-}
-
-// Author implements Violation.
-func (dvc *DescriptiveCommitViolation) Author() (*remote.Author, error) {
-	return &remote.Author{
-		Email:     dvc.email,
-		Login:     "",
-		AvatarUrl: "",
-	}, nil
-}
-
-// FileLocation implements Violation.
-func (dvc *DescriptiveCommitViolation) FileLocation() (string, error) {
-	return "", ErrViolationMethodNotExist
-}
-
-// LineLocation implements Violation.
-func (dvc *DescriptiveCommitViolation) LineLocation() (int, error) {
-	return 0, ErrViolationMethodNotExist
-}
-
-// Severity implements Violation.
-func (dvc *DescriptiveCommitViolation) Severity() Severity {
-	return Suggestion
-}
-
-// Email implements Violation.
-func (dvc *DescriptiveCommitViolation) Email() string {
-	return dvc.email
 }

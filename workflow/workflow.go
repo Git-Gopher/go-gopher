@@ -83,6 +83,7 @@ func LocalDetectors() []detector.Detector {
 		detector.NewBranchDetector(detector.StaleBranchDetect()),
 		detector.NewCommitDetector(detector.DiffMatchesMessageDetect()),
 		detector.NewCommitDetector(detector.ShortCommitMessageDetect()),
+		detector.NewCommitDetector(detector.UnresolvedDetect()),
 		detector.NewCommitDistanceDetector(detector.DiffDistanceCalculation()),
 		detector.NewBranchCompareDetector(detector.NewBranchNameConsistencyDetect()),
 		detector.NewCommitDetector(detector.BranchCommitDetect()), // used to check if branches are used

@@ -3,21 +3,26 @@ package violation
 import (
 	"fmt"
 	"strings"
+	"time"
 
 	"github.com/Git-Gopher/go-gopher/markup"
-	"github.com/Git-Gopher/go-gopher/model/remote"
 )
 
 func NewShortCommitViolation(
 	commit markup.Commit,
 	message string,
 	email string,
+	time time.Time,
 ) *ShortCommitViolation {
 	violation := &ShortCommitViolation{
-		display: nil,
+		violation: violation{
+			name:     "ShortCommitViolation",
+			email:    email,
+			time:     time,
+			severity: Violated,
+		},
 		commit:  commit,
 		message: message,
-		email:   email,
 	}
 	violation.display = &display{violation}
 
@@ -26,15 +31,10 @@ func NewShortCommitViolation(
 
 // from feature branches.
 type ShortCommitViolation struct {
+	violation
 	*display
 	commit  markup.Commit
 	message string
-	email   string
-}
-
-// Name implements Violation.
-func (sc *ShortCommitViolation) Name() string {
-	return "ShortCommitViolation"
 }
 
 // Message implements Violation.
@@ -47,29 +47,4 @@ func (sc *ShortCommitViolation) Message() string {
 // Suggestion implements Violation.
 func (sc *ShortCommitViolation) Suggestion() (string, error) {
 	return "Commit message is too short", nil
-}
-
-// Author implements Violation.
-func (sc *ShortCommitViolation) Author() (*remote.Author, error) {
-	return nil, ErrViolationMethodNotExist
-}
-
-// FileLocation implements Violation.
-func (sc *ShortCommitViolation) FileLocation() (string, error) {
-	return "", ErrViolationMethodNotExist
-}
-
-// LineLocation implements Violation.
-func (sc *ShortCommitViolation) LineLocation() (int, error) {
-	return 0, ErrViolationMethodNotExist
-}
-
-// Severity implements Violation.
-func (sc *ShortCommitViolation) Severity() Severity {
-	return Suggestion
-}
-
-// Email implements Violation.
-func (sc *ShortCommitViolation) Email() string {
-	return sc.email
 }
