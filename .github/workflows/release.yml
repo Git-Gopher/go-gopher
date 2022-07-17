@@ -18,7 +18,7 @@ jobs:
       - name: Verify dependencies
         run: go mod verify
       - name: Build
-        run: go build -v
+        run: go build -ldflags="-s -w" -v
       - name: Run go vet
         run: go vet ./...
       - name: lint
@@ -27,6 +27,13 @@ jobs:
           version: v1.46.2
       - name: Run tests
         run: make test
+      - name: Run UPX
+        uses: crazy-max/ghaction-upx@v2
+        with:
+          version: latest
+          files: |
+            ./go-gopher
+          args: -9v --ultra-brute
       - name: Release
         env:
           GITHUB_TOKEN: "${{ secrets.RELEASE_REPO_SECRET }}"
