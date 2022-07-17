@@ -66,6 +66,7 @@ func PopulateAuthors(enriched *EnrichedModel, manualUsers ...struct{ email, logi
 	commitMap := make(map[string]remote.Committer) // map of commits to commitID.
 
 	for _, committer := range enriched.GithubCommitters {
+		commitMap[committer.CommitId] = committer
 		if authors.Check(committer.Email) {
 			continue
 		}
@@ -76,8 +77,6 @@ func PopulateAuthors(enriched *EnrichedModel, manualUsers ...struct{ email, logi
 
 			continue
 		}
-
-		commitMap[committer.CommitId] = committer
 
 		err := authors.Add(committer.Login, committer.Email)
 		if err != nil {
