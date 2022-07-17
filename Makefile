@@ -6,7 +6,6 @@ run: build
 build:
 	go build -v
 
-
 .PHONY: lint
 lint:
 	golangci-lint run
