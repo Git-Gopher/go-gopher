@@ -7,5 +7,4 @@
 output/
 **/*.zip 
 /log-*.json
-.vscode
 *.upx

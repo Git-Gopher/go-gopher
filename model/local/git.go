@@ -89,6 +89,11 @@ type Commit struct {
 	DiffToParents []Diff
 }
 
+type Committer struct {
+	CommitId string
+	Email    string
+}
+
 type Operation int
 
 const (
@@ -170,6 +175,7 @@ func NewBranch(repo *git.Repository, o *plumbing.Reference, c *object.Commit) *B
 
 type GitModel struct {
 	Commits      []Commit
+	Committer    []Committer
 	Branches     []Branch
 	MainGraph    *BranchGraph
 	BranchMatrix []*BranchMatrix
@@ -189,6 +195,10 @@ func NewGitModel(repo *git.Repository) (*GitModel, error) {
 		}
 		commit := NewCommit(repo, c)
 		gitModel.Commits = append(gitModel.Commits, *commit)
+		gitModel.Committer = append(gitModel.Committer, Committer{
+			CommitId: c.Hash.String(),
+			Email:    c.Committer.Email,
+		})
 
 		return nil
 	})
