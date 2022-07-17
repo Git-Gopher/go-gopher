@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/Git-Gopher/go-gopher/markup"
 	"github.com/Git-Gopher/go-gopher/model/remote"
 	"github.com/Git-Gopher/go-gopher/utils"
 )
@@ -40,9 +41,10 @@ type display struct {
 // Display implements Violation.
 func (d *display) Display(authors utils.Authors) string {
 	// Get the author of the violation.
-	author, err := authors.Find(d.v.Email())
-	if err != nil {
-		author = utils.String("unknown")
+	authorLink := "@unknown"
+	author, _ := authors.Find(d.v.Email())
+	if author != nil {
+		authorLink = markup.Author(*author).Link()
 	}
 
 	suggestion, err := d.v.Suggestion()
@@ -52,7 +54,7 @@ func (d *display) Display(authors utils.Authors) string {
 			"%s: %s - @%s %s\n",
 			d.v.Name(),
 			d.v.Message(),
-			*author,
+			authorLink,
 			d.v.Time().Format(time.UnixDate),
 		)
 	}
@@ -61,7 +63,7 @@ func (d *display) Display(authors utils.Authors) string {
 		"%s: %s - @%s %s \n\t%s\n",
 		d.v.Name(),
 		d.v.Message(),
-		*author,
+		authorLink,
 		d.v.Time().Format(time.UnixDate),
 		suggestion,
 	)

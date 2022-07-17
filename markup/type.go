@@ -28,7 +28,7 @@ func (a Author) String() string {
 }
 
 func (a Author) Link() string {
-	return termlink.Link(a.String(), fmt.Sprintf("https://github.com/%s", a.String()))
+	return termlink.Link("@"+a.String(), fmt.Sprintf("https://github.com/%s", a.String()))
 }
 
 // Commit - Commit link.
