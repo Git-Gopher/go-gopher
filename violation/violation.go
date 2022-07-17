@@ -5,7 +5,9 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/Git-Gopher/go-gopher/markup"
 	"github.com/Git-Gopher/go-gopher/model/remote"
+	"github.com/Git-Gopher/go-gopher/utils"
 )
 
 type Severity int
@@ -18,12 +20,12 @@ const (
 var ErrViolationMethodNotExist = errors.New("Violation method not exist")
 
 type Violation interface {
-	Name() string       // required: Internal name of the violation.
-	Message() string    // required: Warning message.
-	Display() string    // required: Formal display line of the violation.
-	Email() string      // required: Email address of the violator.
-	Time() time.Time    // required: Time of the violation.
-	Severity() Severity // required: Severity of the violation.
+	Name() string                 // required: Internal name of the violation.
+	Message() string              // required: Warning message.
+	Display(utils.Authors) string // required: Formal display line of the violation.
+	Email() string                // required: Email address of the violator.
+	Time() time.Time              // required: Time of the violation.
+	Severity() Severity           // required: Severity of the violation.
 
 	Author() (*remote.Author, error) // optional: GitHub author which caused the violation.
 	FileLocation() (string, error)   // optional: File location of the violation.
@@ -37,15 +39,34 @@ type display struct {
 }
 
 // Display implements Violation.
-func (d *display) Display() string {
-	var format string = "%s: %s"
+func (d *display) Display(authors utils.Authors) string {
+	// Get the author of the violation.
+	authorLink := "@unknown"
+	author, _ := authors.Find(d.v.Email())
+	if author != nil {
+		authorLink = markup.Author(*author).Link()
+	}
+
 	suggestion, err := d.v.Suggestion()
 	if err != nil {
-		return fmt.Sprintf(format, d.v.Name(), d.v.Message())
+		// If the suggestion is not available.
+		return fmt.Sprintf(
+			"%s: %s - %s %s\n",
+			d.v.Name(),
+			d.v.Message(),
+			authorLink,
+			d.v.Time().Format(time.UnixDate),
+		)
 	}
-	format += "\n\t%s\n"
 
-	return fmt.Sprintf(format, d.v.Name(), d.v.Message(), suggestion)
+	return fmt.Sprintf(
+		"%s: %s - %s %s \n\t%s\n",
+		d.v.Name(),
+		d.v.Message(),
+		authorLink,
+		d.v.Time().Format(time.UnixDate),
+		suggestion,
+	)
 }
 
 // violation - common base struct for all violations.

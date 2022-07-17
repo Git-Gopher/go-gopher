@@ -42,6 +42,6 @@ func (sbv *StaleBranchViolation) Message() string {
 
 // Suggestion implements Violation.
 func (sbv *StaleBranchViolation) Suggestion() (string, error) {
-	return fmt.Sprintf(`Consider deleting the branch, \"%s\" if it 
-		is unused delete it, or continue to work use it by merging the primary branch into it`, sbv.branch), nil
+	return fmt.Sprintf("Consider deleting the branch, \"%s\" if it is unused delete it,"+
+		" or continue to work use it by merging the primary branch into it", sbv.branch), nil
 }

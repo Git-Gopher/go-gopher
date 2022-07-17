@@ -182,6 +182,8 @@ github.com/savioxavier/termlink v1.2.1 h1:O9ZQvk9BPQQK4JQeMB56ZfV8uam0Ts+f97mJme
 github.com/savioxavier/termlink v1.2.1/go.mod h1:WA7FTALNwN41NGnmQMIrnjAYTsEhIAZ4RuzgEiB0Jp8=
 github.com/sergi/go-diff v1.1.0 h1:we8PVUC3FE2uYfodKH/nBHMSetSfHDR6scGdBi+erh0=
 github.com/sergi/go-diff v1.1.0/go.mod h1:STckp+ISIX8hZLjrqAeVduY0gWCT9IjLuqbuNXdaHfM=
+github.com/sethvargo/go-envconfig v0.8.0 h1:AcmdAewSFAc7pQ1Ghz+vhZkilUtxX559QlDuLLiSkdI=
+github.com/sethvargo/go-envconfig v0.8.0/go.mod h1:Iz1Gy1Sf3T64TQlJSvee81qDhf7YIlt8GMUX6yyNFs0=
 github.com/shurcooL/githubv4 v0.0.0-20220520033151-0b4e3294ff00 h1:fiFvD4lT0aWjuuAb64LlZ/67v87m+Kc9Qsu5cMFNK0w=
 github.com/shurcooL/githubv4 v0.0.0-20220520033151-0b4e3294ff00/go.mod h1:hAF0iLZy4td2EX+/8Tw+4nodhlMrwN3HupfaXj3zkGo=
 github.com/shurcooL/graphql v0.0.0-20220520033453-bdb1221e171e h1:dmM59/+RIH6bO/gjmUgaJwdyDhAvZkHgA5OJUcoUyGU=

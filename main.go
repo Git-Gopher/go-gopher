@@ -12,7 +12,6 @@ import (
 
 	"github.com/Git-Gopher/go-gopher/cache"
 	"github.com/Git-Gopher/go-gopher/config"
-	"github.com/Git-Gopher/go-gopher/detector"
 	"github.com/Git-Gopher/go-gopher/markup"
 	"github.com/Git-Gopher/go-gopher/model/enriched"
 	"github.com/Git-Gopher/go-gopher/model/local"
@@ -21,11 +20,8 @@ import (
 	"github.com/Git-Gopher/go-gopher/violation"
 	"github.com/Git-Gopher/go-gopher/workflow"
 	"github.com/go-git/go-git/v5"
-	"github.com/go-git/go-git/v5/plumbing"
-	githttp "github.com/go-git/go-git/v5/plumbing/transport/http"
 	"github.com/go-git/go-git/v5/storage/memory"
 	"github.com/google/go-github/v45/github"
-	"github.com/joho/godotenv"
 	"github.com/urfave/cli/v2"
 	"golang.org/x/oauth2"
 )
@@ -138,117 +134,6 @@ func main() {
 				}
 
 				return nil
-			},
-		},
-		{
-			Name:    "debug",
-			Aliases: []string{"d"},
-			Usage:   "debug/development subcommands",
-			Subcommands: []*cli.Command{
-				{
-					Name:    "feature",
-					Aliases: []string{"feat", "features"},
-					Usage:   "detect a feature branching",
-					// Example: `go-gopher feature https://github.com/Git-Gopher/tests test/two-parents-merged/0`
-					Action: func(ctx *cli.Context) error {
-						url := ctx.Args().Get(0)
-						branch := ctx.Args().Get(1)
-
-						if err := godotenv.Load(".env"); err != nil {
-							log.Println("Error loading .env file")
-						}
-
-						token := os.Getenv("GITHUB_TOKEN")
-
-						var branchRef plumbing.ReferenceName
-						if branch != "" {
-							branchRef = plumbing.NewBranchReferenceName(branch)
-						}
-
-						repo, err := git.Clone(memory.NewStorage(), nil, &git.CloneOptions{
-							Auth: &githttp.BasicAuth{
-								Username: "non-empty",
-								Password: token,
-							},
-							URL:           url,
-							ReferenceName: branchRef,
-						})
-						if err != nil {
-							log.Fatalf("Failed to clone repository: %v", err)
-						}
-
-						gitModel, err := local.NewGitModel(repo)
-						if err != nil {
-							log.Fatalf("Could not create GitModel: %v\n", err)
-						}
-
-						enrichedModel := enriched.NewEnrichedModel(*gitModel, remote.RemoteModel{})
-						authors := enriched.PopulateAuthors(enrichedModel)
-
-						d := detector.NewFeatureBranchDetector()
-						if err := d.Run(enrichedModel); err != nil {
-							log.Fatalf("Failed to run weighted detectors: %v", err)
-						}
-						v, co, t, vs := d.Result()
-
-						fmt.Printf("\n## Detector Type: %T ##\n", d)
-						workflowSummary(authors, v, co, t, vs)
-
-						return nil
-					},
-				},
-				{
-					Name:    "diff-distance",
-					Aliases: []string{"dd"},
-					Usage:   "detect diff distance",
-					// Example: `go-gopher dd https://github.com/Git-Gopher/tests test/two-parents-merged/0`
-					Action: func(ctx *cli.Context) error {
-						url := ctx.Args().Get(0)
-						branch := ctx.Args().Get(1)
-
-						if err := godotenv.Load(".env"); err != nil {
-							log.Println("Error loading .env file")
-						}
-
-						token := os.Getenv("GITHUB_TOKEN")
-
-						var branchRef plumbing.ReferenceName
-						if branch != "" {
-							branchRef = plumbing.NewBranchReferenceName(branch)
-						}
-
-						repo, err := git.Clone(memory.NewStorage(), nil, &git.CloneOptions{
-							Auth: &githttp.BasicAuth{
-								Username: "non-empty",
-								Password: token,
-							},
-							URL:           url,
-							ReferenceName: branchRef,
-						})
-						if err != nil {
-							log.Fatalf("Failed to clone repository: %v", err)
-						}
-
-						gitModel, err := local.NewGitModel(repo)
-						if err != nil {
-							log.Fatalf("Could not create GitModel: %v\n", err)
-						}
-
-						enrichedModel := enriched.NewEnrichedModel(*gitModel, remote.RemoteModel{})
-						authors := enriched.PopulateAuthors(enrichedModel)
-
-						d := detector.NewCommitDistanceDetector(detector.DiffDistanceCalculation())
-						if err := d.Run(enrichedModel); err != nil {
-							log.Fatalf("Failed to run weighted detectors: %v", err)
-						}
-						v, co, t, vs := d.Result()
-
-						fmt.Printf("\n## Detector Type: %T ##\n", d)
-						workflowSummary(authors, v, co, t, vs)
-
-						return nil
-					},
-				},
 			},
 		},
 		{
@@ -445,59 +330,6 @@ func main() {
 					},
 				},
 				{
-					Name:  "local",
-					Usage: "analyze a local git project directory",
-					Action: func(ctx *cli.Context) error {
-						path := ctx.Args().Get(0)
-						repo, err := git.PlainOpen(path)
-						if err != nil {
-							log.Fatalf("Failed to clone repository: %v", err)
-						}
-
-						gitModel, err := local.NewGitModel(repo)
-						if err != nil {
-							log.Fatalf("Could not create GitModel: %v\n", err)
-						}
-
-						url, err := utils.Url(repo)
-						if err != nil {
-							log.Fatalf("Could get url from repository: \"%v\", does it have any remotes?", err)
-						}
-
-						owner, name, err := utils.OwnerNameFromUrl(url)
-						if err != nil {
-							log.Fatalf("Could get the owner and name from URL: %v", err)
-						}
-
-						githubModel, err := remote.ScrapeRemoteModel(owner, name)
-						if err != nil {
-							log.Fatalf("Could not create GithubModel: %v\n", err)
-						}
-
-						enrichedModel := enriched.NewEnrichedModel(*gitModel, *githubModel)
-
-						// Authors
-						authors := enriched.PopulateAuthors(enrichedModel)
-
-						cfg := readConfig(ctx)
-						ghwf := workflow.GithubFlowWorkflow(cfg)
-						v, c, t, vs, err := ghwf.Analyze(enrichedModel, authors, nil, nil)
-						if err != nil {
-							log.Fatalf("Failed to analyze: %v\n", err)
-						}
-
-						workflowSummary(authors, v, c, t, vs)
-						if ctx.Bool("csv") {
-							err = ghwf.Csv(workflow.DefaultCsvPath, enrichedModel.Name, enrichedModel.URL)
-							if err != nil {
-								log.Fatalf("Could not create csv summary: %v", err)
-							}
-						}
-
-						return nil
-					},
-				},
-				{
 					Name:    "batch",
 					Aliases: []string{"b"},
 					Usage:   "batch analyze a series of local git projects",
@@ -616,13 +448,13 @@ func workflowSummary(authors utils.Authors, v, c, t int, vs []violation.Violatio
 
 	var vsd string
 	for _, v := range violations {
-		vsd += v.Display()
+		vsd += v.Display(authors)
 	}
 	markup.Group("Violations", vsd)
 
 	var ssd string
 	for _, v := range suggestions {
-		ssd += v.Display()
+		ssd += v.Display(authors)
 	}
 	markup.Group("Suggestions", ssd)
 
@@ -658,9 +490,8 @@ func readConfig(ctx *cli.Context) *config.Config {
 		if err != nil {
 			log.Fatalf("Failed to read custom config: %v", err)
 		}
-	} else
-	// Use default config
-	{
+	} else {
+		// Use default config
 		cfg, err = config.Default()
 		if err != nil {
 			log.Fatalf("Failed to read default config: %v", err)

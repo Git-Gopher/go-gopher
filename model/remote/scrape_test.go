@@ -19,7 +19,7 @@ func TestScraper_FetchPullRequests(t *testing.T) {
 func TestScraper_FetchCommitters(t *testing.T) {
 	utils.Environment("../../.env")
 	s := NewScraper()
-	committers, err := s.FetchCommitters("subquery", "subql")
+	committers, err := s.FetchCommitters("Git-Gopher", "go-gopher")
 	if err != nil {
 		t.Error(err)
 	}
