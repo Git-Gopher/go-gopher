@@ -49,22 +49,22 @@ var (
 )
 
 type Workflow struct {
-	Name                    string                  `json:"name"`
-	WeightedCommitDetectors []WeightedDetector      `json:"weightedCommitDetectors"`
-	WeightedCacheDetectors  []WeightedCacheDetector `json:"weightedCacheDetectors"`
+	Name                    string
+	WeightedCommitDetectors []WeightedDetector      `json:"-"`
+	WeightedCacheDetectors  []WeightedCacheDetector `json:"-"`
 	Violations              []violation.Violation
 	Count                   int
 	Total                   int
 }
 
 type WeightedDetector struct {
-	Weight   int               `json:"weight"`
-	Detector detector.Detector `json:"detector"`
+	Weight   int
+	Detector detector.Detector
 }
 
 type WeightedCacheDetector struct {
-	Weight   int                    `json:"weight"`
-	Detector detector.CacheDetector `json:"detector"`
+	Weight   int
+	Detector detector.CacheDetector
 }
 
 func GithubFlowWorkflow(cfg *config.Config) *Workflow {
