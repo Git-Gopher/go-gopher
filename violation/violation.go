@@ -51,7 +51,7 @@ func (d *display) Display(authors utils.Authors) string {
 	if err != nil {
 		// If the suggestion is not available.
 		return fmt.Sprintf(
-			"%s: %s - @%s %s\n",
+			"%s: %s - %s %s\n",
 			d.v.Name(),
 			d.v.Message(),
 			authorLink,
@@ -60,7 +60,7 @@ func (d *display) Display(authors utils.Authors) string {
 	}
 
 	return fmt.Sprintf(
-		"%s: %s - @%s %s \n\t%s\n",
+		"%s: %s - %s %s \n\t%s\n",
 		d.v.Name(),
 		d.v.Message(),
 		authorLink,

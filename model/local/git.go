@@ -1,7 +1,6 @@
 package local
 
 import (
-	"encoding/hex"
 	"errors"
 	"fmt"
 	"time"
@@ -25,7 +24,7 @@ func (h Hash) ToByte() []byte {
 }
 
 func (h Hash) String() string {
-	return hex.EncodeToString(h[:])
+	return string(h[:])
 }
 
 type Signature struct {
@@ -196,7 +195,7 @@ func NewGitModel(repo *git.Repository) (*GitModel, error) {
 		commit := NewCommit(repo, c)
 		gitModel.Commits = append(gitModel.Commits, *commit)
 		gitModel.Committer = append(gitModel.Committer, Committer{
-			CommitId: c.Hash.String(),
+			CommitId: string(c.Hash[:]),
 			Email:    c.Committer.Email,
 		})
 
