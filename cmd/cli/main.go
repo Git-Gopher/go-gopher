@@ -8,13 +8,12 @@ import (
 )
 
 func main() {
-	app := &cli.App{
-		Name:  "boom",
-		Usage: "make an explosive entrance",
-		Action: func(*cli.Context) error {
-			return nil
-		},
-	}
+	app := cli.NewApp()
+
+	app.Name = "go-gopher"
+	app.HelpName = "go-gopher"
+	app.Usage = "A tool for analyzing GitHub repositories"
+	// app.Action = actionCommand.
 
 	if err := app.Run(os.Args); err != nil {
 		log.Fatal(err)
