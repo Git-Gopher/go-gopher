@@ -21,7 +21,6 @@ func NewPrimaryBranchDirectCommitViolation(
 			time:     time,
 			severity: Violated,
 		},
-		display:       nil,
 		parentHashes:  parentHashes,
 		primaryBranch: primaryBranch,
 		commitHash:    commitHash,
