@@ -48,7 +48,8 @@ func main() {
 				// repository := os.Getenv("GITHUB_REPOSITORY")
 				workspace := os.Getenv("GITHUB_WORKSPACE")
 				if workspace == "" {
-					log.Fatalf("GITHUB_WORKSPACE is not set")
+					workspace = "./"
+					log.Println("GITHUB_WORKSPACE is not set, falling back to current directory...")
 				}
 				// sha := os.Getenv("GITHUB_SHA") // commit sha triggered
 				// ref := os.Getenv("GITHUB_REF") // branch ref triggered
@@ -70,7 +71,7 @@ func main() {
 					if err != nil {
 						log.Fatalf("Could get url from repository: %v\n", err)
 					}
-					log.Printf("GITHUB_URL is not set, using fallback url of \"%s\"...\n", url)
+					log.Printf("GITHUB_URL is not set, falling back to \"%s\"...\n", url)
 				}
 				owner, name, err := utils.OwnerNameFromUrl(url)
 				if err != nil {
@@ -127,7 +128,7 @@ func main() {
 				}
 
 				if ctx.Bool("logging") {
-					err = ghwf.WriteLog(*enrichedModel)
+					err = ghwf.WriteLog(*enrichedModel, cfg)
 					if err != nil {
 						log.Fatalf("Could not write json log: %v", err)
 					}
@@ -326,6 +327,14 @@ func main() {
 								log.Fatalf("Could not create csv summary: %v", err)
 							}
 						}
+
+						if ctx.Bool("logging") {
+							err = ghwf.WriteLog(*enrichedModel, cfg)
+							if err != nil {
+								log.Fatalf("Could not write json log: %v", err)
+							}
+						}
+
 						return nil
 					},
 				},
@@ -337,12 +346,6 @@ func main() {
 						&cli.BoolFlag{
 							Name:     "csv",
 							Usage:    "csv summary of the workflow run",
-							Required: false,
-						},
-						&cli.BoolFlag{
-							Name:     "logging",
-							Aliases:  []string{"l"},
-							Usage:    "json log of the workflow run",
 							Required: false,
 						},
 					},
@@ -416,7 +419,7 @@ func main() {
 							}
 
 							if ctx.Bool("logging") {
-								err = ghwf.WriteLog(*enrichedModel)
+								err = ghwf.WriteLog(*enrichedModel, cfg)
 								if err != nil {
 									log.Fatalf("Could not write json log: %v", err)
 								}

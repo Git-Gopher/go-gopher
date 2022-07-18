@@ -16,6 +16,7 @@ import (
 	"github.com/Git-Gopher/go-gopher/config"
 	"github.com/Git-Gopher/go-gopher/detector"
 	"github.com/Git-Gopher/go-gopher/model/enriched"
+	"github.com/Git-Gopher/go-gopher/model/remote"
 	"github.com/Git-Gopher/go-gopher/utils"
 	"github.com/Git-Gopher/go-gopher/violation"
 )
@@ -49,21 +50,21 @@ var (
 
 type Workflow struct {
 	Name                    string                  `json:"name"`
-	WeightedCommitDetectors []WeightedDetector      `json:"weightedCommitDetectors"`
-	WeightedCacheDetectors  []WeightedCacheDetector `json:"weightedCacheDetectors"`
-	Violations              []violation.Violation
-	Count                   int
-	Total                   int
+	WeightedCommitDetectors []WeightedDetector      `json:"-"`
+	WeightedCacheDetectors  []WeightedCacheDetector `json:"-"`
+	Violations              []violation.Violation   `json:"-"`
+	Count                   int                     `json:"count"`
+	Total                   int                     `json:"total"`
 }
 
 type WeightedDetector struct {
-	Weight   int               `json:"weight"`
-	Detector detector.Detector `json:"detector"`
+	Weight   int
+	Detector detector.Detector
 }
 
 type WeightedCacheDetector struct {
-	Weight   int                    `json:"weight"`
-	Detector detector.CacheDetector `json:"detector"`
+	Weight   int
+	Detector detector.CacheDetector
 }
 
 func GithubFlowWorkflow(cfg *config.Config) *Workflow {
@@ -304,25 +305,66 @@ func configureDetectors(cfg *config.Config) ([]WeightedDetector, []WeightedCache
 
 // Write a JSON log of the workflow run.
 // Assumes that the workflow is in a state that it has run to create a meaningful log.
-func (w *Workflow) WriteLog(em enriched.EnrichedModel) error {
-	type Log struct {
-		Date     time.Time `json:"date"`
-		Workflow Workflow  `json:"workflow"`
+func (w *Workflow) WriteLog(em enriched.EnrichedModel, cfg *config.Config) error {
+	// Interface types within workflow mean we need to reconsume the interface to get the concrete type.
+	type logViolation struct {
+		Name         string
+		Message      string
+		Suggestion   string
+		Email        string
+		Author       remote.Author
+		FileLocation string
+		LineLocation int
+		Severity     int
 	}
 
-	log := Log{
-		Date:     time.Now(),
-		Workflow: *w,
+	type log struct {
+		Date       time.Time              `json:"date"`
+		Workflow   Workflow               `json:"workflow"`
+		Config     config.Config          `json:"config"`
+		Violations []logViolation         `json:"violations"`
+		Model      enriched.EnrichedModel `json:"model"`
 	}
 
-	bytes, err := json.MarshalIndent(log, "", "")
+	LogViolations := make([]logViolation, len(w.Violations))
+
+	for i, v := range w.Violations {
+		suggestion, _ := v.Suggestion()
+		author, err := v.Author()
+		if err != nil {
+			author = &remote.Author{}
+		}
+
+		fileLocation, _ := v.FileLocation()
+		lineLocation, _ := v.LineLocation()
+		LogViolations[i] = logViolation{
+			Name:         v.Name(),
+			Message:      v.Message(),
+			Suggestion:   suggestion,
+			Email:        v.Email(),
+			Author:       *author,
+			FileLocation: fileLocation,
+			LineLocation: lineLocation,
+			Severity:     int(v.Severity()),
+		}
+	}
+
+	l := log{
+		Date:       time.Now(),
+		Workflow:   *w,
+		Config:     *cfg,
+		Violations: LogViolations,
+		Model:      em,
+	}
+
+	bytes, err := json.MarshalIndent(l, "", "")
 	if err != nil {
 		return fmt.Errorf("Failed to marshal workflow log: %w", err)
 	}
 
 	path := fmt.Sprintf("log-%s-%d.json", em.Name, time.Now().Unix())
 	if err := ioutil.WriteFile(filepath.Clean(path), bytes, 0o600); err != nil {
-		return fmt.Errorf("Error writing log to file: %w", err)
+		return fmt.Errorf("failed writing log to file: %w", err)
 	}
 
 	return nil
