@@ -49,12 +49,12 @@ var (
 )
 
 type Workflow struct {
-	Name                    string
+	Name                    string                  `json:"name"`
 	WeightedCommitDetectors []WeightedDetector      `json:"-"`
 	WeightedCacheDetectors  []WeightedCacheDetector `json:"-"`
-	Violations              []violation.Violation
-	Count                   int
-	Total                   int
+	Violations              []violation.Violation   `json:"-"`
+	Count                   int                     `json:"count"`
+	Total                   int                     `json:"total"`
 }
 
 type WeightedDetector struct {
@@ -319,11 +319,11 @@ func (w *Workflow) WriteLog(em enriched.EnrichedModel, cfg *config.Config) error
 	}
 
 	type log struct {
-		Date       time.Time
-		Workflow   Workflow
-		Config     config.Config
-		Violations []logViolation
-		Model      enriched.EnrichedModel
+		Date       time.Time              `json:"date"`
+		Workflow   Workflow               `json:"workflow"`
+		Config     config.Config          `json:"config"`
+		Violations []logViolation         `json:"violations"`
+		Model      enriched.EnrichedModel `json:"model"`
 	}
 
 	LogViolations := make([]logViolation, len(w.Violations))
