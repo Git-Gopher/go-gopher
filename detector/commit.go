@@ -99,8 +99,8 @@ func DiffMatchesMessageDetect() CommitDetect {
 				},
 			},
 			commit.Message,
-			commit.Author.Email,
-			commit.Author.When,
+			commit.Committer.Email,
+			commit.Committer.When,
 		), nil
 	}
 }
@@ -127,8 +127,8 @@ func UnresolvedDetect() CommitDetect {
 							},
 							Start: int(diff.Points[0].NewPosition),
 						},
-						commit.Author.Email,
-						commit.Author.When,
+						commit.Committer.Email,
+						commit.Committer.When,
 					), nil
 				}
 			}
@@ -162,8 +162,8 @@ func ShortCommitMessageDetect() CommitDetect {
 					},
 				},
 				commit.Message,
-				commit.Author.Email,
-				commit.Author.When,
+				commit.Committer.Email,
+				commit.Committer.When,
 			), nil
 		}
 

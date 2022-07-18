@@ -14,7 +14,6 @@ func NewStaleCommitViolation(commit markup.Commit, message string, email string,
 			time:     time,
 			severity: Violated,
 		},
-		display: nil,
 		commit:  commit,
 		message: message,
 	}
@@ -29,11 +28,6 @@ type StaleCommitViolation struct {
 	*display
 	commit  markup.Commit
 	message string
-}
-
-// Name returns the name of the Violation.
-func (*StaleCommitViolation) Name() string {
-	return "StaleCommitViolation"
 }
 
 // Message implements Violation.

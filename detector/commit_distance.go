@@ -1,11 +1,12 @@
 package detector
 
 import (
+	"encoding/hex"
 	"fmt"
-	"log"
 	"path/filepath"
 	"strings"
 
+	"github.com/Git-Gopher/go-gopher/markup"
 	"github.com/Git-Gopher/go-gopher/model/enriched"
 	"github.com/Git-Gopher/go-gopher/model/local"
 	"github.com/Git-Gopher/go-gopher/violation"
@@ -64,9 +65,31 @@ func (cd *CommitDistanceDetector) Run(model *enriched.EnrichedModel) error {
 
 	for i, v := range cd.distance {
 		if v < lof || v > uof {
-			log.Printf("EXTREME commit \"%s\" has a distance of %f\n", model.Commits[i].Hash.String(), v)
+			cd.violated++
+			cd.violations = append(cd.violations, violation.NewExtremeDiffDistanceViolation(
+				markup.Commit{
+					GitHubLink: markup.GitHubLink{
+						Owner: model.Owner,
+						Repo:  model.Name,
+					},
+					Hash: hex.EncodeToString(model.Commits[i].Hash[:]),
+				},
+				model.Commits[i].Committer.Email,
+				model.Commits[i].Committer.When,
+			))
 		} else if v < lif || v > uif {
-			log.Printf("MILD commit \"%s\" has a distance of %f\n", model.Commits[i].Hash.String(), v)
+			cd.violated++
+			cd.violations = append(cd.violations, violation.NewMildDiffDistanceViolation(
+				markup.Commit{
+					GitHubLink: markup.GitHubLink{
+						Owner: model.Owner,
+						Repo:  model.Name,
+					},
+					Hash: hex.EncodeToString(model.Commits[i].Hash[:]),
+				},
+				model.Commits[i].Committer.Email,
+				model.Commits[i].Committer.When,
+			))
 		}
 	}
 
