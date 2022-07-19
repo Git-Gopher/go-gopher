@@ -38,6 +38,9 @@ type Commit struct {
 }
 
 func (c Commit) String() string {
+	if c.Hash == "" {
+		return ""
+	}
 	return c.Hash[:7] // short commit hash with 7 characters.
 }
 

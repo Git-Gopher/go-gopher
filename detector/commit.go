@@ -1,6 +1,7 @@
 package detector
 
 import (
+	"encoding/hex"
 	"strings"
 
 	"github.com/Git-Gopher/go-gopher/markup"
@@ -120,7 +121,7 @@ func UnresolvedDetect() CommitDetect {
 										Owner: common.owner,
 										Repo:  common.repo,
 									},
-									Hash: commit.Hash.String(),
+									Hash: hex.EncodeToString(commit.Hash.ToByte()),
 								},
 								Filepath: diff.Name,
 							},
@@ -154,7 +155,7 @@ func ShortCommitMessageDetect() CommitDetect {
 		if len(words) < 3 {
 			return false, violation.NewShortCommitViolation(
 				markup.Commit{
-					Hash: commit.Hash.String(),
+					Hash: hex.EncodeToString(commit.Hash.ToByte()),
 					GitHubLink: markup.GitHubLink{
 						Owner: c.owner,
 						Repo:  c.repo,
