@@ -51,7 +51,7 @@ func NewBranchMatrixDetector(detect BranchMatrixDetect) *BranchMatrixDetector {
 	}
 }
 
-// NewCrissCrossMergeDetect to find criss cross merges
+// CrissCrossMergeDetect to find criss cross merges
 // Example of criss cross merge.
 // This usually happen during hotfixes.
 // ```
@@ -61,7 +61,7 @@ func NewBranchMatrixDetector(detect BranchMatrixDetect) *BranchMatrixDetector {
 //        \        / \
 //          8f35f30 -- 3fd4180 -- 723181f (branch B)
 // ```.
-func NewCrissCrossMergeDetect() BranchMatrixDetect {
+func CrissCrossMergeDetect() BranchMatrixDetect {
 	return func(branchMatrix *local.BranchMatrix) (bool, violation.Violation, error) {
 		if len(branchMatrix.CrissCrossCommits) >= 2 {
 			return true, nil, nil

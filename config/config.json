@@ -28,15 +28,19 @@
       "enabled": true,
       "weight": 1
     },
-    "NewBranchNameConsistencyDetect": {
+    "BranchNameConsistencyDetect": {
       "enabled": true,
       "weight": 1
     },
-    "NewFeatureBranchDetector": {
+    "FeatureBranchDetector": {
       "enabled": true,
       "weight": 1
     },
-    "NewCrissCrossMergeDetect": {
+    "CrissCrossMergeDetect": {
+      "enabled": true,
+      "weight": 1
+    },
+    "UnresolvedDetect": {
       "enabled": true,
       "weight": 1
     }

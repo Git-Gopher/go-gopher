@@ -32,7 +32,7 @@ func GeneratedFiles(m MarkerCtx) (string, []Mark) {
 // E-A2: Regular branch names: Use regular branch name and branch name prefixes that
 // accurately represent the work that the branch contains.
 func RegularBranchNames(m MarkerCtx) (string, []Mark) {
-	d := detector.NewBranchCompareDetector(detector.NewBranchNameConsistencyDetect())
+	d := detector.NewBranchCompareDetector(detector.BranchNameConsistencyDetect())
 
 	return "RegularBranchNames", DetectorMarker(m, d, m.Contribution.BranchCountMap)
 }
