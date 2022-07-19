@@ -16,6 +16,7 @@ import (
 type CommitDistanceCalculator func(commit *local.Commit) (distance float64, err error)
 
 type CommitDistanceDetector struct {
+	name       string
 	violated   int
 	found      int
 	total      int
@@ -24,6 +25,17 @@ type CommitDistanceDetector struct {
 	distance []float64
 
 	detect CommitDistanceCalculator
+}
+
+func NewCommitDistanceDetector(name string, detect CommitDistanceCalculator) *CommitDistanceDetector {
+	return &CommitDistanceDetector{
+		name:       name,
+		violated:   0,
+		found:      0,
+		total:      0,
+		violations: make([]violation.Violation, 0),
+		detect:     detect,
+	}
 }
 
 func (cd *CommitDistanceDetector) Run(model *enriched.EnrichedModel) error {
@@ -100,20 +112,14 @@ func (cd *CommitDistanceDetector) Result() (int, int, int, []violation.Violation
 	return cd.violated, cd.found, cd.total, cd.violations
 }
 
-func NewCommitDistanceDetector(detect CommitDistanceCalculator) *CommitDistanceDetector {
-	return &CommitDistanceDetector{
-		violated:   0,
-		found:      0,
-		total:      0,
-		violations: make([]violation.Violation, 0),
-		detect:     detect,
-	}
+func (cd *CommitDistanceDetector) Name() string {
+	return cd.name
 }
 
 // 6th methods: use distance between diff to find an average.
 // nolint:gocognit // this function is complex
-func DiffDistanceCalculation() CommitDistanceCalculator {
-	return func(commit *local.Commit) (distance float64, err error) {
+func DiffDistanceCalculation() (string, CommitDistanceCalculator) {
+	return "DiffDistanceCalculation", func(commit *local.Commit) (distance float64, err error) {
 		if commit.DiffToParents == nil {
 			// no diff
 			return 0.0, nil

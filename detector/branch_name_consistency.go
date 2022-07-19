@@ -15,8 +15,8 @@ import (
 // Branches must have consistent names.
 // Research: https://stackoverflow.com/questions/29476737/similarities-in-strings-for-name-matching
 // Methods: q-grams, longest common substring and longest common subsequence.
-func BranchNameConsistencyDetect() BranchCompareDetect {
-	return func(c *common, branches []local.Branch) (int, []violation.Violation, error) {
+func BranchNameConsistencyDetect() (string, BranchCompareDetect) {
+	return "BranchNameConsistencyDetect", func(c *common, branches []local.Branch) (int, []violation.Violation, error) {
 		branchRefs := make([]string, len(branches))
 		for i, branch := range branches {
 			branchRefs[i] = branch.Name

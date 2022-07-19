@@ -11,12 +11,23 @@ type BranchMatrixDetect func(branchMatrix *local.BranchMatrix) (bool, violation.
 // FeatureBranchDetector is a detector that detects multiple remote branches (not deleted).
 // And check if the branch is a feature branch or a main/develop branch.
 type BranchMatrixDetector struct {
+	name       string
 	violated   int // no violations
 	found      int // total branches with cross-merge
 	total      int // total branches * total branches
 	violations []violation.Violation
 
 	detect BranchMatrixDetect
+}
+
+func NewBranchMatrixDetector(name string, detect BranchMatrixDetect) *BranchMatrixDetector {
+	return &BranchMatrixDetector{
+		name:       name,
+		total:      0,
+		found:      0,
+		detect:     detect,
+		violations: make([]violation.Violation, 0),
+	}
 }
 
 func (cc *BranchMatrixDetector) Run(model *enriched.EnrichedModel) error {
@@ -42,13 +53,8 @@ func (cc *BranchMatrixDetector) Result() (violated int, count int, total int, vi
 	return cc.violated, cc.found, cc.total, cc.violations
 }
 
-func NewBranchMatrixDetector(detect BranchMatrixDetect) *BranchMatrixDetector {
-	return &BranchMatrixDetector{
-		total:      0,
-		found:      0,
-		detect:     detect,
-		violations: make([]violation.Violation, 0),
-	}
+func (cc *BranchMatrixDetector) Name() string {
+	return cc.name
 }
 
 // CrissCrossMergeDetect to find criss cross merges
@@ -61,8 +67,8 @@ func NewBranchMatrixDetector(detect BranchMatrixDetect) *BranchMatrixDetector {
 //        \        / \
 //          8f35f30 -- 3fd4180 -- 723181f (branch B)
 // ```.
-func CrissCrossMergeDetect() BranchMatrixDetect {
-	return func(branchMatrix *local.BranchMatrix) (bool, violation.Violation, error) {
+func CrissCrossMergeDetect() (string, BranchMatrixDetect) {
+	return "CrissCrossMergeDetect", func(branchMatrix *local.BranchMatrix) (bool, violation.Violation, error) {
 		if len(branchMatrix.CrissCrossCommits) >= 2 {
 			return true, nil, nil
 		}

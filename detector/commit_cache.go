@@ -17,12 +17,24 @@ type CommitCacheDetect func(
 ) (bool, []violation.Violation, error)
 
 type CommitCacheDetector struct {
+	name       string
 	violated   int
 	found      int
 	total      int
 	violations []violation.Violation
 
 	detect CommitCacheDetect
+}
+
+func NewCommitCacheDetector(name string, detect CommitCacheDetect) *CommitCacheDetector {
+	return &CommitCacheDetector{
+		name:       name,
+		violated:   0,
+		found:      0,
+		total:      0,
+		violations: make([]violation.Violation, 0),
+		detect:     detect,
+	}
 }
 
 // TODO: We should change this to the enriched model.
@@ -54,39 +66,34 @@ func (cd *CommitCacheDetector) Result() (int, int, int, []violation.Violation) {
 	return cd.violated, cd.found, cd.total, cd.violations
 }
 
-func NewCommitCacheDetector(detect CommitCacheDetect) *CommitCacheDetector {
-	return &CommitCacheDetector{
-		violated:   0,
-		found:      0,
-		total:      0,
-		violations: make([]violation.Violation, 0),
-		detect:     detect,
-	}
+func (cd *CommitCacheDetector) Name() string {
+	return cd.name
 }
 
 // GithubWorklow: Force pushes are not allowed.
-func ForcePushDetect() CommitCacheDetect {
-	return func(c *common, email string, current *cache.Cache, cache *cache.Cache) (bool, []violation.Violation, error) {
-		lhs := make([]markup.Commit, 0)
-		for _, cuh := range current.Hashes {
-			for _, cah := range cache.Hashes {
-				if cuh == cah {
-					return false, nil, nil
+func ForcePushDetect() (string, CommitCacheDetect) {
+	return "ForcePushDetect",
+		func(c *common, email string, current *cache.Cache, cache *cache.Cache) (bool, []violation.Violation, error) {
+			lhs := make([]markup.Commit, 0)
+			for _, cuh := range current.Hashes {
+				for _, cah := range cache.Hashes {
+					if cuh == cah {
+						return false, nil, nil
+					}
 				}
+				// Hash not found in cache
+				lh := markup.Commit{
+					Hash: hex.EncodeToString(cuh.ToByte()),
+					GitHubLink: markup.GitHubLink{
+						Owner: c.owner,
+						Repo:  c.repo,
+					},
+				}
+				lhs = append(lhs, lh)
 			}
-			// Hash not found in cache
-			lh := markup.Commit{
-				Hash: hex.EncodeToString(cuh.ToByte()),
-				GitHubLink: markup.GitHubLink{
-					Owner: c.owner,
-					Repo:  c.repo,
-				},
-			}
-			lhs = append(lhs, lh)
+
+			violations := [1]violation.Violation{violation.NewForcePushViolation(lhs, email, cache.Created)}
+
+			return true, violations[:], nil
 		}
-
-		violations := [1]violation.Violation{violation.NewForcePushViolation(lhs, email, cache.Created)}
-
-		return true, violations[:], nil
-	}
 }
