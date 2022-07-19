@@ -7,6 +7,7 @@ import (
 	"github.com/Git-Gopher/go-gopher/markup"
 	"github.com/Git-Gopher/go-gopher/model/enriched"
 	"github.com/Git-Gopher/go-gopher/model/local"
+	"github.com/Git-Gopher/go-gopher/utils"
 	"github.com/Git-Gopher/go-gopher/violation"
 )
 
@@ -37,7 +38,7 @@ func (bd *BranchDetector) Run(model *enriched.EnrichedModel) error {
 		b := b
 		detected, violation, err := bd.detect(&c, &b)
 		if err != nil {
-			return fmt.Errorf("Error detecting stale branch: %w", err)
+			return fmt.Errorf("failed to run branch detector: %w", err)
 		}
 		if err != nil {
 			return err
@@ -70,19 +71,23 @@ func NewBranchDetector(detect BranchDetect) *BranchDetector {
 
 // GithubWorklow: Branches are considered stale after three months.
 func StaleBranchDetect() BranchDetect {
-	StaleBranchTime := time.Hour * 24 * 30
+	secondsInMonth := 2600640
+	staleBranchTime := time.Hour * 24 * 30
 
 	return func(c *common, branch *local.Branch) (bool, violation.Violation, error) {
-		if time.Since(branch.Head.Committer.When) > StaleBranchTime {
+		if time.Since(branch.Head.Committer.When) > staleBranchTime {
 			email := branch.Head.Committer.Email
+			monthsSince := utils.RoundTime(time.Since(branch.Head.Committer.When).Seconds() / float64(secondsInMonth))
 
-			return true, violation.NewStaleBranchViolation(markup.Branch{
-				Name: branch.Name,
-				GitHubLink: markup.GitHubLink{
-					Owner: c.owner,
-					Repo:  c.repo,
+			return true, violation.NewStaleBranchViolation(
+				markup.Branch{
+					Name: branch.Name,
+					GitHubLink: markup.GitHubLink{
+						Owner: c.owner,
+						Repo:  c.repo,
+					},
 				},
-			}, StaleBranchTime, email), nil
+				time.Duration(monthsSince), email), nil
 		}
 
 		return false, nil, nil
