@@ -1,6 +1,7 @@
 package local
 
 import (
+	"encoding/hex"
 	"errors"
 	"fmt"
 	"time"
@@ -25,6 +26,10 @@ func (h Hash) ToByte() []byte {
 
 func (h Hash) String() string {
 	return string(h[:])
+}
+
+func (h Hash) HexString() string {
+	return hex.EncodeToString((h[:]))
 }
 
 type Signature struct {

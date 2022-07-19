@@ -38,6 +38,11 @@ type Commit struct {
 }
 
 func (c Commit) String() string {
+	// XXX: Quick hack, seems that the hash is missing from some structs.
+	if c.Hash == "" {
+		return ""
+	}
+
 	return c.Hash[:7] // short commit hash with 7 characters.
 }
 

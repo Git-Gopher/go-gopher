@@ -1,6 +1,7 @@
 package detector
 
 import (
+	"encoding/hex"
 	"strings"
 
 	"github.com/Git-Gopher/go-gopher/markup"
@@ -77,7 +78,6 @@ func BranchCommitDetect() CommitDetect {
 	}
 }
 
-// XXX: Very very lazy. I am a true software engineer.
 func DiffMatchesMessageDetect() CommitDetect {
 	return func(c *common, commit *local.Commit) (bool, violation.Violation, error) {
 		words := strings.Split(commit.Message, " ")
@@ -121,7 +121,7 @@ func UnresolvedDetect() CommitDetect {
 										Owner: common.owner,
 										Repo:  common.repo,
 									},
-									Hash: commit.Hash.String(),
+									Hash: hex.EncodeToString(commit.Hash.ToByte()),
 								},
 								Filepath: diff.Name,
 							},
@@ -155,7 +155,7 @@ func ShortCommitMessageDetect() CommitDetect {
 		if len(words) < 3 {
 			return false, violation.NewShortCommitViolation(
 				markup.Commit{
-					Hash: commit.Hash.String(),
+					Hash: hex.EncodeToString(commit.Hash.ToByte()),
 					GitHubLink: markup.GitHubLink{
 						Owner: c.owner,
 						Repo:  c.repo,

@@ -35,9 +35,10 @@ var (
 		"DiffMatchesMessageDetect":        detector.NewCommitDetector(detector.DiffMatchesMessageDetect()),
 		"ShortCommitMessageDetect":        detector.NewCommitDetector(detector.ShortCommitMessageDetect()),
 		"DiffDistanceCalculation":         detector.NewCommitDistanceDetector(detector.DiffDistanceCalculation()),
-		"NewBranchNameConsistencyDetect":  detector.NewBranchCompareDetector(detector.NewBranchNameConsistencyDetect()),
-		"NewFeatureBranchDetector":        detector.NewFeatureBranchDetector(),
-		"NewCrissCrossMergeDetect":        detector.NewBranchMatrixDetector(detector.NewCrissCrossMergeDetect()),
+		"BranchNameConsistencyDetect":     detector.NewBranchCompareDetector(detector.BranchNameConsistencyDetect()),
+		"FeatureBranchDetector":           detector.NewFeatureBranchDetector(),
+		"CrissCrossMergeDetect":           detector.NewBranchMatrixDetector(detector.CrissCrossMergeDetect()),
+		"UnresolvedDetect":                detector.NewCommitDetector(detector.UnresolvedDetect()),
 
 		// Disabled
 		// "NewFeatureBranchNameDetect": detector.NewBranchCompareDetector(detector.NewFeatureBranchNameDetect()),
@@ -86,10 +87,10 @@ func LocalDetectors() []detector.Detector {
 		detector.NewCommitDetector(detector.ShortCommitMessageDetect()),
 		detector.NewCommitDetector(detector.UnresolvedDetect()),
 		detector.NewCommitDistanceDetector(detector.DiffDistanceCalculation()),
-		detector.NewBranchCompareDetector(detector.NewBranchNameConsistencyDetect()),
+		detector.NewBranchCompareDetector(detector.BranchNameConsistencyDetect()),
 		detector.NewCommitDetector(detector.BranchCommitDetect()), // used to check if branches are used
 		detector.NewFeatureBranchDetector(),
-		detector.NewBranchMatrixDetector(detector.NewCrissCrossMergeDetect()),
+		detector.NewBranchMatrixDetector(detector.CrissCrossMergeDetect()),
 	}
 }
 

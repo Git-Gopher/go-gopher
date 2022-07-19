@@ -47,7 +47,7 @@ func FetchBranchGraph(head *object.Commit) *BranchGraph {
 
 	err := head.Parents().ForEach(
 		func(c *object.Commit) error {
-			hash := c.Hash.String()
+			hash := Hash(c.Hash).HexString()
 			commit := &CommitGraph{
 				Hash:      hash,
 				Author:    *NewSignature(&head.Author),
