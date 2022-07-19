@@ -8,7 +8,6 @@ import (
 	"log"
 	"os"
 	"path/filepath"
-	"strconv"
 	"time"
 
 	"github.com/Git-Gopher/go-gopher/cache"
@@ -248,13 +247,14 @@ func (wk *Workflow) Csv(path, name, url string) error {
 	body = append(body, name, url)
 
 	for _, wd := range wk.WeightedCommitDetectors {
-		violated, _, _, _ := wd.Detector.Result()
-		body = append(body, strconv.Itoa(violated))
+		violated, found, total, _ := wd.Detector.Result()
+
+		body = append(body, fmt.Sprintf("%d:%d:%d", violated, found, total))
 	}
 
 	for _, wcd := range wk.WeightedCacheDetectors {
-		violated, _, _, _ := wcd.Detector.Result()
-		body = append(body, strconv.Itoa(violated))
+		violated, found, total, _ := wcd.Detector.Result()
+		body = append(body, fmt.Sprintf("%d:%d:%d", violated, found, total))
 	}
 
 	err = w.Write(body)
