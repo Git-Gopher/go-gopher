@@ -14,6 +14,7 @@ import (
 )
 
 func singleCommand(cCtx *cli.Context) error {
+	utils.Environment(".env")
 	// Handle flags.
 	githubURL := cCtx.String("url")
 

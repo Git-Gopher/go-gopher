@@ -20,6 +20,7 @@ import (
 	"github.com/Git-Gopher/go-gopher/violation"
 	"github.com/Git-Gopher/go-gopher/workflow"
 	"github.com/go-git/go-git/v5"
+	githttp "github.com/go-git/go-git/v5/plumbing/transport/http"
 	"github.com/go-git/go-git/v5/storage/memory"
 	"github.com/google/go-github/v45/github"
 	"github.com/urfave/cli/v2"
@@ -28,7 +29,6 @@ import (
 
 //nolint
 func main() {
-	utils.Environment(".env")
 	app := cli.NewApp()
 	app.EnableBashCompletion = true
 	app.Commands = []*cli.Command{
@@ -45,6 +45,7 @@ func main() {
 				},
 			},
 			Action: func(ctx *cli.Context) error {
+				utils.Environment(".env")
 				// repository := os.Getenv("GITHUB_REPOSITORY")
 				workspace := os.Getenv("GITHUB_WORKSPACE")
 				if workspace == "" {
@@ -151,6 +152,7 @@ func main() {
 				},
 			},
 			Action: func(ctx *cli.Context) error {
+				utils.Environment(".env")
 				org := ctx.Args().Get(0)
 				out := ctx.String("output")
 				ts := oauth2.StaticTokenSource(
@@ -269,10 +271,20 @@ func main() {
 					Name:  "url",
 					Usage: "analyze github project url",
 					Action: func(ctx *cli.Context) error {
+						utils.Environment(".env")
+						token := os.Getenv("GITHUB_TOKEN")
+						if token == "" {
+							log.Fatal("GITHUB_TOKEN is not set")
+						}
+
 						url := ctx.Args().Get(0)
 
 						repo, err := git.Clone(memory.NewStorage(), nil, &git.CloneOptions{
 							URL: url,
+							Auth: &githttp.BasicAuth{
+								Username: "non-empty",
+								Password: token,
+							},
 						})
 						if err != nil {
 							log.Fatalf("Failed to clone repository: %v", err)
@@ -350,6 +362,7 @@ func main() {
 						},
 					},
 					Action: func(ctx *cli.Context) error {
+						utils.Environment(".env")
 						path := ctx.Args().Get(0)
 						if path == "" {
 							path = "./"

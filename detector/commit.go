@@ -77,7 +77,6 @@ func BranchCommitDetect() CommitDetect {
 	}
 }
 
-// XXX: Very very lazy. I am a true software engineer.
 func DiffMatchesMessageDetect() CommitDetect {
 	return func(c *common, commit *local.Commit) (bool, violation.Violation, error) {
 		words := strings.Split(commit.Message, " ")
