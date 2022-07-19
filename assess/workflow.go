@@ -7,7 +7,7 @@ import (
 // W-A2: How it should be: Features are made on separate branches and then merged
 // into main via a pull request instead of directly committing them to the main branch.
 func FeatureBranching(m MarkerCtx) (string, []Mark) {
-	d := detector.NewFeatureBranchDetector()
+	d := detector.NewFeatureBranchDetector("FeatureBranchDetector")
 
 	return "FeatureBranching", DetectorMarker(m, d, m.Contribution.MergeCountMap)
 }

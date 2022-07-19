@@ -19,9 +19,11 @@ type common struct {
 type Detector interface {
 	Run(model *enriched.EnrichedModel) error
 	Result() (violated, count, total int, violations []violation.Violation)
+	Name() string
 }
 
 type CacheDetector interface {
 	Run(owner string, repo string, email string, current *cache.Cache, cache []*cache.Cache) error
 	Result() (violated, count, total int, violations []violation.Violation)
+	Name() string
 }

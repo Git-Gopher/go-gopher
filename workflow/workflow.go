@@ -8,7 +8,6 @@ import (
 	"log"
 	"os"
 	"path/filepath"
-	"reflect"
 	"strconv"
 	"time"
 
@@ -36,7 +35,7 @@ var (
 		"ShortCommitMessageDetect":        detector.NewCommitDetector(detector.ShortCommitMessageDetect()),
 		"DiffDistanceCalculation":         detector.NewCommitDistanceDetector(detector.DiffDistanceCalculation()),
 		"BranchNameConsistencyDetect":     detector.NewBranchCompareDetector(detector.BranchNameConsistencyDetect()),
-		"FeatureBranchDetector":           detector.NewFeatureBranchDetector(),
+		"FeatureBranchDetector":           detector.NewFeatureBranchDetector("FeatureBranchDetector"),
 		"CrissCrossMergeDetect":           detector.NewBranchMatrixDetector(detector.CrissCrossMergeDetect()),
 		"UnresolvedDetect":                detector.NewCommitDetector(detector.UnresolvedDetect()),
 
@@ -89,7 +88,7 @@ func LocalDetectors() []detector.Detector {
 		detector.NewCommitDistanceDetector(detector.DiffDistanceCalculation()),
 		detector.NewBranchCompareDetector(detector.BranchNameConsistencyDetect()),
 		detector.NewCommitDetector(detector.BranchCommitDetect()), // used to check if branches are used
-		detector.NewFeatureBranchDetector(),
+		detector.NewFeatureBranchDetector("FeatureBranchDetector"),
 		detector.NewBranchMatrixDetector(detector.CrissCrossMergeDetect()),
 	}
 }
@@ -229,13 +228,11 @@ func (wk *Workflow) Csv(path, name, url string) error {
 
 		// Add detector names to header.
 		for _, wd := range wk.WeightedCommitDetectors {
-			t := reflect.TypeOf(wd.Detector)
-			header = append(header, t.Elem().Name())
+			header = append(header, wd.Detector.Name())
 		}
 
 		for _, wcd := range wk.WeightedCacheDetectors {
-			t := reflect.TypeOf(wcd.Detector)
-			header = append(header, t.Elem().Name())
+			header = append(header, wcd.Detector.Name())
 		}
 
 		err = w.Write(header)

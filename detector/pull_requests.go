@@ -10,6 +10,7 @@ type PullRequestDetect func(pullRequest *remote.PullRequest) (bool, violation.Vi
 
 // XXX: violated, found, total should be contained within a struct and then added to this instead as a composite struct.
 type PullRequestDetector struct {
+	name       string
 	violated   int
 	found      int
 	total      int
@@ -18,12 +19,9 @@ type PullRequestDetector struct {
 	detect PullRequestDetect
 }
 
-func (prd *PullRequestDetector) Result() (int, int, int, []violation.Violation) {
-	return prd.violated, prd.found, prd.total, prd.violations
-}
-
-func NewPullRequestDetector(detect PullRequestDetect) *PullRequestDetector {
+func NewPullRequestDetector(name string, detect PullRequestDetect) *PullRequestDetector {
 	return &PullRequestDetector{
+		name:     name,
 		violated: 0,
 		found:    0,
 		total:    0,
@@ -50,9 +48,17 @@ func (pd *PullRequestDetector) Run(model *enriched.EnrichedModel) error {
 	return nil
 }
 
+func (prd *PullRequestDetector) Result() (int, int, int, []violation.Violation) {
+	return prd.violated, prd.found, prd.total, prd.violations
+}
+
+func (prd *PullRequestDetector) Name() string {
+	return prd.name
+}
+
 // Github Workflow: Pull requests must have at least one associated issue.
-func PullRequestIssueDetector() PullRequestDetect {
-	return func(pullRequest *remote.PullRequest) (bool, violation.Violation, error) {
+func PullRequestIssueDetector() (string, PullRequestDetect) {
+	return "PullRequestIssueDetector", func(pullRequest *remote.PullRequest) (bool, violation.Violation, error) {
 		if len(pullRequest.ClosingIssues) == 0 {
 			return false, nil, nil
 		}
@@ -61,8 +67,8 @@ func PullRequestIssueDetector() PullRequestDetect {
 	}
 }
 
-func PullRequestApprovalDetector() PullRequestDetect {
-	return func(pullRequest *remote.PullRequest) (bool, violation.Violation, error) {
+func PullRequestApprovalDetector() (string, PullRequestDetect) {
+	return "PullRequestApprovalDetector", func(pullRequest *remote.PullRequest) (bool, violation.Violation, error) {
 		// Ignore unmerged pull requests.
 		if pullRequest.Merged {
 			return true, nil, nil
@@ -78,8 +84,8 @@ func PullRequestApprovalDetector() PullRequestDetect {
 }
 
 // All reviews threads should be marked as resolved before merging.
-func PullRequestReviewThreadDetector() PullRequestDetect {
-	return func(pullRequest *remote.PullRequest) (bool, violation.Violation, error) {
+func PullRequestReviewThreadDetector() (string, PullRequestDetect) {
+	return "PullRequestReviewThreadDetector", func(pullRequest *remote.PullRequest) (bool, violation.Violation, error) {
 		// Ignore unmerged pull requests.
 		if pullRequest.Merged {
 			return true, nil, nil

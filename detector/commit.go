@@ -13,12 +13,24 @@ import (
 type CommitDetect func(c *common, commit *local.Commit) (bool, violation.Violation, error)
 
 type CommitDetector struct {
+	name       string
 	violated   int
 	found      int
 	total      int
 	violations []violation.Violation
 
 	detect CommitDetect
+}
+
+func NewCommitDetector(name string, detect CommitDetect) *CommitDetector {
+	return &CommitDetector{
+		name:       name,
+		violated:   0,
+		found:      0,
+		total:      0,
+		violations: make([]violation.Violation, 0),
+		detect:     detect,
+	}
 }
 
 func (cd *CommitDetector) Run(model *enriched.EnrichedModel) error {
@@ -56,20 +68,14 @@ func (cd *CommitDetector) Result() (int, int, int, []violation.Violation) {
 	return cd.violated, cd.found, cd.total, cd.violations
 }
 
-func NewCommitDetector(detect CommitDetect) *CommitDetector {
-	return &CommitDetector{
-		violated:   0,
-		found:      0,
-		total:      0,
-		violations: make([]violation.Violation, 0),
-		detect:     detect,
-	}
+func (cd *CommitDetector) Name() string {
+	return cd.name
 }
 
 // All commits on the main branch for github flow should be merged in,
 // meaning that they have two parents(the main branch and the feature branch).
-func BranchCommitDetect() CommitDetect {
-	return func(c *common, commit *local.Commit) (bool, violation.Violation, error) {
+func BranchCommitDetect() (string, CommitDetect) {
+	return "BranchCommitDetect", func(c *common, commit *local.Commit) (bool, violation.Violation, error) {
 		if len(commit.ParentHashes) >= 2 {
 			return true, nil, nil
 		}
@@ -78,8 +84,8 @@ func BranchCommitDetect() CommitDetect {
 	}
 }
 
-func DiffMatchesMessageDetect() CommitDetect {
-	return func(c *common, commit *local.Commit) (bool, violation.Violation, error) {
+func DiffMatchesMessageDetect() (string, CommitDetect) {
+	return "DiffMatchesMessageDetect", func(c *common, commit *local.Commit) (bool, violation.Violation, error) {
 		words := strings.Split(commit.Message, " ")
 		for _, diff := range commit.DiffToParents {
 			for _, word := range words {
@@ -106,8 +112,8 @@ func DiffMatchesMessageDetect() CommitDetect {
 }
 
 // UnresolvedDetect checks if a commit is unresolved.
-func UnresolvedDetect() CommitDetect {
-	return func(common *common, commit *local.Commit) (bool, violation.Violation, error) {
+func UnresolvedDetect() (string, CommitDetect) {
+	return "UnresolvedDetect", func(common *common, commit *local.Commit) (bool, violation.Violation, error) {
 		for _, diff := range commit.DiffToParents {
 			lines := strings.Split(strings.ReplaceAll(diff.Addition, "\r\n", "\n"), "\n")
 			for _, line := range lines {
@@ -139,8 +145,8 @@ func UnresolvedDetect() CommitDetect {
 }
 
 // Check if commit is less than 3 words.
-func ShortCommitMessageDetect() CommitDetect {
-	return func(c *common, commit *local.Commit) (bool, violation.Violation, error) {
+func ShortCommitMessageDetect() (string, CommitDetect) {
+	return "ShortCommitMessageDetect", func(c *common, commit *local.Commit) (bool, violation.Violation, error) {
 		exclusions := []string{
 			"first commit",
 			"initial commit",

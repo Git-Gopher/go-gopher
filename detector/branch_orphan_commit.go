@@ -10,8 +10,8 @@ import (
 // - If the head commit of the branch is more than X days/weeks old then branch is old (unused)
 // - If branch has fallen behind primary branch by a certain amount then it has been failed to be maintained.
 // Use CreateIndependentCommits.
-func NewOrphanCommitDetector() BranchDetect {
-	return func(c *common, branch *local.Branch) (bool, violation.Violation, error) {
+func OrphanCommitDetector() (string, BranchDetect) {
+	return "OrphanCommitDetector", func(c *common, branch *local.Branch) (bool, violation.Violation, error) {
 		// Run the detector on each branch and look for orphan commits
 
 		return false, nil, nil

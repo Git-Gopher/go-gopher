@@ -15,27 +15,29 @@ var (
 	ErrFeatureBranchNoCommonAncestor = errors.New("feature branch no common ancestor found")
 )
 
-// NewFeatureBranchDetector creates a new feature branch detector.
-// This detector is a custom recursive detector that does not rely on the
-// `detector.NewDetector(detector.Detect)` pattern.
-func NewFeatureBranchDetector() *FeatureBranchDetector {
-	return &FeatureBranchDetector{
-		violated:   0,
-		found:      0,
-		total:      0,
-		violations: make([]violation.Violation, 0),
-	}
-}
-
 // FeatureBranchDetector is a detector that detects multiple remote branches (not deleted).
 // And check if the branch is a feature branch or a main/develop branch.
 type FeatureBranchDetector struct {
+	name       string
 	violated   int // non feature branches aka develop/release etc. (does not account default branch)
 	found      int // total feature branches
 	total      int // total branches
 	violations []violation.Violation
 
 	primaryBranch string
+}
+
+// NewFeatureBranchDetector creates a new feature branch detector.
+// This detector is a custom recursive detector that does not rely on the
+// `detector.NewDetector(detector.Detect)` pattern.
+func NewFeatureBranchDetector(name string) *FeatureBranchDetector {
+	return &FeatureBranchDetector{
+		name:       name,
+		violated:   0,
+		found:      0,
+		total:      0,
+		violations: make([]violation.Violation, 0),
+	}
 }
 
 func (bs *FeatureBranchDetector) Run(model *enriched.EnrichedModel) error {
@@ -55,6 +57,14 @@ func (bs *FeatureBranchDetector) Run(model *enriched.EnrichedModel) error {
 	bs.checkNext(&c, model.MainGraph.Head)
 
 	return nil
+}
+
+func (bs *FeatureBranchDetector) Result() (int, int, int, []violation.Violation) {
+	return bs.violated, bs.found, bs.total, bs.violations
+}
+
+func (bs *FeatureBranchDetector) Name() string {
+	return bs.name
 }
 
 // checkNext is used to check the next commit in the branch. (recursive)
@@ -203,8 +213,4 @@ func (bs *FeatureBranchDetector) checkEnd(
 	))
 
 	return bs.checkEnd(c, cg.ParentCommits[0], v)
-}
-
-func (bs *FeatureBranchDetector) Result() (int, int, int, []violation.Violation) {
-	return bs.violated, bs.found, bs.total, bs.violations
 }

@@ -15,12 +15,24 @@ type BranchDetect func(c *common, branch *local.Branch) (bool, violation.Violati
 
 // BranchDetector is used to run a detector on each branch metadata.
 type BranchDetector struct {
+	name       string
 	violated   int
 	found      int
 	total      int
 	violations []violation.Violation
 
 	detect BranchDetect
+}
+
+func NewBranchDetector(name string, detect BranchDetect) *BranchDetector {
+	return &BranchDetector{
+		name:       name,
+		violated:   0,
+		found:      0,
+		total:      0,
+		violations: make([]violation.Violation, 0),
+		detect:     detect,
+	}
 }
 
 func (bd *BranchDetector) Run(model *enriched.EnrichedModel) error {
@@ -59,22 +71,16 @@ func (b *BranchDetector) Result() (int, int, int, []violation.Violation) {
 	return b.violated, b.found, b.total, b.violations
 }
 
-func NewBranchDetector(detect BranchDetect) *BranchDetector {
-	return &BranchDetector{
-		violated:   0,
-		found:      0,
-		total:      0,
-		violations: make([]violation.Violation, 0),
-		detect:     detect,
-	}
+func (b *BranchDetector) Name() string {
+	return b.name
 }
 
 // GithubWorklow: Branches are considered stale after three months.
-func StaleBranchDetect() BranchDetect {
+func StaleBranchDetect() (string, BranchDetect) {
 	secondsInMonth := 2600640
 	staleBranchTime := time.Hour * 24 * 30
 
-	return func(c *common, branch *local.Branch) (bool, violation.Violation, error) {
+	return "StaleBranchDetect", func(c *common, branch *local.Branch) (bool, violation.Violation, error) {
 		if time.Since(branch.Head.Committer.When) > staleBranchTime {
 			email := branch.Head.Committer.Email
 			monthsSince := utils.RoundTime(time.Since(branch.Head.Committer.When).Seconds() / float64(secondsInMonth))
