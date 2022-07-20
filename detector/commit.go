@@ -98,7 +98,7 @@ func DiffMatchesMessageDetect() (string, CommitDetect) {
 
 		return false, violation.NewDescriptiveCommitViolation(
 			markup.Commit{
-				Hash: commit.Hash.String(),
+				Hash: hex.EncodeToString(commit.Hash[:]),
 				GitHubLink: markup.GitHubLink{
 					Owner: c.owner,
 					Repo:  c.repo,
