@@ -114,14 +114,20 @@ func main() {
 				workflowSummary(authors, violated, count, total, violations)
 
 				// Set action outputs to a markdown summary.
-				md := markup.NewMarkdown()
-				md.
-					Title("Workflow Summary").
-					Collapsible("Violations", markup.NewMarkdown().Text("Stub!")).
-					Collapsible("Suggestions", markup.NewMarkdown().Text("Stub!")).
-					Collapsible("Authors", markup.NewMarkdown().Text("Stub!"))
+				md := markup.CreateMarkdown("Workflow Summary")
+				md.BeginCollapsable("Violations")
+				md.Paragraph("Stub")
+				md.EndCollapsable()
+				md.BeginCollapsable("Suggestions")
+				md.Paragraph("Stub")
+				md.EndCollapsable()
 
-				markup.Outputs("pr_summary", md.String())
+				f, _ := os.Create("./THING.md")
+				f.WriteString(md.Render())
+				f.Close()
+
+				md.Render()
+				markup.Outputs("pr_summary", md.Render())
 
 				err = ghwf.Csv(workflow.DefaultCsvPath, enrichedModel.Name, enrichedModel.URL)
 				if err != nil {
