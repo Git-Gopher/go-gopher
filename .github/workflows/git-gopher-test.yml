@@ -38,11 +38,11 @@ jobs:
       - name: Analyze Workflow
         id: go-gopher
         run: |
-          chmod +x ./go-gopher
+          chmod +x go-gopher
           ./go-gopher
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: Artifact Log
         uses: actions/upload-artifact@v3
         with:
-          path: log-**.json
+          path: bin/log-**.json
