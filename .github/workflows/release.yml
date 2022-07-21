@@ -18,7 +18,7 @@ jobs:
       - name: Verify dependencies
         run: go mod verify
       - name: Build
-        run: go build -ldflags="-s -w" -v
+        run: make build -- -ldflags="-s -w"
       - name: Run go vet
         run: go vet ./...
       - name: lint
@@ -32,11 +32,11 @@ jobs:
         with:
           version: latest
           files: |
-            ./go-gopher
+            bin/*
           args: -9v --ultra-brute
       - name: Release
         env:
           GITHUB_TOKEN: "${{ secrets.RELEASE_REPO_SECRET }}"
         run: |
           gh release delete latest --yes -R https://github.com/Git-Gopher/go-gopher-action || true
-          gh release create latest go-gopher -R https://github.com/Git-Gopher/go-gopher-action --generate-notes
+          gh release create latest bin/* -R https://github.com/Git-Gopher/go-gopher-action --generate-notes
