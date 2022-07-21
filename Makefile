@@ -4,7 +4,11 @@ run: build
 
 .PHONY: build
 build:
-	go build -v
+	mkdir bin || true
+	go build -v -o bin/go-gopher
+	go build -v -o bin/go-gopher-cli ./cmd/cli/ 
+	go build -v -o bin/go-gopher-marker ./cmd/marker/  
+	go build -v -o bin/go-gopher-github-action ./cmd/github-action/  
 
 .PHONY: lint
 lint:

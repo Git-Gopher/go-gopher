@@ -1,8 +1,16 @@
+# project
 /.env
 **/cache.json
 **/__debug_bin
 **/*.csv
+
+# binaries
+/bin
 /go-gopher
+/cmd/marker/marker
+/cmd/github-action/github-action
+/cmd/cli/cli
+
 # artifacts
 output/
 **/*.zip 
