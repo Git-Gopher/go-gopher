@@ -38,13 +38,8 @@ jobs:
       - name: Analyze Workflow
         id: go-gopher
         run: |
-<<<<<<< HEAD
           chmod +x go-gopher
           ./go-gopher
-=======
-          chmod +x ./bin/go-gopher-github-action
-          ./go-gopher-github-action
->>>>>>> adjust workflows
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: Artifact Log
