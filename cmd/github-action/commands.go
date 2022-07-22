@@ -81,6 +81,9 @@ func actionCommand(cCtx *cli.Context) error {
 
 	workflowSummary(authors, violated, count, total, violations)
 
+	summary := MarkdownSummary(violations)
+	markup.Outputs("pr_summary", summary)
+
 	if cCtx.Bool("csv") {
 		err = ghwf.Csv(workflow.DefaultCsvPath, enrichedModel.Name, enrichedModel.URL)
 		if err != nil {
@@ -134,4 +137,90 @@ func workflowSummary(authors utils.Authors, v, c, t int, vs []violation.Violatio
 	asd += fmt.Sprintf("count: %d\n", c)
 	asd += fmt.Sprintf("total: %d\n", t)
 	markup.Group("Summary", asd)
+}
+
+// Helper function to create a markdown summary of the violations.
+func MarkdownSummary(vs []violation.Violation) string {
+	md := markup.CreateMarkdown("Workflow Summary")
+
+	// Separate violation types.
+	var violations []violation.Violation
+	var suggestions []violation.Violation
+
+	for _, v := range vs {
+		switch v.Severity() {
+		case violation.Violated:
+			violations = append(violations, v)
+		case violation.Suggestion:
+			suggestions = append(suggestions, v)
+		default:
+			log.Printf("Unknown violation severity: %v", v.Severity())
+		}
+	}
+
+	headers := []string{"Violation", "Message", "Suggestion", "Author"}
+	rows := make([][]string, len(vs))
+
+	for i, v := range violations {
+		row := make([]string, len(headers))
+		name := v.Name()
+		row[0] = name
+		message := v.Message()
+		row[1] = message
+
+		suggestion, err := v.Suggestion()
+		if err != nil {
+			suggestion = ""
+		}
+		row[2] = suggestion
+
+		var login string
+		author, err := v.Author()
+		if err != nil {
+			login = ""
+		} else {
+			login = author.Login
+		}
+
+		row[3] = login
+		rows[i] = row
+	}
+
+	md.BeginCollapsable("Violations")
+	md.Table(headers, rows)
+	md.EndCollapsable()
+
+	headers = []string{"Suggestion", "Message", "Suggestion", "Author"}
+	rows = make([][]string, len(vs))
+
+	for i, v := range suggestions {
+		row := make([]string, len(headers))
+		name := v.Name()
+		row[0] = name
+		message := v.Message()
+		row[1] = message
+
+		suggestion, err := v.Suggestion()
+		if err != nil {
+			suggestion = ""
+		}
+		row[2] = suggestion
+
+		var login string
+		author, err := v.Author()
+		if err != nil {
+			login = ""
+		} else {
+			login = author.Login
+		}
+
+		row[3] = login
+		rows[i] = row
+	}
+
+	md.BeginCollapsable("Suggestions")
+	md.Table(headers, rows)
+	md.EndCollapsable()
+
+	return md.Render()
 }
