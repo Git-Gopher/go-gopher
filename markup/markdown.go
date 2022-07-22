@@ -35,9 +35,8 @@ func (m *Markdown) SubSubTitle(title string) *Markdown {
 }
 
 func (m *Markdown) Text(text string) *Markdown {
-
 	// Fix termlink issues
-	text = strings.Replace(text, "\u001b[m", "", -1)
+	text = strings.ReplaceAll(text, "\u001b[m", "")
 
 	m.builder.WriteString(text + "\n")
 

@@ -68,6 +68,7 @@ func RunMarker(m MarkerCtx, g GradingAlgorithm, markers ...Marker) []Candidate {
 						Details:      "",
 					},
 				)
+
 				continue
 			}
 

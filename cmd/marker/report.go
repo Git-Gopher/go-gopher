@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"os"
+	"path/filepath"
 
 	"github.com/Git-Gopher/go-gopher/assess"
 	"github.com/Git-Gopher/go-gopher/markup"
@@ -59,16 +60,18 @@ func IndividualReports(candidates []assess.Candidate) error {
 	return nil
 }
 
-func writeFile(filename string, data []byte) error {
-	f, err := os.Create(filename)
+func writeFile(filename string, data []byte) (err error) {
+	f, err := os.Create(filepath.Clean(filename))
 	if err != nil {
-		return err
+		return fmt.Errorf("failed to create file %s: %w", filename, err)
 	}
-	defer f.Close()
+	defer func() {
+		err = f.Close()
+	}()
 
 	_, err = f.Write(data)
 	if err != nil {
-		return err
+		return fmt.Errorf("failed to write to file %s: %w", filename, err)
 	}
 
 	return nil
