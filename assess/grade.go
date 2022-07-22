@@ -19,13 +19,57 @@ func RunMarker(m MarkerCtx, g GradingAlgorithm, markers ...Marker) []Candidate {
 
 	for _, marker := range markers {
 		name, grades := marker(m)
+
+		gradeMap := make(map[string]Mark)
 		for _, grade := range grades {
-			if _, ok := candiateMap[grade.Username]; !ok {
-				candiateMap[grade.Username] = &Candidate{
-					Username: grade.Username,
+			gradeMap[grade.Username] = grade
+		}
+
+		for email, contribution := range m.Contribution.CommitCountMap {
+			usernamePointer, err := m.Author.Find(email)
+			if err != nil {
+				continue
+			}
+
+			username := *usernamePointer
+
+			if _, ok := candiateMap[username]; !ok {
+				candiateMap[username] = &Candidate{
+					Username: username,
 					Grades:   []Grade{},
 					Total:    0,
 				}
+			}
+
+			var grade Mark
+			var ok bool
+			if grade, ok = gradeMap[username]; !ok {
+				// TODO less contribution
+				if contribution < 5 {
+					candiateMap[username].Grades = append(
+						candiateMap[username].Grades,
+						Grade{
+							Name:         name,
+							Grade:        0,
+							Contribution: contribution,
+							Violation:    0,
+							Details:      "Not enough contribution in this category.",
+						},
+					)
+				}
+
+				candiateMap[username].Grades = append(
+					candiateMap[username].Grades,
+					Grade{
+						Name:         name,
+						Grade:        3,
+						Contribution: contribution,
+						Violation:    0,
+						Details:      "",
+					},
+				)
+
+				continue
 			}
 
 			details := ""

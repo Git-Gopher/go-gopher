@@ -42,7 +42,7 @@ func (dvc *DescriptiveCommitViolation) Message() string {
 	message := strings.ReplaceAll(dvc.message, "\n", " ")
 
 	return fmt.Sprintf(
-		"The commit message \"%s\" on \"%s\" may not be descriptive enough",
+		"The commit message \"%s\" on %s may not be descriptive enough",
 		message,
 		dvc.commit.Link(),
 	)

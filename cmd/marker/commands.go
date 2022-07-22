@@ -67,5 +67,9 @@ func singleCommand(cCtx *cli.Context) error {
 		fmt.Println(string(b)) // nolint:forbidigo
 	}
 
+	if err := IndividualReports(candidates); err != nil {
+		return fmt.Errorf("failed to generate individual reports: %w", err)
+	}
+
 	return nil
 }

@@ -47,8 +47,8 @@ type DiffDistanceViolation struct {
 // Message implements Violation.
 func (sc *DiffDistanceViolation) Message() string {
 	if sc.severity == Violated {
-		return fmt.Sprintf("Diff distance extreme violation on \"%s\"", sc.commit.Link())
+		return fmt.Sprintf("Diff distance extreme violation on %s", sc.commit.Link())
 	} else {
-		return fmt.Sprintf("Diff distance mild violation on \"%s\"", sc.commit.Link())
+		return fmt.Sprintf("Diff distance mild violation on %s", sc.commit.Link())
 	}
 }

@@ -28,7 +28,16 @@ func (m *Markdown) SubTitle(title string) *Markdown {
 	return m
 }
 
+func (m *Markdown) SubSubTitle(title string) *Markdown {
+	m.builder.WriteString("### " + title + "\n")
+
+	return m
+}
+
 func (m *Markdown) Text(text string) *Markdown {
+	// Fix termlink issues
+	text = strings.ReplaceAll(text, "\u001b[m", "")
+
 	m.builder.WriteString(text + "\n")
 
 	return m
@@ -41,23 +50,27 @@ func (m *Markdown) Code(code string) *Markdown {
 }
 
 func (m *Markdown) Table(rows ...[]string) *Markdown {
-	m.builder.WriteString("| ")
-	for r, row := range rows {
-		for _, cell := range row {
-			m.builder.WriteString(cell + " | ")
-		}
-		switch r {
-		case 0:
-			m.builder.WriteString("\n|")
-			m.builder.WriteString(strings.Repeat(" - |", len(row)))
-			m.builder.WriteString("\n| ")
+	if len(rows) == 0 {
+		return m
+	}
 
-		case len(rows) - 1:
-			m.builder.WriteString("\n")
+	m.builder.WriteString(strings.Join(rows[0], " | "))
+	m.builder.WriteString("\n")
+	s := strings.Split(strings.Repeat("--- ", len(rows[0])), " ")
+	m.builder.WriteString(strings.Join(s, "|"))
+	m.builder.WriteString("\n")
 
-		default:
-			m.builder.WriteString("\n| ")
-		}
+	if len(rows) == 1 {
+		s := strings.Split(strings.Repeat(" ", len(rows[0])), "")
+		m.builder.WriteString(strings.Join(s, " | "))
+		m.builder.WriteString("\n")
+
+		return m
+	}
+
+	for _, row := range rows[1:] {
+		m.builder.WriteString(strings.Join(row, " | "))
+		m.builder.WriteString("\n")
 	}
 
 	return m

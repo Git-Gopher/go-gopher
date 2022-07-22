@@ -42,12 +42,12 @@ type PrimaryBranchDirectCommitViolation struct {
 
 // Message implements Violation.
 func (p *PrimaryBranchDirectCommitViolation) Message() string {
-	format := "Commit \"%s\" has been directly committed to the primary branch \"%s\""
+	format := "Commit %s has been directly committed to the primary branch %s"
 
 	return fmt.Sprintf(format, p.commitHash.Link(), p.primaryBranch.Link())
 }
 
 // Suggestion implements Violation.
 func (p *PrimaryBranchDirectCommitViolation) Suggestion() (string, error) {
-	return fmt.Sprintf("All commits should be merged in to the branch \"%s\" ", p.primaryBranch.Link()), nil
+	return fmt.Sprintf("All commits should be merged in to the branch %s", p.primaryBranch.Link()), nil
 }
