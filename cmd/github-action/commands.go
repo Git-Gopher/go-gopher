@@ -159,7 +159,7 @@ func MarkdownSummary(vs []violation.Violation) string {
 	}
 
 	headers := []string{"Violation", "Message", "Suggestion", "Author"}
-	rows := make([][]string, len(vs))
+	rows := make([][]string, len(violations))
 
 	for i, v := range violations {
 		row := make([]string, len(headers))
@@ -191,7 +191,7 @@ func MarkdownSummary(vs []violation.Violation) string {
 	md.EndCollapsable()
 
 	headers = []string{"Suggestion", "Message", "Suggestion", "Author"}
-	rows = make([][]string, len(vs))
+	rows = make([][]string, len(suggestions))
 
 	for i, v := range suggestions {
 		row := make([]string, len(headers))
