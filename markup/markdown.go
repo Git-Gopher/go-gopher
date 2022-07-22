@@ -19,6 +19,7 @@ func CreateMarkdown(title string) *Markdown {
 	}
 
 	md.Header(title, 1)
+
 	return md
 }
 
@@ -38,6 +39,7 @@ func (m *Markdown) Header(text string, weigth int) *Markdown {
 		weigth = 1
 	}
 	m.AddLine(fmt.Sprintf("%s %s", strings.Repeat("#", weigth), text))
+
 	return m
 }
 
@@ -55,31 +57,37 @@ func (m *Markdown) EndCollapsable() *Markdown {
 
 func (m *Markdown) AddLine(text string) *Markdown {
 	m.data = append(m.data, text)
+
 	return m
 }
 
 func (m *Markdown) Paragraph(text string) *Markdown {
 	m.AddLine(text)
+
 	return m
 }
 
 func (m *Markdown) Quote(text string) *Markdown {
 	m.AddLine(fmt.Sprintf("> %s", text))
+
 	return m
 }
 
 func (m *Markdown) Code(text string, language string) *Markdown {
 	m.AddLine(fmt.Sprintf("```\n%s\n```", text))
+
 	return m
 }
 
 func (m *Markdown) HorizontalLine() *Markdown {
 	m.AddLine("---")
+
 	return m
 }
 
 func (m *Markdown) Image(altText string, filepath string) *Markdown {
 	m.AddLine(fmt.Sprintf("![%s](%s)", altText, filepath))
+
 	return m
 }
 
@@ -90,7 +98,7 @@ type ListItem struct {
 
 func GenerateList(items []ListItem, numbered bool) []string {
 	bullet := "-"
-	var results []string
+	var results []string //nolint: prealloc
 	for i, item := range items {
 		if numbered {
 			bullet = fmt.Sprintf("%d.", i+1)
@@ -105,12 +113,14 @@ func GenerateList(items []ListItem, numbered bool) []string {
 			item.Label,
 		))
 	}
+
 	return results
 }
 
 func (m *Markdown) List(items []ListItem, numbered bool) *Markdown {
 	list := GenerateList(items, numbered)
 	m.AddLine(strings.Join(list, LineBreak))
+
 	return m
 }
 
@@ -120,7 +130,7 @@ type TaskItem struct {
 }
 
 func (m *Markdown) Task(items []TaskItem, numbered bool) *Markdown {
-	var results []string
+	var results []string //nolint: prealloc
 
 	for _, task := range items {
 		check := " "
@@ -135,6 +145,7 @@ func (m *Markdown) Task(items []TaskItem, numbered bool) *Markdown {
 	}
 
 	m.AddLine(strings.Join(results, LineBreak))
+
 	return m
 }
 
@@ -149,6 +160,7 @@ func (m *Markdown) Table(headers []string, rows [][]string) *Markdown {
 	}
 
 	m.AddLine(t)
+
 	return m
 }
 

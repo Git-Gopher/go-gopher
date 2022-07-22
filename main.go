@@ -510,11 +510,11 @@ func readConfig(ctx *cli.Context) *config.Config {
 	return cfg
 }
 
-// Helper function to create a markdown summary of the violations
+// Helper function to create a markdown summary of the violations.
 func MarkdownSummary(vs []violation.Violation) string {
 	md := markup.CreateMarkdown("Workflow Summary")
 
-	// Seperate violation types
+	// Separate violation types.
 	var violations []violation.Violation
 	var suggestions []violation.Violation
 
@@ -532,7 +532,7 @@ func MarkdownSummary(vs []violation.Violation) string {
 	headers := []string{"Violation", "Message", "Suggestion", "Author"}
 	rows := make([][]string, len(vs))
 
-	for i, v := range vs {
+	for i, v := range violations {
 		row := make([]string, len(headers))
 		name := v.Name()
 		row[0] = name
@@ -564,7 +564,7 @@ func MarkdownSummary(vs []violation.Violation) string {
 	headers = []string{"Suggestion", "Message", "Suggestion", "Author"}
 	rows = make([][]string, len(vs))
 
-	for i, v := range vs {
+	for i, v := range suggestions {
 		row := make([]string, len(headers))
 		name := v.Name()
 		row[0] = name
