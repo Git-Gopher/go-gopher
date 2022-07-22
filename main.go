@@ -114,12 +114,11 @@ func main() {
 					log.Fatalf("Could not create csv summary: %v", err)
 				}
 
-				if ctx.Bool("logging") {
-					err = ghwf.WriteLog(*enrichedModel, cfg)
-					if err != nil {
-						log.Fatalf("Could not write json log: %v", err)
-					}
+				err = ghwf.WriteLog(*enrichedModel, cfg)
+				if err != nil {
+					log.Fatalf("Could not write json log: %v", err)
 				}
+
 				return nil
 			},
 		},
