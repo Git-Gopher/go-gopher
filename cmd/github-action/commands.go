@@ -81,15 +81,8 @@ func actionCommand(cCtx *cli.Context) error {
 
 	workflowSummary(authors, violated, count, total, violations)
 
-	summary := MarkdownSummary(violations)
+	summary := markdownSummary(violations)
 	markup.Outputs("pr_summary", summary)
-
-	if cCtx.Bool("csv") {
-		err = ghwf.Csv(workflow.DefaultCsvPath, enrichedModel.Name, enrichedModel.URL)
-		if err != nil {
-			log.Fatalf("Could not create csv summary: %v", err)
-		}
-	}
 
 	return nil
 }
@@ -140,7 +133,7 @@ func workflowSummary(authors utils.Authors, v, c, t int, vs []violation.Violatio
 }
 
 // Helper function to create a markdown summary of the violations.
-func MarkdownSummary(vs []violation.Violation) string {
+func markdownSummary(vs []violation.Violation) string {
 	md := markup.CreateMarkdown("Workflow Summary")
 
 	// Separate violation types.

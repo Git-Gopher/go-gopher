@@ -36,14 +36,6 @@ func main() {
 			Name:    "action",
 			Aliases: []string{"a"},
 			Usage:   "detect a workflow for current root",
-			Flags: []cli.Flag{
-				&cli.BoolFlag{
-					Name:     "logging",
-					Usage:    "enable logging, output to the set file name",
-					Aliases:  []string{"l"},
-					Required: false,
-				},
-			},
 			Action: func(ctx *cli.Context) error {
 				utils.Environment(".env")
 				// repository := os.Getenv("GITHUB_REPOSITORY")
@@ -114,7 +106,7 @@ func main() {
 				workflowSummary(authors, violated, count, total, violations)
 
 				// Set action outputs to a markdown summary.
-				summary := MarkdownSummary(violations)
+				summary := markdownSummary(violations)
 				markup.Outputs("pr_summary", summary)
 
 				err = ghwf.Csv(workflow.DefaultCsvPath, enrichedModel.Name, enrichedModel.URL)
@@ -511,7 +503,7 @@ func readConfig(ctx *cli.Context) *config.Config {
 }
 
 // Helper function to create a markdown summary of the violations.
-func MarkdownSummary(vs []violation.Violation) string {
+func markdownSummary(vs []violation.Violation) string {
 	md := markup.CreateMarkdown("Workflow Summary")
 
 	// Separate violation types.
@@ -530,7 +522,7 @@ func MarkdownSummary(vs []violation.Violation) string {
 	}
 
 	headers := []string{"Violation", "Message", "Suggestion", "Author"}
-	rows := make([][]string, len(vs))
+	rows := make([][]string, len(violations))
 
 	for i, v := range violations {
 		row := make([]string, len(headers))
@@ -562,7 +554,7 @@ func MarkdownSummary(vs []violation.Violation) string {
 	md.EndCollapsable()
 
 	headers = []string{"Suggestion", "Message", "Suggestion", "Author"}
-	rows = make([][]string, len(vs))
+	rows = make([][]string, len(suggestions))
 
 	for i, v := range suggestions {
 		row := make([]string, len(headers))
