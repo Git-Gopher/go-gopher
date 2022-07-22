@@ -36,14 +36,6 @@ func main() {
 			Name:    "action",
 			Aliases: []string{"a"},
 			Usage:   "detect a workflow for current root",
-			Flags: []cli.Flag{
-				&cli.BoolFlag{
-					Name:     "logging",
-					Usage:    "enable logging, output to the set file name",
-					Aliases:  []string{"l"},
-					Required: false,
-				},
-			},
 			Action: func(ctx *cli.Context) error {
 				utils.Environment(".env")
 				// repository := os.Getenv("GITHUB_REPOSITORY")
@@ -114,25 +106,17 @@ func main() {
 				workflowSummary(authors, violated, count, total, violations)
 
 				// Set action outputs to a markdown summary.
-				md := markup.NewMarkdown()
-				md.
-					Title("Workflow Summary").
-					Collapsible("Violations", markup.NewMarkdown().Text("Stub!")).
-					Collapsible("Suggestions", markup.NewMarkdown().Text("Stub!")).
-					Collapsible("Authors", markup.NewMarkdown().Text("Stub!"))
-
-				markup.Outputs("pr_summary", md.String())
+				summary := markdownSummary(violations)
+				markup.Outputs("pr_summary", summary)
 
 				err = ghwf.Csv(workflow.DefaultCsvPath, enrichedModel.Name, enrichedModel.URL)
 				if err != nil {
 					log.Fatalf("Could not create csv summary: %v", err)
 				}
 
-				if ctx.Bool("logging") {
-					err = ghwf.WriteLog(*enrichedModel, cfg)
-					if err != nil {
-						log.Fatalf("Could not write json log: %v", err)
-					}
+				err = ghwf.WriteLog(*enrichedModel, cfg)
+				if err != nil {
+					log.Fatalf("Could not write json log: %v", err)
 				}
 
 				return nil
@@ -515,4 +499,90 @@ func readConfig(ctx *cli.Context) *config.Config {
 	}
 
 	return cfg
+}
+
+// Helper function to create a markdown summary of the violations.
+func markdownSummary(vs []violation.Violation) string {
+	md := markup.CreateMarkdown("Workflow Summary")
+
+	// Separate violation types.
+	var violations []violation.Violation
+	var suggestions []violation.Violation
+
+	for _, v := range vs {
+		switch v.Severity() {
+		case violation.Violated:
+			violations = append(violations, v)
+		case violation.Suggestion:
+			suggestions = append(suggestions, v)
+		default:
+			log.Printf("Unknown violation severity: %v", v.Severity())
+		}
+	}
+
+	headers := []string{"Violation", "Message", "Suggestion", "Author"}
+	rows := make([][]string, len(violations))
+
+	for i, v := range violations {
+		row := make([]string, len(headers))
+		name := v.Name()
+		row[0] = name
+		message := v.Message()
+		row[1] = message
+
+		suggestion, err := v.Suggestion()
+		if err != nil {
+			suggestion = ""
+		}
+		row[2] = suggestion
+
+		var login string
+		author, err := v.Author()
+		if err != nil {
+			login = ""
+		} else {
+			login = author.Login
+		}
+
+		row[3] = login
+		rows[i] = row
+	}
+
+	md.BeginCollapsable("Violations")
+	md.Table(headers, rows)
+	md.EndCollapsable()
+
+	headers = []string{"Suggestion", "Message", "Suggestion", "Author"}
+	rows = make([][]string, len(suggestions))
+
+	for i, v := range suggestions {
+		row := make([]string, len(headers))
+		name := v.Name()
+		row[0] = name
+		message := v.Message()
+		row[1] = message
+
+		suggestion, err := v.Suggestion()
+		if err != nil {
+			suggestion = ""
+		}
+		row[2] = suggestion
+
+		var login string
+		author, err := v.Author()
+		if err != nil {
+			login = ""
+		} else {
+			login = author.Login
+		}
+
+		row[3] = login
+		rows[i] = row
+	}
+
+	md.BeginCollapsable("Suggestions")
+	md.Table(headers, rows)
+	md.EndCollapsable()
+
+	return md.Render()
 }

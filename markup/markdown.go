@@ -5,86 +5,183 @@ import (
 	"strings"
 )
 
-// Chainable markdown generator.
+const LineBreak = "\r\n"
+
 type Markdown struct {
-	builder *strings.Builder
+	data []string
 }
 
-func NewMarkdown() *Markdown {
-	return &Markdown{
-		builder: &strings.Builder{},
-	}
-}
+func CreateMarkdown(title string) *Markdown {
+	data := make([]string, 0)
 
-func (m *Markdown) Title(title string) *Markdown {
-	m.builder.WriteString("# " + title + "\n")
-
-	return m
-}
-
-func (m *Markdown) SubTitle(title string) *Markdown {
-	m.builder.WriteString("## " + title + "\n")
-
-	return m
-}
-
-func (m *Markdown) SubSubTitle(title string) *Markdown {
-	m.builder.WriteString("### " + title + "\n")
-
-	return m
-}
-
-func (m *Markdown) Text(text string) *Markdown {
-	// Fix termlink issues
-	text = strings.ReplaceAll(text, "\u001b[m", "")
-
-	m.builder.WriteString(text + "\n")
-
-	return m
-}
-
-func (m *Markdown) Code(code string) *Markdown {
-	m.builder.WriteString("```\n" + code + "\n```\n")
-
-	return m
-}
-
-func (m *Markdown) Table(rows ...[]string) *Markdown {
-	if len(rows) == 0 {
-		return m
+	md := &Markdown{
+		data: data,
 	}
 
-	m.builder.WriteString(strings.Join(rows[0], " | "))
-	m.builder.WriteString("\n")
-	s := strings.Split(strings.Repeat("--- ", len(rows[0])), " ")
-	m.builder.WriteString(strings.Join(s, "|"))
-	m.builder.WriteString("\n")
+	md.Header(title, 1)
 
-	if len(rows) == 1 {
-		s := strings.Split(strings.Repeat(" ", len(rows[0])), "")
-		m.builder.WriteString(strings.Join(s, " | "))
-		m.builder.WriteString("\n")
+	return md
+}
 
-		return m
+func (m *Markdown) GetLine(lineNumber int) string {
+	return m.data[lineNumber]
+}
+
+func (m *Markdown) Render() string {
+	return strings.Join(m.data, LineBreak+LineBreak)
+}
+
+func (m *Markdown) Header(text string, weigth int) *Markdown {
+	if weigth > 6 {
+		weigth = 6
 	}
-
-	for _, row := range rows[1:] {
-		m.builder.WriteString(strings.Join(row, " | "))
-		m.builder.WriteString("\n")
+	if weigth < 1 {
+		weigth = 1
 	}
+	m.AddLine(fmt.Sprintf("%s %s", strings.Repeat("#", weigth), text))
 
 	return m
 }
 
-func (m *Markdown) Collapsible(title string, body *Markdown) *Markdown {
-	m.builder.WriteString("<details>\n")
-	m.builder.WriteString(fmt.Sprintf("<summary>%s</summary>\n", title))
-	m.builder.WriteString(body.String())
-	m.builder.WriteString("</details>\n")
+func (m *Markdown) BeginCollapsable(title string) *Markdown {
+	m.data = append(m.data, fmt.Sprintf("<details>%s<summary>%s</summary>%s", LineBreak, title, LineBreak))
 
 	return m
 }
 
-func (m *Markdown) String() string {
-	return m.builder.String()
+func (m *Markdown) EndCollapsable() *Markdown {
+	m.data = append(m.data, fmt.Sprintf("</details>%s", LineBreak))
+
+	return m
+}
+
+func (m *Markdown) AddLine(text string) *Markdown {
+	m.data = append(m.data, text)
+
+	return m
+}
+
+func (m *Markdown) Paragraph(text string) *Markdown {
+	m.AddLine(text)
+
+	return m
+}
+
+func (m *Markdown) Quote(text string) *Markdown {
+	m.AddLine(fmt.Sprintf("> %s", text))
+
+	return m
+}
+
+func (m *Markdown) Code(text string, language string) *Markdown {
+	m.AddLine(fmt.Sprintf("```\n%s\n```", text))
+
+	return m
+}
+
+func (m *Markdown) HorizontalLine() *Markdown {
+	m.AddLine("---")
+
+	return m
+}
+
+func (m *Markdown) Image(altText string, filepath string) *Markdown {
+	m.AddLine(fmt.Sprintf("![%s](%s)", altText, filepath))
+
+	return m
+}
+
+type ListItem struct {
+	Label string
+	Depth int
+}
+
+func GenerateList(items []ListItem, numbered bool) []string {
+	bullet := "-"
+	var results []string //nolint: prealloc
+	for i, item := range items {
+		if numbered {
+			bullet = fmt.Sprintf("%d.", i+1)
+		}
+		results = append(results, fmt.Sprintf(
+			"%s%s %s",
+			// spaces
+			strings.Repeat("  ", item.Depth),
+			// bullet type
+			bullet,
+			// Label
+			item.Label,
+		))
+	}
+
+	return results
+}
+
+func (m *Markdown) List(items []ListItem, numbered bool) *Markdown {
+	list := GenerateList(items, numbered)
+	m.AddLine(strings.Join(list, LineBreak))
+
+	return m
+}
+
+type TaskItem struct {
+	Label   string
+	Checked bool
+}
+
+func (m *Markdown) Task(items []TaskItem, numbered bool) *Markdown {
+	var results []string //nolint: prealloc
+
+	for _, task := range items {
+		check := " "
+		if task.Checked {
+			check = "X"
+		}
+		results = append(results, fmt.Sprintf(
+			"[%s] %s",
+			check,
+			task.Label,
+		))
+	}
+
+	m.AddLine(strings.Join(results, LineBreak))
+
+	return m
+}
+
+func (m *Markdown) Table(headers []string, rows [][]string) *Markdown {
+	t := ""
+
+	t += fmt.Sprintf("| %s |", strings.Join(headers, " | "))
+	t += fmt.Sprintf("%s|%s", LineBreak, strings.Repeat(" --- |", len(headers)))
+
+	for _, row := range rows {
+		t += fmt.Sprintf("%s| %s |", LineBreak, strings.Join(row, " | "))
+	}
+
+	m.AddLine(t)
+
+	return m
+}
+
+func (m *Markdown) GenerateToc(index int) *Markdown {
+	list := make([]ListItem, 0)
+	for _, row := range m.data {
+		c := strings.Count(row, "#")
+		if c == 0 {
+			continue
+		}
+
+		title := strings.ToLower(strings.SplitAfter(row, "# ")[1])
+
+		list = append(list, ListItem{
+			Label: Link(title, "#"+strings.ReplaceAll(title, " ", "-")),
+			Depth: c - 1,
+		})
+	}
+
+	m.data = append(m.data[:index],
+		append([]string{"## Table of content", strings.Join(GenerateList(list, false), LineBreak)}, m.data[index:]...)...)
+
+	return m
 }

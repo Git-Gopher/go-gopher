@@ -33,22 +33,18 @@ func IndividualReports(candidates []assess.Candidate) error {
 			}
 		}
 
-		headRow := [][]string{{"Marker", "Violation", "Contribution", "Grade"}}
+		header := []string{"Marker", "Violation", "Contribution", "Grade"}
 
-		rows = append(headRow, rows...)
-
-		m := markup.NewMarkdown()
-		md := m.
-			Title(fmt.Sprintf("%s %s Report", course, candidate.Username)).
-			SubTitle("Marked by git-gopher").
-			Table(rows...)
+		md := markup.CreateMarkdown(fmt.Sprintf("%s %s Report", course, candidate.Username)).
+			Header("Marked by git-gopher", 2).
+			Table(header, rows)
 
 		for _, grade := range candidate.Grades {
 			subcategory := fmt.Sprintf("Marker details %s", grade.Name)
-			md.SubSubTitle(subcategory).Text(grade.Details)
+			md.Header(subcategory, 2).Paragraph(grade.Details)
 		}
 
-		output := markdown.ToHTML([]byte(md.String()), nil, nil)
+		output := markdown.ToHTML([]byte(md.Render()), nil, nil)
 
 		filename := fmt.Sprintf("%s-individual-reports.html", candidate.Username)
 

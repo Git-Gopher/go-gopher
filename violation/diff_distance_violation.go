@@ -7,8 +7,8 @@ import (
 	"github.com/Git-Gopher/go-gopher/markup"
 )
 
-func NewExtremeDiffDistanceViolation(commit markup.Commit, email string, time time.Time) *StaleCommitViolation {
-	common := &StaleCommitViolation{
+func NewExtremeDiffDistanceViolation(commit markup.Commit, email string, time time.Time) *DiffDistanceViolation {
+	common := &DiffDistanceViolation{
 		violation: violation{
 			name:     "ExtremeDiffDistanceViolation",
 			email:    email,
@@ -22,8 +22,8 @@ func NewExtremeDiffDistanceViolation(commit markup.Commit, email string, time ti
 	return common
 }
 
-func NewMildDiffDistanceViolation(commit markup.Commit, email string, time time.Time) *StaleCommitViolation {
-	common := &StaleCommitViolation{
+func NewMildDiffDistanceViolation(commit markup.Commit, email string, time time.Time) *DiffDistanceViolation {
+	common := &DiffDistanceViolation{
 		violation: violation{
 			name:     "MildDiffDistanceViolation",
 			email:    email,
