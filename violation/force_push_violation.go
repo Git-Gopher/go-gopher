@@ -37,7 +37,7 @@ type ForcePushViolation struct {
 
 // Message implements Violation.
 func (f *ForcePushViolation) Message() string {
-	format := "The following commits have been lost:\n%s"
+	format := "The following commits have been lost: %s"
 	commits := make([]string, len(f.lostCommits))
 	for i, commit := range f.lostCommits {
 		commits[i] = commit.Link()
