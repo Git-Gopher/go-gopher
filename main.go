@@ -190,7 +190,7 @@ func main() {
 						return nil
 					}
 
-					if matched, err := filepath.Match("*.json", filepath.Base(path)); err != nil {
+					if matched, err := filepath.Match("log-go-gopher*.json", filepath.Base(path)); err != nil {
 						return err
 					} else if matched {
 						logCount++

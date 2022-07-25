@@ -42,7 +42,9 @@ jobs:
           ./go-gopher
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      - name: Artifact Log
+      - name: Artifact outputs
         uses: actions/upload-artifact@v3
         with:
-          path: bin/log-**.json
+          path: |
+            log-**.json
+            cache.json
