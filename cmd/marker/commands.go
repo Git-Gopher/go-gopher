@@ -57,7 +57,7 @@ func singleCommand(cCtx *cli.Context) error {
 	)
 
 	for _, candidate := range candidates {
-		log.Printf("#### @%s ####\n", candidate.Username) // nolint:forbidigo
+		log.Printf("#### @%s ####\n", candidate.Username)
 	}
 
 	if err := IndividualReports(candidates); err != nil {
