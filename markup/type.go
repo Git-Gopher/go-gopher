@@ -2,6 +2,7 @@ package markup
 
 import (
 	"fmt"
+	"log"
 )
 
 // GitHubLink - GitHub link.
@@ -18,6 +19,10 @@ func (g GitHubLink) Link() string {
 	return fmt.Sprintf("https://github.com/%s", g.String())
 }
 
+func (g GitHubLink) Markdown() string {
+	return fmt.Sprintf("[%s](%s)", g.String(), g.Link())
+}
+
 // Author - Author link.
 type Author string
 
@@ -29,6 +34,10 @@ func (a Author) Link() string {
 	return fmt.Sprintf("https://github.com/%s", a.String())
 }
 
+func (a Author) Markdown() string {
+	return fmt.Sprintf("[@%s](%s)", a.String(), a.Link())
+}
+
 // Commit - Commit link.
 type Commit struct {
 	GitHubLink
@@ -38,7 +47,7 @@ type Commit struct {
 func (c Commit) String() string {
 	// XXX: Quick hack, seems that the hash is missing from some structs.
 	if c.Hash == "" {
-		return ""
+		log.Panicln("[WARN] Commit hash is empty, SHOULD NEVER HAPPEN")
 	}
 
 	return c.Hash[:7] // short commit hash with 7 characters.
@@ -48,6 +57,10 @@ func (c Commit) Link() string {
 	return fmt.Sprintf("https://github.com/%s/commit/%s", c.GitHubLink.String(), c.Hash)
 }
 
+func (c Commit) Markdown() string {
+	return fmt.Sprintf("[%s](%s)", c.String(), c.Link())
+}
+
 // Branch - Branch link.
 type Branch struct {
 	GitHubLink
@@ -55,11 +68,20 @@ type Branch struct {
 }
 
 func (b Branch) String() string {
+	// branch name is a hash cause it has been deleted
+	if len(b.Name) == 40 {
+		return b.Name[:7] // short commit hash with 7 characters.
+	}
+
 	return b.Name
 }
 
 func (b Branch) Link() string {
 	return fmt.Sprintf("https://github.com/%s/tree/%s", b.GitHubLink.String(), b.Name)
+}
+
+func (b Branch) Markdown() string {
+	return fmt.Sprintf("[%s](%s)", b.String(), b.Link())
 }
 
 // PR - Pull request link.
@@ -78,6 +100,10 @@ func (p PR) Link() string {
 		p.Number)
 }
 
+func (p PR) Markdown() string {
+	return fmt.Sprintf("[%s](%s)", p.String(), p.Link())
+}
+
 // File - File link.
 type File struct {
 	Commit   Commit
@@ -90,6 +116,10 @@ func (f File) String() string {
 
 func (f File) Link() string {
 	return fmt.Sprintf("https://github.com/%s/tree/%s/%s", f.Commit.GitHubLink.String(), f.Commit.Hash, f.Filepath)
+}
+
+func (f File) Markdown() string {
+	return fmt.Sprintf("[%s](%s)", f.String(), f.Link())
 }
 
 // Line - Line link.
@@ -136,4 +166,8 @@ func (l Line) Link() string {
 		l.Start,
 		l.End,
 	)
+}
+
+func (l Line) Markdown() string {
+	return fmt.Sprintf("[%s](%s)", l.String(), l.Link())
 }

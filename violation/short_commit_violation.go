@@ -41,7 +41,7 @@ type ShortCommitViolation struct {
 func (sc *ShortCommitViolation) Message() string {
 	message := strings.ReplaceAll(sc.message, "\n", " ")
 
-	return fmt.Sprintf("Commit message \"%s\" on %s is too short", message, sc.commit.Link())
+	return fmt.Sprintf("Commit message \"%s\" on %s is too short", message, sc.commit.Markdown())
 }
 
 // Suggestion implements Violation.
