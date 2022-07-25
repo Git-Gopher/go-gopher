@@ -23,7 +23,7 @@ type Detector interface {
 }
 
 type CacheDetector interface {
-	Run(owner string, repo string, email string, current *cache.Cache, cache []*cache.Cache) error
+	Run(owner string, repo string, email string, current *cache.Cache, previous []*cache.Cache) error
 	Result() (violated, count, total int, violations []violation.Violation)
 	Name() string
 }

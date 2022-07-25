@@ -97,7 +97,7 @@ func (w *Workflow) Analyze(
 	model *enriched.EnrichedModel,
 	authors utils.Authors,
 	current *cache.Cache,
-	caches []*cache.Cache,
+	previous []*cache.Cache,
 ) (violated int,
 	count,
 	total int,
@@ -111,16 +111,16 @@ func (w *Workflow) Analyze(
 	add(&violated, &count, &total, &violations, v, c, t, &vs, 1)
 
 	// Only run when we have a cache
-	if current != nil || caches != nil {
+	if current != nil || previous != nil {
 		// assumes irst commit is the current user
 		email := model.Commits[0].Committer.Email
-		v, c, t, vs, err = w.RunCacheDetectors(model.Owner, model.Name, email, current, caches)
+		v, c, t, vs, err = w.RunCacheDetectors(model.Owner, model.Name, email, current, previous)
 		if err != nil {
 			return 0, 0, 0, nil, fmt.Errorf("Failed to analyze workflow: %w", err)
 		}
 		add(&violated, &count, &total, &violations, v, c, t, &vs, 1)
 	} else {
-		log.Println("No cache loaded, skipping cache detectors")
+		log.Println("No cache loaded, skipping cache detectors...")
 	}
 
 	w.Violations = violations
@@ -158,7 +158,7 @@ func (w *Workflow) RunWeightedDetectors(model *enriched.EnrichedModel) (
 }
 
 // All cache detectors share the same current and cache, treated as readonly.
-func (w *Workflow) RunCacheDetectors(owner, repo, email string, current *cache.Cache, caches []*cache.Cache) (
+func (w *Workflow) RunCacheDetectors(owner, repo, email string, current *cache.Cache, previous []*cache.Cache) (
 	int,
 	int,
 	int,
@@ -168,24 +168,20 @@ func (w *Workflow) RunCacheDetectors(owner, repo, email string, current *cache.C
 	violated, count, total := 0, 0, 0
 	violations := []violation.Violation{}
 	for _, wd := range w.WeightedCacheDetectors {
-		if err := wd.Detector.Run(owner, repo, email, current, caches); err != nil {
-			return 0, 0, 0, nil, fmt.Errorf("Failed to analyze caches: %w", err)
+		if err := wd.Detector.Run(owner, repo, email, current, previous); err != nil {
+			return 0, 0, 0, nil, fmt.Errorf("failed to analyze caches: %w", err)
 		}
 
 		v, c, t, vs := wd.Detector.Result()
 		add(&violated, &count, &total, &violations, v, c, t, &vs, wd.Weight)
 	}
 
-	// No violations means we can reset cache to current, otherwise append to cache
-	var nc *cache.Cache
-	if len(violations) == 0 {
-		nc = cache.NewCache()
-	} else {
-		nc = append(nc, caches...)
-		nc = append(nc, current)
-	}
+	var nc []*cache.Cache
+	nc = append(nc, previous...)
+	nc = append(nc, current)
+
 	if err := cache.Write(nc); err != nil {
-		return 0, 0, 0, nil, fmt.Errorf("Failed to write cache: %w", err)
+		return 0, 0, 0, nil, fmt.Errorf("failed to write cache: %w", err)
 	}
 
 	return violated, count, total, violations, nil
