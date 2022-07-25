@@ -38,12 +38,9 @@ func main() {
 			Usage:   "detect a workflow for current root",
 			Action: func(ctx *cli.Context) error {
 				utils.Environment(".env")
+				workspace := utils.EnvGithubWorkspace()
+
 				// repository := os.Getenv("GITHUB_REPOSITORY")
-				workspace := os.Getenv("GITHUB_WORKSPACE")
-				if workspace == "" {
-					workspace = "./"
-					log.Println("GITHUB_WORKSPACE is not set, falling back to current directory...")
-				}
 				// sha := os.Getenv("GITHUB_SHA") // commit sha triggered
 				// ref := os.Getenv("GITHUB_REF") // branch ref triggered
 
@@ -83,13 +80,13 @@ func main() {
 
 				// Cache
 				current := cache.NewCache(enrichedModel)
-				caches, err := cache.ReadCaches()
+				caches, err := cache.Read()
 
 				//nolint
 				if errors.Is(err, os.ErrNotExist) {
 					log.Printf("Cache file does not exist: %v", err)
 					// Write a cache for current so that next run can use it
-					if err = cache.WriteCaches([]*cache.Cache{current}); err != nil {
+					if err = cache.Write([]*cache.Cache{current}); err != nil {
 						log.Fatalf("Could not write cache: %v\n", err)
 					}
 				} else if err != nil {
@@ -295,13 +292,13 @@ func main() {
 
 						// Cache
 						current := cache.NewCache(enrichedModel)
-						caches, err := cache.ReadCaches()
+						caches, err := cache.Read()
 
 						//nolint
 						if errors.Is(err, os.ErrNotExist) {
 							log.Printf("Cache file does not exist: %v", err)
 							// Write a cache for current so that next run can use it
-							if err = cache.WriteCaches([]*cache.Cache{current}); err != nil {
+							if err = cache.Write([]*cache.Cache{current}); err != nil {
 								log.Fatalf("Could not write cache: %v\n", err)
 							}
 						} else if err != nil {

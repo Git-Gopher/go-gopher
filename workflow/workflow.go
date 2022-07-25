@@ -177,14 +177,14 @@ func (w *Workflow) RunCacheDetectors(owner, repo, email string, current *cache.C
 	}
 
 	// No violations means we can reset cache to current, otherwise append to cache
-	var nc []*cache.Cache
+	var nc *cache.Cache
 	if len(violations) == 0 {
-		nc = []*cache.Cache{current}
+		nc = cache.NewCache()
 	} else {
 		nc = append(nc, caches...)
 		nc = append(nc, current)
 	}
-	if err := cache.WriteCaches(nc); err != nil {
+	if err := cache.Write(nc); err != nil {
 		return 0, 0, 0, nil, fmt.Errorf("Failed to write cache: %w", err)
 	}
 

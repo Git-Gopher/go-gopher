@@ -251,3 +251,14 @@ func RoundTime(input float64) int {
 
 	return int(i)
 }
+
+// Get the env variable for github workspace or return the default value.
+func EnvGithubWorkspace() string {
+	workspace := os.Getenv("GITHUB_WORKSPACE")
+	if workspace == "" {
+		workspace = "./"
+		log.Println("GITHUB_WORKSPACE is not set, falling back to current directory...")
+	}
+
+	return workspace
+}

@@ -11,35 +11,38 @@ import (
 
 	"github.com/Git-Gopher/go-gopher/model/enriched"
 	"github.com/Git-Gopher/go-gopher/model/local"
+	"github.com/Git-Gopher/go-gopher/utils"
 )
 
 const cacheFile = "cache.json"
 
-// Cache is a single cache file containing a set of caches.
+// Cache belonging to a particular branch.
 type Cache struct {
-	Hashes  []local.Hash `json:"hashes"`
-	Created time.Time    `json:"time"`
+	Created       time.Time               `json:"time"`
+	Hashes        map[local.Hash]struct{} `json:"hashes"`
+	MissingHashes map[local.Hash]struct{} `json:"missing_hashes"`
 }
 
-func NewCache(model *enriched.EnrichedModel) *Cache {
-	hashes := make([]local.Hash, len(model.Commits))
-	for i, c := range model.Commits {
-		hashes[i] = c.Hash
+// Cache from a enriched model with empty missing hash set.
+func NewCache(em *enriched.EnrichedModel) *Cache {
+	hashes := make(map[local.Hash]struct{})
+	for _, commit := range em.Commits {
+		hashes[commit.Hash] = struct{}{}
 	}
 
 	return &Cache{
-		Hashes:  hashes,
 		Created: time.Now(),
+		Hashes:  hashes,
 	}
 }
 
 // Github action will load the cache into the file system, we point this function towards it.
-func ReadCaches() ([]*Cache, error) {
-	loc := Location()
-	cachePath := path.Join(loc, cacheFile)
-	file, err := os.Open(filepath.Clean(cachePath))
+func Read() (*Cache, error) {
+	loc := utils.EnvGithubWorkspace()
+	path := path.Join(loc, cacheFile)
+	file, err := os.Open(filepath.Clean(path))
 	if err != nil {
-		return nil, fmt.Errorf("Error opening cache file: %w", err)
+		return nil, fmt.Errorf("error opening cache file: %w", err)
 	}
 
 	//nolint
@@ -47,39 +50,48 @@ func ReadCaches() ([]*Cache, error) {
 
 	b, err := ioutil.ReadAll(file)
 	if err != nil {
-		return nil, fmt.Errorf("Error reading cache file: %w", err)
+		return nil, fmt.Errorf("error reading cache file: %w", err)
 	}
 
-	var caches []*Cache
-	if err = json.Unmarshal(b, &caches); err != nil {
-		return nil, fmt.Errorf("Error unmarshalling cache file: %w", err)
+	var cache *Cache
+	if err = json.Unmarshal(b, cache); err != nil {
+		return nil, fmt.Errorf("error unmarshalling cache file: %w", err)
 	}
 
-	return caches, nil
+	return cache, nil
 }
 
-func WriteCaches(caches []*Cache) error {
-	bytes, err := json.MarshalIndent(caches, "", " ")
+// Update the cache by comparing the old cache to current model.
+func (c *Cache) Update(em *enriched.EnrichedModel) {
+	for _, commit := range em.Commits {
+		if _, ok := c.Hashes[commit.Hash]; ok {
+			delete(c.MissingHashes, commit.Hash)
+		} else {
+			c.MissingHashes[commit.Hash] = struct{}{}
+		}
+	}
+
+	hashes := make(map[local.Hash]struct{})
+	for _, commit := range em.Commits {
+		hashes[commit.Hash] = struct{}{}
+	}
+
+	c.Hashes = hashes
+	c.Created = time.Now()
+}
+
+func (c *Cache) Write() error {
+	loc := utils.EnvGithubWorkspace()
+
+	bytes, err := json.MarshalIndent(c, "", " ")
 	if err != nil {
 		return fmt.Errorf("Error marshaling caches: %w", err)
 	}
 
-	loc := Location()
-	cachePath := path.Join(loc, cacheFile)
-	if err := ioutil.WriteFile(cachePath, bytes, 0o600); err != nil {
+	path := path.Join(loc, cacheFile)
+	if err := ioutil.WriteFile(path, bytes, 0o600); err != nil {
 		return fmt.Errorf("Error writing cache: %w", err)
 	}
 
 	return nil
-}
-
-// Attempt to find the location for the cache file.
-// $GITHUB_WORKSPACE, otherwise fallback onto $CACHE_PATH.
-func Location() string {
-	workspace := os.Getenv("GITHUB_WORKSPACE")
-	if workspace == "" {
-		workspace = os.Getenv("CACHE_PATH")
-	}
-
-	return workspace
 }

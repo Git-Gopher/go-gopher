@@ -60,14 +60,14 @@ func actionCommand(cCtx *cli.Context) error {
 	authors := enriched.PopulateAuthors(enrichedModel)
 
 	// Read cache.
-	caches, err := cache.ReadCaches()
+	caches, err := cache.Read()
 	if err != nil {
 		if !errors.Is(err, os.ErrNotExist) {
 			return fmt.Errorf("failed to read caches: %w", err)
 		}
 
 		// Write a cache for current so that next run can use it.
-		if err = cache.WriteCaches([]*cache.Cache{current}); err != nil {
+		if err = cache.Write([]*cache.Cache{current}); err != nil {
 			return fmt.Errorf("failed to write cache: %w", err)
 		}
 	}
