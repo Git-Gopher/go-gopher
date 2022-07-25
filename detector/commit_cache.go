@@ -1,7 +1,6 @@
 package detector
 
 import (
-	"encoding/hex"
 	"fmt"
 
 	"github.com/Git-Gopher/go-gopher/cache"
@@ -13,7 +12,7 @@ type CommitCacheDetect func(
 	c *common,
 	email string,
 	current *cache.Cache,
-	cache *cache.Cache,
+	previous []*cache.Cache,
 ) (bool, []violation.Violation, error)
 
 type CommitCacheDetector struct {
@@ -37,8 +36,7 @@ func NewCommitCacheDetector(name string, detect CommitCacheDetect) *CommitCacheD
 	}
 }
 
-// TODO: We should change this to the enriched model.
-func (cd *CommitCacheDetector) Run(owner, repo, email string, current *cache.Cache, cache []*cache.Cache) error {
+func (cd *CommitCacheDetector) Run(owner, repo, email string, current *cache.Cache, previous []*cache.Cache) error {
 	// Struct should be reset before each run, incase we are running it with a different model.
 	cd.violated = 0
 	cd.found = 0
@@ -46,18 +44,17 @@ func (cd *CommitCacheDetector) Run(owner, repo, email string, current *cache.Cac
 	cd.violations = make([]violation.Violation, 0)
 	c := common{owner: owner, repo: repo}
 
-	for _, ca := range cache {
-		found, vlns, err := cd.detect(&c, email, current, ca)
-		if err != nil {
-			return fmt.Errorf("Error running cache detector: %w", err)
-		}
-
-		if found {
-			cd.found++
-		}
-		cd.violations = append(cd.violations, vlns...)
-		cd.total++
+	found, vs, err := cd.detect(&c, email, current, previous)
+	if err != nil {
+		return fmt.Errorf("Error running cache detector: %w", err)
 	}
+
+	if found {
+		cd.found++
+	}
+
+	cd.violations = append(cd.violations, vs...)
+	cd.total++
 
 	return nil
 }
@@ -73,26 +70,34 @@ func (cd *CommitCacheDetector) Name() string {
 // GithubWorklow: Force pushes are not allowed.
 func ForcePushDetect() (string, CommitCacheDetect) {
 	return "ForcePushDetect",
-		func(c *common, email string, current *cache.Cache, cache *cache.Cache) (bool, []violation.Violation, error) {
-			lhs := make([]markup.Commit, 0)
-			for _, cuh := range current.Hashes {
-				for _, cah := range cache.Hashes {
-					if cuh == cah {
-						return false, nil, nil
+		func(c *common, email string, current *cache.Cache, previous []*cache.Cache) (bool, []violation.Violation, error) {
+			missing := make([]markup.Commit, 0)
+			for _, pc := range previous {
+				hashes := make([]string, 0, len(pc.Hashes))
+				for k := range pc.Hashes {
+					hashes = append(hashes, k)
+				}
+
+				for _, h := range hashes {
+					if _, ok := current.Hashes[h]; !ok {
+						missing = append(missing,
+							markup.Commit{
+								Hash: h,
+								GitHubLink: markup.GitHubLink{
+									Owner: c.owner,
+									Repo:  c.repo,
+								},
+							},
+						)
 					}
 				}
-				// Hash not found in cache
-				lh := markup.Commit{
-					Hash: hex.EncodeToString(cuh.ToByte()),
-					GitHubLink: markup.GitHubLink{
-						Owner: c.owner,
-						Repo:  c.repo,
-					},
-				}
-				lhs = append(lhs, lh)
 			}
 
-			violations := [1]violation.Violation{violation.NewForcePushViolation(lhs, email, cache.Created)}
+			if len(missing) == 0 {
+				return false, nil, nil
+			}
+
+			violations := [1]violation.Violation{violation.NewForcePushViolation(missing, email, current.Created)}
 
 			return true, violations[:], nil
 		}

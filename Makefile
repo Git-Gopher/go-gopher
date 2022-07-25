@@ -10,6 +10,10 @@ build:
 	go build -v -o bin/go-gopher-marker ./cmd/marker/  
 	go build -v -o bin/go-gopher-github-action ./cmd/github-action/  
 
+.PHONY: install
+install: build
+	cp bin/go-gopher /usr/local/bin
+
 .PHONY: lint
 lint:
 	golangci-lint run

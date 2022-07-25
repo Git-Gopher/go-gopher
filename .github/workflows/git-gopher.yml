@@ -32,7 +32,9 @@ jobs:
         uses: marocchino/sticky-pull-request-comment@v2
         with:
           message: "${{ steps.go-gopher.outputs.pr_summary }}"
-      - name: Artifact Log
+      - name: Artifact outputs
         uses: actions/upload-artifact@v3
         with:
-          path: log-**.json
+          path: |
+            log-**.json
+            cache.json
