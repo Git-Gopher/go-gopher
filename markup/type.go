@@ -2,8 +2,6 @@ package markup
 
 import (
 	"fmt"
-
-	"github.com/savioxavier/termlink"
 )
 
 // GitHubLink - GitHub link.
@@ -17,7 +15,7 @@ func (g GitHubLink) String() string {
 }
 
 func (g GitHubLink) Link() string {
-	return termlink.Link(g.String(), fmt.Sprintf("https://github.com/%s", g.String()))
+	return fmt.Sprintf("https://github.com/%s", g.String())
 }
 
 // Author - Author link.
@@ -28,7 +26,7 @@ func (a Author) String() string {
 }
 
 func (a Author) Link() string {
-	return termlink.Link("@"+a.String(), fmt.Sprintf("https://github.com/%s", a.String()))
+	return fmt.Sprintf("https://github.com/%s", a.String())
 }
 
 // Commit - Commit link.
@@ -47,7 +45,7 @@ func (c Commit) String() string {
 }
 
 func (c Commit) Link() string {
-	return termlink.Link(c.String(), fmt.Sprintf("https://github.com/%s/commit/%s", c.GitHubLink.String(), c.Hash))
+	return fmt.Sprintf("https://github.com/%s/commit/%s", c.GitHubLink.String(), c.Hash)
 }
 
 // Branch - Branch link.
@@ -61,7 +59,7 @@ func (b Branch) String() string {
 }
 
 func (b Branch) Link() string {
-	return termlink.Link(b.String(), fmt.Sprintf("https://github.com/%s/tree/%s", b.GitHubLink.String(), b.Name))
+	return fmt.Sprintf("https://github.com/%s/tree/%s", b.GitHubLink.String(), b.Name)
 }
 
 // PR - Pull request link.
@@ -75,7 +73,9 @@ func (p PR) String() string {
 }
 
 func (p PR) Link() string {
-	return termlink.Link(p.String(), fmt.Sprintf("https://github.com/%s/pull/%d", p.GitHubLink.String(), p.Number))
+	return fmt.Sprintf("https://github.com/%s/pull/%d",
+		p.GitHubLink.String(),
+		p.Number)
 }
 
 // File - File link.
@@ -89,14 +89,7 @@ func (f File) String() string {
 }
 
 func (f File) Link() string {
-	return termlink.Link(
-		f.String(),
-		fmt.Sprintf("https://github.com/%s/tree/%s/%s",
-			f.Commit.GitHubLink.String(),
-			f.Commit.Hash,
-			f.Filepath,
-		),
-	)
+	return fmt.Sprintf("https://github.com/%s/tree/%s/%s", f.Commit.GitHubLink.String(), f.Commit.Hash, f.Filepath)
 }
 
 // Line - Line link.
@@ -126,27 +119,21 @@ func (l Line) String() string {
 
 func (l Line) Link() string {
 	if l.End == nil {
-		return termlink.Link(
-			l.String(),
-			fmt.Sprintf(
-				"https://github.com/%s/tree/%s/%s#L%d",
-				l.File.Commit.GitHubLink.String(),
-				l.File.Commit.Hash,
-				l.File.Filepath,
-				l.Start,
-			),
-		)
-	}
-
-	return termlink.Link(
-		l.String(),
-		fmt.Sprintf(
-			"https://github.com/%s/tree/%s/%s#L%d-L%d",
+		return fmt.Sprintf(
+			"https://github.com/%s/tree/%s/%s#L%d",
 			l.File.Commit.GitHubLink.String(),
 			l.File.Commit.Hash,
 			l.File.Filepath,
 			l.Start,
-			l.End,
-		),
+		)
+	}
+
+	return fmt.Sprintf(
+		"https://github.com/%s/tree/%s/%s#L%d-L%d",
+		l.File.Commit.GitHubLink.String(),
+		l.File.Commit.Hash,
+		l.File.Filepath,
+		l.Start,
+		l.End,
 	)
 }
