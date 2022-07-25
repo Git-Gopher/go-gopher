@@ -1,8 +1,8 @@
 package main
 
 import (
-	"encoding/json"
 	"fmt"
+	"log"
 
 	"github.com/Git-Gopher/go-gopher/assess"
 	"github.com/Git-Gopher/go-gopher/model"
@@ -57,14 +57,7 @@ func singleCommand(cCtx *cli.Context) error {
 	)
 
 	for _, candidate := range candidates {
-		fmt.Printf("#### @%s ####", candidate.Username) // nolint:forbidigo
-
-		b, err := json.MarshalIndent(candidate, "", "\t")
-		if err != nil {
-			return fmt.Errorf("failed to marshal candidate: %w", err)
-		}
-
-		fmt.Println(string(b)) // nolint:forbidigo
+		log.Printf("#### @%s ####\n", candidate.Username) // nolint:forbidigo
 	}
 
 	if err := IndividualReports(candidates); err != nil {
