@@ -14,7 +14,6 @@ build:
 install: build
 	cp bin/go-gopher /usr/local/bin
 
-
 .PHONY: lint
 lint:
 	golangci-lint run

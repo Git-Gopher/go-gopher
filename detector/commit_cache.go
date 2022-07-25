@@ -70,7 +70,6 @@ func (cd *CommitCacheDetector) Name() string {
 // GithubWorklow: Force pushes are not allowed.
 func ForcePushDetect() (string, CommitCacheDetect) {
 	return "ForcePushDetect",
-
 		func(c *common, email string, current *cache.Cache, previous []*cache.Cache) (bool, []violation.Violation, error) {
 			missing := make([]markup.Commit, 0)
 			for _, pc := range previous {
@@ -82,7 +81,6 @@ func ForcePushDetect() (string, CommitCacheDetect) {
 				for _, h := range hashes {
 					if _, ok := current.Hashes[h]; !ok {
 						missing = append(missing,
-
 							markup.Commit{
 								Hash: h,
 								GitHubLink: markup.GitHubLink{
