@@ -1,7 +1,6 @@
 package detector
 
 import (
-	"fmt"
 	"log"
 	"os"
 	"testing"
@@ -194,7 +193,6 @@ func TestBinaryDetect(t *testing.T) {
 			if err != nil {
 				t.Errorf(" TestBinaryDetect() create model = %v", err)
 			}
-			fmt.Printf("gitModel.Commits[0].DiffToParents: %v\n", gitModel.Commits[0].DiffToParents[0].IsBinary)
 
 			enrichedModel := enriched.NewEnrichedModel(*gitModel, remote.RemoteModel{})
 

@@ -16,7 +16,8 @@ var (
 	ErrCommitEmpty   = errors.New("Commit empty")
 	ErrBranchEmpty   = errors.New("Branch empty")
 	ErrUnknownLineOp = errors.New("Unknown line op")
-	// $(printf '' | git hash-object -t tree --stdin)
+	// Hash of an empty git tree.
+	// $(printf '' | git hash-object -t tree --stdin).
 	EmptyTreeHash = "4b825dc642cb6eb9a060e54bf8d69288fbee4904"
 )
 
@@ -130,23 +131,26 @@ func NewCommit(r *git.Repository, c *object.Commit) *Commit {
 	}
 
 	var diffs []Diff
-	var err error
 
-	if len(parentHashes) == 0 {
+	if len(parentHashes) == 0 { // nolint: nestif
 		iter, err := r.TreeObjects()
 		if err != nil {
 			return nil
 		}
-		iter.ForEach(func(o *object.Tree) error {
-			changes, err := o.Diff(&object.Tree{Hash: plumbing.NewHash(EmptyTreeHash)})
+		err = iter.ForEach(func(o *object.Tree) error {
+			var patch *object.Patch
+			var changes object.Changes
+			var diff []Diff
+
+			changes, err = o.Diff(&object.Tree{Hash: plumbing.NewHash(EmptyTreeHash)})
 			if err != nil {
 				return fmt.Errorf("failed to fetch tree root diff: %w", err)
 			}
-			patch, err := changes.Patch()
+			patch, err = changes.Patch()
 			if err != nil {
 				return fmt.Errorf("failed to fetch root patch: %w", err)
 			}
-			diff, err := FetchDiffs(patch)
+			diff, err = FetchDiffs(patch)
 			if err != nil {
 				return fmt.Errorf("failed to fetch root diff: %w", err)
 			}
@@ -154,12 +158,16 @@ func NewCommit(r *git.Repository, c *object.Commit) *Commit {
 
 			return err
 		})
+
+		if err != nil {
+			return nil
+		}
 	} else {
-		err = c.Parents().ForEach(
+		err := c.Parents().ForEach(
 			func(p *object.Commit) error {
 				var diff []Diff
 				var patch *object.Patch
-				patch, err = p.Patch(c)
+				patch, err := p.Patch(c)
 				if err != nil {
 					return fmt.Errorf("failed to fetch patch: %w", err)
 				}
@@ -172,10 +180,9 @@ func NewCommit(r *git.Repository, c *object.Commit) *Commit {
 
 				return nil
 			})
-	}
-
-	if err != nil {
-		return nil
+		if err != nil {
+			return nil
+		}
 	}
 
 	return &Commit{
