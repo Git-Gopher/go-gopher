@@ -19,6 +19,7 @@ func NewUnresolvedMergeViolation(
 			time:     time,
 			severity: Suggestion,
 		},
+		line: line,
 	}
 	violation.display = &display{violation}
 
