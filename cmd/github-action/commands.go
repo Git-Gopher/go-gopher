@@ -81,7 +81,7 @@ func actionCommand(cCtx *cli.Context) error {
 
 	workflowSummary(authors, violated, count, total, violations)
 
-	summary := markdownSummary(violations)
+	summary := markdownSummary(authors, violations)
 	markup.Outputs("pr_summary", summary)
 
 	return nil
@@ -133,7 +133,7 @@ func workflowSummary(authors utils.Authors, v, c, t int, vs []violation.Violatio
 }
 
 // Helper function to create a markdown summary of the violations.
-func markdownSummary(vs []violation.Violation) string {
+func markdownSummary(authors utils.Authors, vs []violation.Violation) string {
 	md := markup.CreateMarkdown("Workflow Summary")
 
 	// Separate violation types.
@@ -199,15 +199,13 @@ func markdownSummary(vs []violation.Violation) string {
 		}
 		row[2] = suggestion
 
-		var login string
-		author, err := v.Author()
-		if err != nil {
-			login = ""
+		usernamePtr, err := authors.Find(v.Email())
+		if err != nil || usernamePtr == nil {
+			row[3] = "@unknown"
 		} else {
-			login = author.Login
+			row[3] = markup.Author(*usernamePtr).Markdown()
 		}
 
-		row[3] = login
 		rows[i] = row
 	}
 

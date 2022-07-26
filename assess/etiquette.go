@@ -14,13 +14,42 @@ func Atomicity(m MarkerCtx) (string, []Mark) {
 	return "Atomicity", DetectorMarker(m, d, m.Contribution.CommitCountMap)
 }
 
-// E-A1: Commit messages are descriptive and relate to the contents of the commit
-// diff that contains the change made to the code (eg: "fix: index offset incorrect
-// starting value bug".
-func DescriptiveCommit(m MarkerCtx) (string, []Mark) {
-	d := detector.NewCommitDetector(detector.DiffMatchesMessageDetect())
+// E-A1: Commit message:
+// Commit messages should be descriptive and concise.
+// Commit messages should not be too short.
+func CommitMessage(m MarkerCtx) (string, []Mark) {
+	diff := detector.NewCommitDetector(detector.DiffMatchesMessageDetect())
 
-	return "DescriptiveCommit", DetectorMarker(m, d, m.Contribution.CommitCountMap)
+	short := detector.NewCommitDetector(detector.ShortCommitMessageDetect())
+
+	diffMarker := DetectorMarker(m, diff, m.Contribution.CommitCountMap)
+
+	shortMarker := DetectorMarker(m, short, m.Contribution.CommitCountMap)
+
+	diffMarkMap := make(map[string]Mark)
+	for _, mark := range diffMarker {
+		diffMarkMap[mark.Username] = mark
+	}
+
+	for _, mark := range shortMarker {
+		if _, ok := diffMarkMap[mark.Username]; !ok {
+			diffMarkMap[mark.Username] = mark
+
+			continue
+		}
+
+		diffMark := diffMarkMap[mark.Username]
+		diffMark.Violations = append(diffMark.Violations, mark.Violations...)
+		diffMark.Total += mark.Total
+		diffMarkMap[mark.Username] = diffMark
+	}
+
+	allMarks := make([]Mark, 0, len(diffMarkMap))
+	for _, mark := range diffMarkMap {
+		allMarks = append(allMarks, mark)
+	}
+
+	return "CommitMessage", allMarks
 }
 
 // E-A1: Generated files (low priority); we can detect binaries etc.

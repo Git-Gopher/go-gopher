@@ -49,11 +49,11 @@ func singleCommand(cCtx *cli.Context) error {
 		},
 		assess.BasicGradingAlgorithm,
 		// Markers
-		assess.Atomicity,
-		assess.DescriptiveCommit,
-		assess.RegularBranchNames,
-		assess.FeatureBranching,
-		assess.PullRequestReview,
+		assess.D(assess.Atomicity),
+		assess.D(assess.CommitMessage),
+		assess.D(assess.RegularBranchNames),
+		assess.D(assess.FeatureBranching),
+		assess.D(assess.PullRequestReview),
 	)
 
 	for _, candidate := range candidates {
