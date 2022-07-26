@@ -55,6 +55,7 @@ func NewSignature(o *object.Signature) *Signature {
 
 type Diff struct {
 	Name     string
+	IsBinary bool
 	Equal    string
 	Addition string
 	Deletion string

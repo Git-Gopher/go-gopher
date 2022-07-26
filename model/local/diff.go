@@ -39,6 +39,7 @@ func FetchDiffs(from *object.Commit, to *object.Commit) ([]Diff, error) {
 
 		diffs[i] = Diff{
 			Name:     name,
+			IsBinary: f.IsBinary,
 			Addition: added,
 			Deletion: deleted,
 			Equal:    equal,
