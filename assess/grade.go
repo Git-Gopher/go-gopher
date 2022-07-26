@@ -36,6 +36,7 @@ func C(m Marker, g GradingAlgorithm) struct {
 	}{m, g}
 }
 
+// nolint: gocognit
 func RunMarker(m MarkerCtx, def GradingAlgorithm, markers ...struct {
 	Marker
 	*GradingAlgorithm

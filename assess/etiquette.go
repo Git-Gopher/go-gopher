@@ -40,7 +40,7 @@ func CommitMessage(m MarkerCtx) (string, []Mark) {
 
 		diffMark := diffMarkMap[mark.Username]
 		diffMark.Violations = append(diffMark.Violations, mark.Violations...)
-		diffMark.Total = diffMark.Total + mark.Total
+		diffMark.Total += mark.Total
 		diffMarkMap[mark.Username] = diffMark
 	}
 
