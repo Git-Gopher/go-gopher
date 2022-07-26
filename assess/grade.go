@@ -40,7 +40,8 @@ func C(m Marker, g GradingAlgorithm) struct {
 func RunMarker(m MarkerCtx, def GradingAlgorithm, markers ...struct {
 	Marker
 	*GradingAlgorithm
-}) []Candidate {
+},
+) []Candidate {
 	candiateMap := make(map[string]*Candidate)
 	contributionMap := make(map[string]int)
 
