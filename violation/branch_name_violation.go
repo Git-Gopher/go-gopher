@@ -41,7 +41,7 @@ type BranchNameViolation struct {
 func (bn *BranchNameViolation) Message() string {
 	format := "Branch %s name is too inconsistent with other branch names"
 
-	return fmt.Sprintf(format, bn.branchRef.Link())
+	return fmt.Sprintf(format, bn.branchRef.Markdown())
 }
 
 // Suggestion implements Violation.

@@ -19,6 +19,7 @@ func NewUnresolvedMergeViolation(
 			time:     time,
 			severity: Suggestion,
 		},
+		line: line,
 	}
 	violation.display = &display{violation}
 
@@ -34,7 +35,7 @@ type UnresolvedMergeViolation struct {
 
 // Message implements Violation.
 func (um *UnresolvedMergeViolation) Message() string {
-	return fmt.Sprintf("Unresolved merge conflicts on %s", um.line.Link())
+	return fmt.Sprintf("Unresolved merge conflicts on %s", um.line.Markdown())
 }
 
 // Suggestion implements Violation.

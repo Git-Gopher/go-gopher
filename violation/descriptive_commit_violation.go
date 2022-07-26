@@ -44,7 +44,7 @@ func (dvc *DescriptiveCommitViolation) Message() string {
 	return fmt.Sprintf(
 		"The commit message \"%s\" on %s may not be descriptive enough",
 		message,
-		dvc.commit.Link(),
+		dvc.commit.Markdown(),
 	)
 }
 

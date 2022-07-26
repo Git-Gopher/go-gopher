@@ -35,7 +35,7 @@ type StaleBranchViolation struct {
 func (sbv *StaleBranchViolation) Message() string {
 	return fmt.Sprintf(
 		"Branch %s is stale due it not being committed to for over %d months",
-		sbv.branch.Link(),
+		sbv.branch.Markdown(),
 		sbv.duration,
 	)
 }

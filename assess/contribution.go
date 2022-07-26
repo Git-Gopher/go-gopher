@@ -1,6 +1,8 @@
 package assess
 
-import "github.com/Git-Gopher/go-gopher/model/enriched"
+import (
+	"github.com/Git-Gopher/go-gopher/model/enriched"
+)
 
 // contribution.go contains code to find the contribution of a user to a detector.
 
@@ -33,7 +35,7 @@ func NewContribution(enriched enriched.EnrichedModel) *contribution {
 		}
 
 		email = branch.Head.Committer.Email
-		if _, ok := c.CommitCountMap[email]; !ok {
+		if _, ok := c.BranchCountMap[email]; !ok {
 			c.BranchCountMap[email] = 0
 		}
 		c.BranchCountMap[email]++
@@ -41,7 +43,7 @@ func NewContribution(enriched enriched.EnrichedModel) *contribution {
 
 	for _, commit := range enriched.Commits {
 		email := commit.Author.Email
-		if _, ok := c.BranchCountMap[email]; !ok {
+		if _, ok := c.CommitCountMap[email]; !ok {
 			c.CommitCountMap[email] = 0
 		}
 		c.CommitCountMap[email]++

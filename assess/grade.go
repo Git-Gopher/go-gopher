@@ -16,6 +16,7 @@ type Grade struct {
 
 func RunMarker(m MarkerCtx, g GradingAlgorithm, markers ...Marker) []Candidate {
 	candiateMap := make(map[string]*Candidate)
+	contributionMap := make(map[string]int)
 
 	for _, marker := range markers {
 		name, grades := marker(m)
@@ -41,6 +42,15 @@ func RunMarker(m MarkerCtx, g GradingAlgorithm, markers ...Marker) []Candidate {
 				}
 			}
 
+			if _, ok := contributionMap[username]; !ok {
+				contributionMap[username] = 0
+			}
+			contributionMap[username] += contribution
+		}
+
+		for username := range candiateMap {
+			contribution := contributionMap[username]
+
 			var grade Mark
 			var ok bool
 			if grade, ok = gradeMap[username]; !ok {
@@ -56,6 +66,8 @@ func RunMarker(m MarkerCtx, g GradingAlgorithm, markers ...Marker) []Candidate {
 							Details:      "Not enough contribution in this category.",
 						},
 					)
+
+					continue
 				}
 
 				candiateMap[username].Grades = append(
@@ -68,6 +80,7 @@ func RunMarker(m MarkerCtx, g GradingAlgorithm, markers ...Marker) []Candidate {
 						Details:      "",
 					},
 				)
+				candiateMap[username].Total += 3
 
 				continue
 			}
@@ -79,8 +92,8 @@ func RunMarker(m MarkerCtx, g GradingAlgorithm, markers ...Marker) []Candidate {
 
 			points := g(len(grade.Violations), grade.Total)
 
-			candiateMap[grade.Username].Grades = append(
-				candiateMap[grade.Username].Grades,
+			candiateMap[username].Grades = append(
+				candiateMap[username].Grades,
 				Grade{
 					Name:         name,
 					Grade:        points,
@@ -90,7 +103,7 @@ func RunMarker(m MarkerCtx, g GradingAlgorithm, markers ...Marker) []Candidate {
 				},
 			)
 
-			candiateMap[grade.Username].Total += points
+			candiateMap[username].Total += points
 		}
 	}
 

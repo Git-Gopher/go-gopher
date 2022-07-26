@@ -40,7 +40,7 @@ func (f *ForcePushViolation) Message() string {
 	format := "The following commits have been lost: %s"
 	commits := make([]string, len(f.lostCommits))
 	for i, commit := range f.lostCommits {
-		commits[i] = commit.Link()
+		commits[i] = commit.Markdown()
 	}
 
 	return fmt.Sprintf(format, strings.Join(commits, ",\n"))
@@ -51,7 +51,7 @@ func (f *ForcePushViolation) Suggestion() (string, error) {
 	format := "Restore the following commits to restore the work lost on the branch:\n%s"
 	commits := make([]string, len(f.lostCommits))
 	for i, commit := range f.lostCommits {
-		commits[i] = commit.Link()
+		commits[i] = commit.Markdown()
 	}
 
 	return fmt.Sprintf(format, strings.Join(commits, ",\n")), nil

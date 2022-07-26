@@ -5,7 +5,7 @@ import (
 	"strings"
 )
 
-const LineBreak = "\r\n"
+const LineBreak = "\n"
 
 type Markdown struct {
 	data []string

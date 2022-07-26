@@ -44,7 +44,7 @@ func (d *display) Display(authors utils.Authors) string {
 	authorLink := "@unknown"
 	author, _ := authors.Find(d.v.Email())
 	if author != nil {
-		authorLink = markup.Author(*author).Link()
+		authorLink = markup.Author(*author).Markdown()
 	}
 
 	suggestion, err := d.v.Suggestion()
