@@ -1,6 +1,7 @@
 package detector
 
 import (
+	"fmt"
 	"log"
 	"os"
 	"testing"
@@ -170,6 +171,36 @@ func TestDiffMatchesMessageDetect(t *testing.T) {
 			detector := NewCommitDetector(DiffMatchesMessageDetect())
 			if err = detector.Run(enrichedModel); err != nil {
 				t.Errorf(" TestDiffMatchesMessageDetect() run detector = %v", err)
+			}
+
+			t.Log(detector.Result())
+		})
+	}
+}
+
+func TestBinaryDetect(t *testing.T) {
+	r := utils.FetchRepository(t, "https://github.com/Git-Gopher/tests", "test/committed-binary/1")
+	tests := []struct {
+		name string
+		want CommitDetect
+	}{
+		{"BinaryDetect", nil},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			// Create the gitModel
+			gitModel, err := local.NewGitModel(r)
+			if err != nil {
+				t.Errorf(" TestBinaryDetect() create model = %v", err)
+			}
+			fmt.Printf("gitModel.Commits[0].DiffToParents: %v\n", gitModel.Commits[0].DiffToParents[0].IsBinary)
+
+			enrichedModel := enriched.NewEnrichedModel(*gitModel, remote.RemoteModel{})
+
+			detector := NewCommitDetector(BinaryDetect())
+			if err = detector.Run(enrichedModel); err != nil {
+				t.Errorf(" TestBinaryDetect() run detector = %v", err)
 			}
 
 			t.Log(detector.Result())

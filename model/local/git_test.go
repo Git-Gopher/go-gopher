@@ -24,7 +24,13 @@ func TestFetchChunk(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := FetchDiffs(tt.args.from, tt.args.to)
+			patch, err := tt.args.from.Patch(tt.args.to)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("FetchChunk() error = %v, wantErr %v", err, tt.wantErr)
+
+				return
+			}
+			got, err := FetchDiffs(patch)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("FetchChunk() error = %v, wantErr %v", err, tt.wantErr)
 
@@ -60,7 +66,13 @@ func TestExampleFetchChunk(t *testing.T) {
 			}
 
 			var diffs []Diff
-			diffs, err = FetchDiffs(parent, c)
+			var patch *object.Patch
+			patch, err = parent.Patch(c)
+			if err != nil {
+				return fmt.Errorf("CommitObject() = %w", err)
+			}
+
+			diffs, err = FetchDiffs(patch)
 			if err != nil {
 				return fmt.Errorf("FetchDiffs() = %w", err)
 			}
