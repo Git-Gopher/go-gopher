@@ -198,3 +198,32 @@ func BinaryDetect() (string, CommitDetect) {
 		return len(vs) > 0, vs, nil
 	}
 }
+
+func EmptyCommitDetect() (string, CommitDetect) {
+	return "EmptyCommitDetect", func(c *common, commit *local.Commit) (bool, []violation.Violation, error) {
+		isEmpty := true
+		for _, d := range commit.DiffToParents {
+			if d.Addition != "" || d.Deletion != "" && d.Equal != "" {
+				isEmpty = false
+
+				break
+			}
+		}
+
+		vs := []violation.Violation{}
+		if isEmpty {
+			vs = append(vs, violation.NewEmptyCommitViolation(
+				markup.Commit{
+					Hash: commit.Hash.HexString(),
+					GitHubLink: markup.GitHubLink{
+						Owner: c.owner,
+						Repo:  c.repo,
+					},
+				},
+				commit.Committer.Email,
+				commit.Committer.When))
+		}
+
+		return isEmpty, vs, nil
+	}
+}

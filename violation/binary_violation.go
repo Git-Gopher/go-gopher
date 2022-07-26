@@ -12,7 +12,7 @@ func NewBinaryViolation(
 ) *BinaryViolation {
 	violation := &BinaryViolation{
 		violation: violation{
-			name:     "BranchNameViolation",
+			name:     "BinaryViolation",
 			email:    email,
 			time:     time,
 			severity: Suggestion,
