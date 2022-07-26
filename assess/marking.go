@@ -24,7 +24,7 @@ type Marker func(MarkerCtx) (string, []Mark)
 // List all markers.
 var _ []Marker = []Marker{
 	Atomicity,          // E-A1 Diff Distance/Atomicity.
-	DescriptiveCommit,  // E-A1 Commit messages are descriptive.
+	CommitMessage,      // E-A1 Commit messages.
 	GeneratedFiles,     // E-A1 Generated files should not be committed.
 	RegularBranchNames, // E-A2 Regular branch names.
 

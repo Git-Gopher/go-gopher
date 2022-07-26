@@ -14,12 +14,37 @@ type Grade struct {
 	Details      string `json:"details"`
 }
 
-func RunMarker(m MarkerCtx, g GradingAlgorithm, markers ...Marker) []Candidate {
+// D Default marker without grading.
+func D(m Marker) struct {
+	Marker
+	*GradingAlgorithm
+} {
+	return struct {
+		Marker
+		*GradingAlgorithm
+	}{m, nil}
+}
+
+// C Custom marker with custom grading algorithm.
+func C(m Marker, g GradingAlgorithm) struct {
+	Marker
+	GradingAlgorithm
+} {
+	return struct {
+		Marker
+		GradingAlgorithm
+	}{m, g}
+}
+
+func RunMarker(m MarkerCtx, def GradingAlgorithm, markers ...struct {
+	Marker
+	*GradingAlgorithm
+}) []Candidate {
 	candiateMap := make(map[string]*Candidate)
 	contributionMap := make(map[string]int)
 
 	for _, marker := range markers {
-		name, grades := marker(m)
+		name, grades := marker.Marker(m)
 
 		gradeMap := make(map[string]Mark)
 		for _, grade := range grades {
@@ -90,7 +115,15 @@ func RunMarker(m MarkerCtx, g GradingAlgorithm, markers ...Marker) []Candidate {
 				details += v.Display(m.Author) + "\n"
 			}
 
-			points := g(len(grade.Violations), grade.Total)
+			points := 0
+			if marker.GradingAlgorithm != nil {
+				// use custom grader
+				grader := *marker.GradingAlgorithm
+				grader(len(grade.Violations), grade.Total)
+			} else {
+				// default grading
+				points = def(len(grade.Violations), grade.Total)
+			}
 
 			candiateMap[username].Grades = append(
 				candiateMap[username].Grades,
