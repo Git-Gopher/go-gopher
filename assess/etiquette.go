@@ -34,6 +34,7 @@ func CommitMessage(m MarkerCtx) (string, []Mark) {
 	for _, mark := range shortMarker {
 		if _, ok := diffMarkMap[mark.Username]; !ok {
 			diffMarkMap[mark.Username] = mark
+
 			continue
 		}
 
