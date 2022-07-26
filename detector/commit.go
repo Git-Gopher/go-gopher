@@ -132,6 +132,7 @@ func UnresolvedDetect() (string, CommitDetect) {
 								Filepath: diff.Name,
 							},
 							Start: int(diff.Points[0].NewPosition),
+							End:   nil,
 						},
 						commit.Committer.Email,
 						commit.Committer.When,
@@ -155,6 +156,10 @@ func ShortCommitMessageDetect() (string, CommitDetect) {
 			if strings.ToLower(commit.Message) == exclusion {
 				return true, nil, nil
 			}
+		}
+
+		if len(commit.Hash) == 0 {
+			return false, nil, nil
 		}
 
 		words := strings.Split(commit.Message, " ")
