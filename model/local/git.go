@@ -16,6 +16,9 @@ var (
 	ErrCommitEmpty   = errors.New("Commit empty")
 	ErrBranchEmpty   = errors.New("Branch empty")
 	ErrUnknownLineOp = errors.New("Unknown line op")
+	// Hash of an empty git tree.
+	// $(printf '' | git hash-object -t tree --stdin).
+	EmptyTreeHash = "4b825dc642cb6eb9a060e54bf8d69288fbee4904"
 )
 
 type Hash [20]byte
@@ -55,6 +58,7 @@ func NewSignature(o *object.Signature) *Signature {
 
 type Diff struct {
 	Name     string
+	IsBinary bool
 	Equal    string
 	Addition string
 	Deletion string
@@ -127,18 +131,57 @@ func NewCommit(r *git.Repository, c *object.Commit) *Commit {
 	}
 
 	var diffs []Diff
-	err := c.Parents().ForEach(
-		func(p *object.Commit) error {
-			diff, err := FetchDiffs(p, c)
+	if len(parentHashes) == 0 { // nolint: nestif
+		iter, err := r.TreeObjects()
+		if err != nil {
+			return nil
+		}
+		err = iter.ForEach(func(o *object.Tree) error {
+			var patch *object.Patch
+			var changes object.Changes
+			var diff []Diff
+
+			changes, err = o.Diff(&object.Tree{Hash: plumbing.NewHash(EmptyTreeHash)})
 			if err != nil {
-				return fmt.Errorf("Failed to fetch diff: %w", err)
+				return fmt.Errorf("failed to fetch tree root diff: %w", err)
+			}
+			patch, err = changes.Patch()
+			if err != nil {
+				return fmt.Errorf("failed to fetch root patch: %w", err)
+			}
+			diff, err = FetchDiffs(patch)
+			if err != nil {
+				return fmt.Errorf("failed to fetch root diff: %w", err)
 			}
 			diffs = append(diffs, diff...)
 
-			return nil
+			return err
 		})
-	if err != nil {
-		return nil
+
+		if err != nil {
+			return nil
+		}
+	} else {
+		err := c.Parents().ForEach(
+			func(p *object.Commit) error {
+				var diff []Diff
+				var patch *object.Patch
+				patch, err := p.Patch(c)
+				if err != nil {
+					return fmt.Errorf("failed to fetch patch: %w", err)
+				}
+
+				diff, err = FetchDiffs(patch)
+				if err != nil {
+					return fmt.Errorf("failed to fetch diff: %w", err)
+				}
+				diffs = append(diffs, diff...)
+
+				return nil
+			})
+		if err != nil {
+			return nil
+		}
 	}
 
 	return &Commit{

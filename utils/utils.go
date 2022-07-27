@@ -88,6 +88,7 @@ func FetchRepository(t *testing.T, remote, branch string) *git.Repository {
 		},
 		URL:           remote,
 		ReferenceName: plumbing.NewBranchReferenceName(branch),
+		SingleBranch:  true,
 	})
 	if err != nil {
 		t.Errorf("%v", err)

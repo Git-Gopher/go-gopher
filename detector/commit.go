@@ -10,7 +10,7 @@ import (
 	"github.com/Git-Gopher/go-gopher/violation"
 )
 
-type CommitDetect func(c *common, commit *local.Commit) (bool, violation.Violation, error)
+type CommitDetect func(c *common, commit *local.Commit) (bool, []violation.Violation, error)
 
 type CommitDetector struct {
 	name       string
@@ -48,7 +48,7 @@ func (cd *CommitDetector) Run(model *enriched.EnrichedModel) error {
 
 	for _, co := range model.Commits {
 		co := co
-		detected, violation, err := cd.detect(&c, &co)
+		detected, violations, err := cd.detect(&c, &co)
 		cd.total++
 		if err != nil {
 			return err
@@ -56,8 +56,8 @@ func (cd *CommitDetector) Run(model *enriched.EnrichedModel) error {
 		if detected {
 			cd.found++
 		}
-		if violation != nil {
-			cd.violations = append(cd.violations, violation)
+		if violations != nil {
+			cd.violations = append(cd.violations, violations...)
 		}
 	}
 
@@ -75,7 +75,7 @@ func (cd *CommitDetector) Name() string {
 // All commits on the main branch for github flow should be merged in,
 // meaning that they have two parents(the main branch and the feature branch).
 func BranchCommitDetect() (string, CommitDetect) {
-	return "BranchCommitDetect", func(c *common, commit *local.Commit) (bool, violation.Violation, error) {
+	return "BranchCommitDetect", func(c *common, commit *local.Commit) (bool, []violation.Violation, error) {
 		if len(commit.ParentHashes) >= 2 {
 			return true, nil, nil
 		}
@@ -85,7 +85,7 @@ func BranchCommitDetect() (string, CommitDetect) {
 }
 
 func DiffMatchesMessageDetect() (string, CommitDetect) {
-	return "DiffMatchesMessageDetect", func(c *common, commit *local.Commit) (bool, violation.Violation, error) {
+	return "DiffMatchesMessageDetect", func(c *common, commit *local.Commit) (bool, []violation.Violation, error) {
 		words := strings.Split(commit.Message, " ")
 		for _, diff := range commit.DiffToParents {
 			for _, word := range words {
@@ -96,7 +96,7 @@ func DiffMatchesMessageDetect() (string, CommitDetect) {
 			}
 		}
 
-		return false, violation.NewDescriptiveCommitViolation(
+		return false, []violation.Violation{violation.NewDescriptiveCommitViolation(
 			markup.Commit{
 				Hash: hex.EncodeToString(commit.Hash[:]),
 				GitHubLink: markup.GitHubLink{
@@ -107,19 +107,19 @@ func DiffMatchesMessageDetect() (string, CommitDetect) {
 			commit.Message,
 			commit.Committer.Email,
 			commit.Committer.When,
-		), nil
+		)}, nil
 	}
 }
 
 // UnresolvedDetect checks if a commit is unresolved.
 func UnresolvedDetect() (string, CommitDetect) {
-	return "UnresolvedDetect", func(common *common, commit *local.Commit) (bool, violation.Violation, error) {
+	return "UnresolvedDetect", func(common *common, commit *local.Commit) (bool, []violation.Violation, error) {
 		for _, diff := range commit.DiffToParents {
 			lines := strings.Split(strings.ReplaceAll(diff.Addition, "\r\n", "\n"), "\n")
 			for _, line := range lines {
 				line = strings.TrimSpace(line)
 				if strings.HasPrefix(line, "<<<<<<") {
-					return true, violation.NewUnresolvedMergeViolation(
+					return true, []violation.Violation{violation.NewUnresolvedMergeViolation(
 						markup.Line{
 							File: markup.File{
 								Commit: markup.Commit{
@@ -136,7 +136,7 @@ func UnresolvedDetect() (string, CommitDetect) {
 						},
 						commit.Committer.Email,
 						commit.Committer.When,
-					), nil
+					)}, nil
 				}
 			}
 		}
@@ -147,7 +147,7 @@ func UnresolvedDetect() (string, CommitDetect) {
 
 // Check if commit is less than 3 words.
 func ShortCommitMessageDetect() (string, CommitDetect) {
-	return "ShortCommitMessageDetect", func(c *common, commit *local.Commit) (bool, violation.Violation, error) {
+	return "ShortCommitMessageDetect", func(c *common, commit *local.Commit) (bool, []violation.Violation, error) {
 		exclusions := []string{
 			"first commit",
 			"initial commit",
@@ -164,7 +164,7 @@ func ShortCommitMessageDetect() (string, CommitDetect) {
 
 		words := strings.Split(commit.Message, " ")
 		if len(words) < 3 {
-			return false, violation.NewShortCommitViolation(
+			return false, []violation.Violation{violation.NewShortCommitViolation(
 				markup.Commit{
 					Hash: hex.EncodeToString(commit.Hash.ToByte()),
 					GitHubLink: markup.GitHubLink{
@@ -175,9 +175,64 @@ func ShortCommitMessageDetect() (string, CommitDetect) {
 				commit.Message,
 				commit.Committer.Email,
 				commit.Committer.When,
-			), nil
+			)}, nil
 		}
 
 		return true, nil, nil
+	}
+}
+
+func BinaryDetect() (string, CommitDetect) {
+	return "BinaryDetect", func(common *common, commit *local.Commit) (bool, []violation.Violation, error) {
+		vs := []violation.Violation{}
+		for _, d := range commit.DiffToParents {
+			if d.IsBinary {
+				vs = append(vs, violation.NewBinaryViolation(
+					markup.File{
+						Commit: markup.Commit{
+							GitHubLink: markup.GitHubLink{
+								Owner: common.owner,
+								Repo:  common.repo,
+							},
+							Hash: hex.EncodeToString(commit.Hash.ToByte()),
+						},
+						Filepath: d.Name,
+					},
+					commit.Committer.Email,
+					commit.Committer.When,
+				))
+			}
+		}
+
+		return len(vs) > 0, vs, nil
+	}
+}
+
+func EmptyCommitDetect() (string, CommitDetect) {
+	return "EmptyCommitDetect", func(c *common, commit *local.Commit) (bool, []violation.Violation, error) {
+		isEmpty := true
+		for _, d := range commit.DiffToParents {
+			if d.Addition != "" || d.Deletion != "" && d.Equal != "" {
+				isEmpty = false
+
+				break
+			}
+		}
+
+		vs := []violation.Violation{}
+		if isEmpty {
+			vs = append(vs, violation.NewEmptyCommitViolation(
+				markup.Commit{
+					Hash: commit.Hash.HexString(),
+					GitHubLink: markup.GitHubLink{
+						Owner: c.owner,
+						Repo:  c.repo,
+					},
+				},
+				commit.Committer.Email,
+				commit.Committer.When))
+		}
+
+		return isEmpty, vs, nil
 	}
 }

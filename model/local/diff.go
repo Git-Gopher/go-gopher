@@ -8,12 +8,7 @@ import (
 	"github.com/go-git/go-git/v5/plumbing/object"
 )
 
-func FetchDiffs(from *object.Commit, to *object.Commit) ([]Diff, error) {
-	patch, err := from.Patch(to)
-	if err != nil {
-		return nil, fmt.Errorf("failed to fetch chunk: %w", err)
-	}
-
+func FetchDiffs(patch *object.Patch) ([]Diff, error) {
 	files, _, err := gitdiff.Parse(strings.NewReader(patch.String()))
 	if err != nil {
 		return nil, fmt.Errorf("Failed to parse diff: %w", err)
@@ -38,7 +33,9 @@ func FetchDiffs(from *object.Commit, to *object.Commit) ([]Diff, error) {
 		}
 
 		diffs[i] = Diff{
-			Name:     name,
+			Name: name,
+			// XXX: IsBinary doesn't pick up well, use zero text fragments as a approximation
+			IsBinary: f.IsBinary || len(f.TextFragments) == 0,
 			Addition: added,
 			Deletion: deleted,
 			Equal:    equal,
