@@ -22,9 +22,9 @@ jobs:
       - name: Analyze Workflow
         id: go-gopher
         run: |
-          gh release download -R https://github.com/Git-Gopher/go-gopher-action -p 'go-gopher'
-          chmod +x ./go-gopher
-          ./go-gopher action
+          gh release download -R https://github.com/Git-Gopher/go-gopher-action -p 'go-gopher-github-action'
+          chmod +x ./go-gopher-github-action
+          ./go-gopher-github-action
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GITHUB_URL: ${{ github.server_url }}/${{ github.repository }}/

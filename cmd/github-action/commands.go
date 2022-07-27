@@ -167,15 +167,13 @@ func markdownSummary(authors utils.Authors, vs []violation.Violation) string {
 		}
 		row[2] = suggestion
 
-		var login string
-		author, err := v.Author()
-		if err != nil {
-			login = ""
+		usernamePtr, err := authors.Find(v.Email())
+		if err != nil || usernamePtr == nil {
+			row[3] = "@unknown"
 		} else {
-			login = author.Login
+			row[3] = markup.Author(*usernamePtr).Markdown()
 		}
 
-		row[3] = login
 		rows[i] = row
 	}
 
