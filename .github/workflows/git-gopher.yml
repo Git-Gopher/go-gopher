@@ -22,7 +22,7 @@ jobs:
       - name: Analyze Workflow
         id: go-gopher
         run: |
-          gh release download -R https://github.com/Git-Gopher/go-gopher-action -p 'go-gopher-marker'
+          gh release download -R https://github.com/Git-Gopher/go-gopher-action -p 'go-gopher-github-action'
           chmod +x ./go-gopher-marker
           ./go-gopher-marker
         env:
