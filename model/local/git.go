@@ -131,7 +131,6 @@ func NewCommit(r *git.Repository, c *object.Commit) *Commit {
 	}
 
 	var diffs []Diff
-
 	if len(parentHashes) == 0 { // nolint: nestif
 		iter, err := r.TreeObjects()
 		if err != nil {

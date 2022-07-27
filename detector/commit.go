@@ -183,12 +183,21 @@ func ShortCommitMessageDetect() (string, CommitDetect) {
 }
 
 func BinaryDetect() (string, CommitDetect) {
-	return "BinaryDetect", func(c *common, commit *local.Commit) (bool, []violation.Violation, error) {
+	return "BinaryDetect", func(common *common, commit *local.Commit) (bool, []violation.Violation, error) {
 		vs := []violation.Violation{}
 		for _, d := range commit.DiffToParents {
 			if d.IsBinary {
 				vs = append(vs, violation.NewBinaryViolation(
-					d.Name,
+					markup.File{
+						Commit: markup.Commit{
+							GitHubLink: markup.GitHubLink{
+								Owner: common.owner,
+								Repo:  common.repo,
+							},
+							Hash: hex.EncodeToString(commit.Hash.ToByte()),
+						},
+						Filepath: d.Name,
+					},
 					commit.Committer.Email,
 					commit.Committer.When,
 				))

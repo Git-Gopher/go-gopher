@@ -3,10 +3,12 @@ package violation
 import (
 	"fmt"
 	"time"
+
+	"github.com/Git-Gopher/go-gopher/markup"
 )
 
 func NewBinaryViolation(
-	filename string,
+	file markup.File,
 	email string,
 	time time.Time,
 ) *BinaryViolation {
@@ -17,7 +19,7 @@ func NewBinaryViolation(
 			time:     time,
 			severity: Suggestion,
 		},
-		filename: filename,
+		file: file,
 	}
 	violation.display = &display{violation}
 
@@ -28,14 +30,14 @@ func NewBinaryViolation(
 type BinaryViolation struct {
 	violation
 	*display
-	filename string
+	file markup.File
 }
 
 // Message implements Violation.
 func (bv *BinaryViolation) Message() string {
-	format := "A binary file \"%s\" has been committed to the project"
+	format := "A binary file %s has been committed to the project"
 
-	return fmt.Sprintf(format, bv.name)
+	return fmt.Sprintf(format, bv.file.Markdown())
 }
 
 // Suggestion implements Violation.
