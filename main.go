@@ -17,6 +17,7 @@ import (
 	"github.com/Git-Gopher/go-gopher/model/local"
 	"github.com/Git-Gopher/go-gopher/model/remote"
 	"github.com/Git-Gopher/go-gopher/utils"
+	"github.com/Git-Gopher/go-gopher/version"
 	"github.com/Git-Gopher/go-gopher/violation"
 	"github.com/Git-Gopher/go-gopher/workflow"
 	"github.com/go-git/go-git/v5"
@@ -31,6 +32,7 @@ import (
 func main() {
 	app := cli.NewApp()
 	app.EnableBashCompletion = true
+	app.Version = version.BuildVersion()
 	app.Commands = []*cli.Command{
 		{
 			Name:    "action",
@@ -426,6 +428,7 @@ func main() {
 		},
 	}
 
+	log.Printf("BuildVersion: %s", version.BuildVersion())
 	if err := app.Run(os.Args); err != nil {
 		log.Fatal(err)
 	}

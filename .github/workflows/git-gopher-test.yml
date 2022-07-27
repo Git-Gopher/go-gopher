@@ -21,7 +21,12 @@ jobs:
       - name: Verify dependencies
         run: go mod verify
       - name: Build
-        run: go build -o go-gopher -v ./cmd/github-action 
+        run: |
+          REPO := github.com/Git-Gopher/go-gopher
+          HASH := $(shell git rev-parse --short HEAD)
+          DATE := $(shell date "+%F-%T")
+          LDFLAGS_DEV := -ldflags "-X '${REPO}/version.CommitHash=${HASH}' -X '${REPO}/version.CompileDate=${DATE}'"
+          go build ${LDFLAGS_DEV} -o go-gopher -v ./cmd/github-action 
       - name: Run go vet
         run: go vet ./...
       - name: lint

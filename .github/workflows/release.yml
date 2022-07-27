@@ -18,7 +18,7 @@ jobs:
       - name: Verify dependencies
         run: go mod verify
       - name: Build
-        run: make build -- -ldflags="-s -w"
+        run: make release
       - name: Run go vet
         run: go vet ./...
       - name: lint
