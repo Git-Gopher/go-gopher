@@ -26,8 +26,8 @@ func NewEmptyCommitViolation(
 	return violation
 }
 
-// BinaryViolation is violation when a branch name is inconsistent with others.
-// from feature branches.
+// Empty commit violation is a violation when a commit is made with no content.
+// Students may aim to inflate their commit count artificially by making empty commits.
 type EmptyCommitViolation struct {
 	violation
 	*display

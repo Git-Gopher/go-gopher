@@ -24,8 +24,7 @@ func NewBinaryViolation(
 	return violation
 }
 
-// BinaryViolation is violation when a branch name is inconsistent with others.
-// from feature branches.
+// BinaryViolation is violation when a binary has been committed to the repository.
 type BinaryViolation struct {
 	violation
 	*display
