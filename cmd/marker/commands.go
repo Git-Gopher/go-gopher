@@ -8,12 +8,14 @@ import (
 	"github.com/Git-Gopher/go-gopher/model"
 	"github.com/Git-Gopher/go-gopher/model/enriched"
 	"github.com/Git-Gopher/go-gopher/utils"
+	"github.com/Git-Gopher/go-gopher/version"
 	"github.com/go-git/go-git/v5"
 	"github.com/go-git/go-git/v5/storage/memory"
 	"github.com/urfave/cli/v2"
 )
 
 func singleCommand(cCtx *cli.Context) error {
+	log.Printf("BuildVersion: %v\n", version.BuildVersion())
 	utils.Environment(".env")
 	// Handle flags.
 	githubURL := cCtx.String("url")

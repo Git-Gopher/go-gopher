@@ -4,6 +4,7 @@ import (
 	"log"
 	"os"
 
+	"github.com/Git-Gopher/go-gopher/version"
 	"github.com/urfave/cli/v2"
 )
 
@@ -13,6 +14,7 @@ func main() {
 	app.Name = "go-gopher-marker"
 	app.HelpName = "go-gopher-marker"
 	app.Usage = "A tool for mark GitHub projects"
+	app.Version = version.BuildVersion()
 	app.Commands = []*cli.Command{
 		{
 			Name:  "single",

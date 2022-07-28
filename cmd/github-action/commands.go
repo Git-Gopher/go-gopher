@@ -11,6 +11,7 @@ import (
 	"github.com/Git-Gopher/go-gopher/model"
 	"github.com/Git-Gopher/go-gopher/model/enriched"
 	"github.com/Git-Gopher/go-gopher/utils"
+	"github.com/Git-Gopher/go-gopher/version"
 	"github.com/Git-Gopher/go-gopher/violation"
 	"github.com/Git-Gopher/go-gopher/workflow"
 	"github.com/go-git/go-git/v5"
@@ -20,6 +21,7 @@ import (
 var errOwnerMismatch = errors.New("owner mismatch")
 
 func actionCommand(cCtx *cli.Context) error {
+	log.Printf("BuildVersion: %s", version.BuildVersion())
 	// Load the environment variables from GitHub Actions.
 	config, err := loadEnv(cCtx.Context)
 	if err != nil {

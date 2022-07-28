@@ -20,8 +20,8 @@ jobs:
           go-version: 1.18
       - name: Verify dependencies
         run: go mod verify
-      - name: Build
-        run: go build -o go-gopher -v ./cmd/github-action 
+      - name: Development Build
+        run: make build
       - name: Run go vet
         run: go vet ./...
       - name: lint
@@ -36,10 +36,9 @@ jobs:
           path: cache.json
           key: ${{ github.ref }}
       - name: Analyze Workflow
-        id: go-gopher
         run: |
-          chmod +x go-gopher
-          ./go-gopher
+          chmod +x bin/go-gopher-github-action
+          ./bin/go-gopher-github-action
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: Artifact outputs
