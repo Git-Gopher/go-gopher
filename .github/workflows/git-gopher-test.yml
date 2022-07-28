@@ -25,8 +25,8 @@ jobs:
           echo "REPO=github.com/Git-Gopher/go-gopher" >> $GITHUB_ENV
           echo "HASH=$(shell git rev-parse --short HEAD)" >> $GITHUB_ENV
           echo "DATE=$(shell date "+%F-%T")" >> $GITHUB_ENV
-          echo LDFLAGS_DEV="-ldflags "-X '${{ env.REPO }}/version.CommitHash=${{ env.HASH }}' -X '${{ env.REPO }}/version.CompileDate=${{ env.DATE }}'" >> $GITHUB_ENV
-          go build ${LDFLAGS_DEV} -o go-gopher -v ./cmd/github-action 
+          echo "LDFLAGS_DEV="-ldflags \"-X \'${{ env.REPO }}/version.CommitHash=${{ env.HASH }}\' -X \'${{ env.REPO }}/version.CompileDate=${{ env.DATE }}\'\"" >> $GITHUB_ENV
+          go build ${LDFLAGS_DEV} -o go-gopher -v ./cmd/github-action
       - name: Run go vet
         run: go vet ./...
       - name: lint
