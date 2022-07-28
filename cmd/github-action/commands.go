@@ -12,7 +12,6 @@ import (
 	"github.com/Git-Gopher/go-gopher/model/enriched"
 	"github.com/Git-Gopher/go-gopher/utils"
 	"github.com/Git-Gopher/go-gopher/version"
-	"github.com/Git-Gopher/go-gopher/violation"
 	"github.com/Git-Gopher/go-gopher/workflow"
 	"github.com/go-git/go-git/v5"
 	"github.com/urfave/cli/v2"
@@ -20,10 +19,10 @@ import (
 
 var errOwnerMismatch = errors.New("owner mismatch")
 
-func actionCommand(cCtx *cli.Context) error {
+func ActionCommand(cCtx *cli.Context) error {
 	log.Printf("BuildVersion: %s", version.BuildVersion())
 	// Load the environment variables from GitHub Actions.
-	config, err := loadEnv(cCtx.Context)
+	config, err := utils.LoadEnv(cCtx.Context)
 	if err != nil {
 		return fmt.Errorf("failed to load env: %w", err)
 	}
@@ -74,144 +73,17 @@ func actionCommand(cCtx *cli.Context) error {
 		}
 	}
 
-	cfg := readConfig(cCtx)
+	cfg := utils.ReadConfig(cCtx)
 	ghwf := workflow.GithubFlowWorkflow(cfg)
 	violated, count, total, violations, err := ghwf.Analyze(enrichedModel, authors, current, caches)
 	if err != nil {
 		log.Fatalf("Failed to analyze: %v\n", err)
 	}
 
-	workflowSummary(authors, violated, count, total, violations)
+	workflow.TextSummary(authors, violated, count, total, violations)
 
-	summary := markdownSummary(authors, violations)
+	summary := workflow.MarkdownSummary(authors, violations)
 	markup.Outputs("pr_summary", summary)
 
 	return nil
-}
-
-// Print violation summary to IO, Split by severity with author association.
-func workflowSummary(authors utils.Authors, v, c, t int, vs []violation.Violation) {
-	var violations, suggestions []violation.Violation
-	for _, v := range vs {
-		switch v.Severity() {
-		case violation.Violated:
-			violations = append(violations, v)
-		case violation.Suggestion:
-			suggestions = append(suggestions, v)
-		}
-	}
-
-	var vsd string
-	for _, v := range violations {
-		vsd += v.Display(authors)
-	}
-	markup.Group("Violations", vsd)
-
-	var ssd string
-	for _, v := range suggestions {
-		ssd += v.Display(authors)
-	}
-	markup.Group("Suggestions", ssd)
-
-	var asd string
-	counts := make(map[string]int)
-	for _, v := range vs {
-		email := v.Email()
-		login, err := authors.Find(email)
-		if err != nil {
-			continue
-		}
-		counts[*login]++
-	}
-
-	for login, count := range counts {
-		asd += fmt.Sprintf("%s: %d\n", login, count)
-	}
-
-	asd += fmt.Sprintf("violated: %d\n", v)
-	asd += fmt.Sprintf("count: %d\n", c)
-	asd += fmt.Sprintf("total: %d\n", t)
-	markup.Group("Summary", asd)
-}
-
-// Helper function to create a markdown summary of the violations.
-func markdownSummary(authors utils.Authors, vs []violation.Violation) string {
-	md := markup.CreateMarkdown("Workflow Summary")
-
-	// Separate violation types.
-	var violations []violation.Violation
-	var suggestions []violation.Violation
-
-	for _, v := range vs {
-		switch v.Severity() {
-		case violation.Violated:
-			violations = append(violations, v)
-		case violation.Suggestion:
-			suggestions = append(suggestions, v)
-		default:
-			log.Printf("Unknown violation severity: %v", v.Severity())
-		}
-	}
-
-	headers := []string{"Violation", "Message", "Suggestion", "Author"}
-	rows := make([][]string, len(violations))
-
-	for i, v := range violations {
-		row := make([]string, len(headers))
-		name := v.Name()
-		row[0] = name
-		message := v.Message()
-		row[1] = message
-
-		suggestion, err := v.Suggestion()
-		if err != nil {
-			suggestion = ""
-		}
-		row[2] = suggestion
-
-		usernamePtr, err := authors.Find(v.Email())
-		if err != nil || usernamePtr == nil {
-			row[3] = "@unknown"
-		} else {
-			row[3] = markup.Author(*usernamePtr).Markdown()
-		}
-
-		rows[i] = row
-	}
-
-	md.BeginCollapsable("Violations")
-	md.Table(headers, rows)
-	md.EndCollapsable()
-
-	headers = []string{"Suggestion", "Message", "Suggestion", "Author"}
-	rows = make([][]string, len(suggestions))
-
-	for i, v := range suggestions {
-		row := make([]string, len(headers))
-		name := v.Name()
-		row[0] = name
-		message := v.Message()
-		row[1] = message
-
-		suggestion, err := v.Suggestion()
-		if err != nil {
-			suggestion = ""
-		}
-		row[2] = suggestion
-
-		usernamePtr, err := authors.Find(v.Email())
-		if err != nil || usernamePtr == nil {
-			row[3] = "@unknown"
-		} else {
-			row[3] = markup.Author(*usernamePtr).Markdown()
-		}
-
-		rows[i] = row
-	}
-
-	md.BeginCollapsable("Suggestions")
-	md.Table(headers, rows)
-	md.EndCollapsable()
-
-	return md.Render()
 }

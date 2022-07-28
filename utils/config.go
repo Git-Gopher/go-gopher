@@ -1,4 +1,4 @@
-package main
+package utils
 
 import (
 	"context"
@@ -10,7 +10,7 @@ import (
 	"github.com/urfave/cli/v2"
 )
 
-type githubConfig struct {
+type GithubConfig struct {
 	GithubActions         bool   `env:"GITHUB_ACTIONS,required"`          // always set to true in GitHub Actions.
 	GithubAction          string `env:"GITHUB_ACTION,required"`           // name of the action.
 	GithubToken           string `env:"GITHUB_TOKEN,required"`            // token scoped to the repo.
@@ -21,8 +21,8 @@ type githubConfig struct {
 }
 
 // Load the environment variables from GitHub Actions.
-func loadEnv(ctx context.Context) (*githubConfig, error) {
-	var c githubConfig
+func LoadEnv(ctx context.Context) (*GithubConfig, error) {
+	var c GithubConfig
 	if err := envconfig.Process(ctx, &c); err != nil {
 		return nil, fmt.Errorf("load env: %w", err)
 	}
@@ -31,7 +31,7 @@ func loadEnv(ctx context.Context) (*githubConfig, error) {
 }
 
 // Fetch custom or default config. Fatal on bad custom config.
-func readConfig(ctx *cli.Context) *config.Config {
+func ReadConfig(ctx *cli.Context) *config.Config {
 	var cfg *config.Config
 	var err error
 

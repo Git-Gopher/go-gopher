@@ -14,7 +14,7 @@ import (
 	"github.com/urfave/cli/v2"
 )
 
-func singleCommand(cCtx *cli.Context) error {
+func MarkCommand(cCtx *cli.Context) error {
 	log.Printf("BuildVersion: %v\n", version.BuildVersion())
 	utils.Environment(".env")
 	// Handle flags.

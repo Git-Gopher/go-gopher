@@ -6,6 +6,7 @@ require (
 	github.com/adrg/strutil v0.3.0
 	github.com/bluekeyes/go-gitdiff v0.6.1
 	github.com/go-git/go-billy/v5 v5.3.1
+	github.com/go-git/go-git v4.7.0+incompatible
 	github.com/go-git/go-git/v5 v5.4.2
 	github.com/google/go-github/v45 v45.2.0
 	github.com/joho/godotenv v1.4.0
@@ -16,6 +17,11 @@ require (
 	github.com/whilp/git-urls v1.0.0
 	golang.org/x/oauth2 v0.0.0-20220524215830-622c5d57e401
 	gopkg.in/vmarkovtsev/go-lcss.v1 v1.0.0-20181020221121-dfc501d07ea0
+)
+
+require (
+	github.com/src-d/gcfg v1.4.0 // indirect
+	gopkg.in/src-d/go-git.v4 v4.13.1 // indirect
 )
 
 require (

@@ -15,7 +15,7 @@ func main() {
 	app.HelpName = "go-gopher-action"
 	app.Usage = "A github action for analyzing GitHub repositories"
 	app.Version = version.BuildVersion()
-	app.Action = actionCommand
+	app.Action = ActionCommand
 
 	if err := app.Run(os.Args); err != nil {
 		log.Fatal(err)

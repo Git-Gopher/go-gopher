@@ -27,7 +27,7 @@ func main() {
 					Required: true,
 				},
 			},
-			Action: singleCommand,
+			Action: MarkCommand,
 		},
 	}
 
