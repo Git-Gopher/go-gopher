@@ -6,8 +6,8 @@ import (
 
 // Link time variables.
 var (
-	CommitHash  = ""
-	CompileDate = ""
+	CommitHash  = "n/a"
+	CompileDate = "n/a"
 )
 
 // BuildVersion combines available information to a nicer looking version string.
