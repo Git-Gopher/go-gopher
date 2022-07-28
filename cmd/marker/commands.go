@@ -15,7 +15,7 @@ import (
 )
 
 func singleCommand(cCtx *cli.Context) error {
-	fmt.Printf("BuildVersion: %v\n", version.BuildVersion())
+	log.Printf("BuildVersion: %v\n", version.BuildVersion())
 	utils.Environment(".env")
 	// Handle flags.
 	githubURL := cCtx.String("url")
