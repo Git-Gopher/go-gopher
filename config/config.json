@@ -43,6 +43,14 @@
     "UnresolvedDetect": {
       "enabled": true,
       "weight": 1
+    },
+    "EmptyCommit": {
+      "enabled": true,
+      "weight": 1
+    },
+    "Binary": {
+      "enabled": true,
+      "weight": 1
     }
   }
 }
