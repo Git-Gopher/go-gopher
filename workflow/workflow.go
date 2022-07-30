@@ -37,6 +37,8 @@ var (
 		"FeatureBranchDetector":           detector.NewFeatureBranchDetector("FeatureBranchDetector"),
 		"CrissCrossMergeDetect":           detector.NewBranchMatrixDetector(detector.CrissCrossMergeDetect()),
 		"UnresolvedDetect":                detector.NewCommitDetector(detector.UnresolvedDetect()),
+		"EmptyCommitDetect":               detector.NewCommitDetector(detector.EmptyCommitDetect()),
+		"BinaryDetect":                    detector.NewCommitDetector(detector.BinaryDetect()),
 
 		// Disabled
 		// "NewFeatureBranchNameDetect": detector.NewBranchCompareDetector(detector.NewFeatureBranchNameDetect()),

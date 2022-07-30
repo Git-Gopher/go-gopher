@@ -23,36 +23,35 @@ type Marker func(MarkerCtx) (string, []Mark)
 
 // List all markers.
 var _ []Marker = []Marker{
-	Atomicity,          // E-A1 Diff Distance/Atomicity.
-	CommitMessage,      // E-A1 Commit messages.
-	GeneratedFiles,     // E-A1 Generated files should not be committed.
-	RegularBranchNames, // E-A2 Regular branch names.
-
-	FeatureBranching,  // W-A2 Feature branching.
-	PullRequestReview, // W-A2 Pull request review.
+	Commit,
+	CommitMessage,
+	Branching,
+	PullRequest,
+	General,
 }
 
 // DetectorMarker is a helper method to run a detector as a marker.
 func DetectorMarker(
 	m MarkerCtx, // ctx
-	d detector.Detector, // detector
+	ds []detector.Detector, // detector
 	c map[string]int, // contribution map
 ) []Mark {
-	if err := d.Run(m.Model); err != nil {
-		return nil
-	}
-
 	// violations map to author
 	violationsMap := make(map[string][]violation.Violation)
-
-	_, _, _, violations := d.Result() // nolint:dogsled
-	for _, v := range violations {
-		username, err := m.Author.Find(v.Email())
-		if err != nil {
-			continue
+	for _, d := range ds {
+		if err := d.Run(m.Model); err != nil {
+			return nil
 		}
 
-		violationsMap[*username] = append(violationsMap[*username], v)
+		_, _, _, violations := d.Result()
+		for _, v := range violations {
+			username, err := m.Author.Find(v.Email())
+			if err != nil {
+				continue
+			}
+
+			violationsMap[*username] = append(violationsMap[*username], v)
+		}
 	}
 
 	marks := make([]Mark, 0, len(violationsMap))
