@@ -13,14 +13,14 @@ run: build
 	go run .
 
 build:
-	mkdir ${BINARY_DIR} || true
+	mkdir -p ${BINARY_DIR}
 	go build ${LDFLAGS_DEV} -v -o ${BINARY_DIR}/go-gopher 
 	go build ${LDFLAGS_DEV} -v -o ${BINARY_DIR}/go-gopher-cli ./cmd/cli/ 
 	go build ${LDFLAGS_DEV} -v -o ${BINARY_DIR}/go-gopher-marker ./cmd/marker/  
 	go build ${LDFLAGS_DEV} -v -o ${BINARY_DIR}/go-gopher-github-action ./cmd/github-action/  
 
 release:
-	mkdir ${BINARY_DIR} || true
+	mkdir -p ${BINARY_DIR}
 	go build ${LDFLAGS_RELEASE} -v -o ${BINARY_DIR}/go-gopher 
 	go build ${LDFLAGS_RELEASE} -v -o ${BINARY_DIR}/go-gopher-cli ./cmd/cli/ 
 	go build ${LDFLAGS_RELEASE} -v -o ${BINARY_DIR}/go-gopher-marker ./cmd/marker/  
