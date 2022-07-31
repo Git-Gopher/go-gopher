@@ -3,7 +3,8 @@ package main
 import (
 	"context"
 	"fmt"
-	"log"
+
+	log "github.com/sirupsen/logrus"
 
 	"github.com/Git-Gopher/go-gopher/config"
 	"github.com/sethvargo/go-envconfig"

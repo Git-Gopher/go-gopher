@@ -1,6 +1,6 @@
-package assess
+package options
 
-import "log"
+import log "github.com/sirupsen/logrus"
 
 // All grades are out of 3 points.
 type GradingAlgorithm func(violations int, total int) int
@@ -58,4 +58,29 @@ func ThresholdGradingAlgorithm(thresholdA, thresholdB, thresholdC int) GradingAl
 			return 0
 		}
 	}
+}
+
+// GetGradingAlgorithm returns the grading algorithm.
+func GetGradingAlgorithm(name string, t *ThresholdSettings) GradingAlgorithm {
+	algorithMap := map[string]GradingAlgorithm{
+		"basic-algorithm": BasicGradingAlgorithm,
+	}
+
+	if t != nil {
+		threshold := *t
+
+		algorithMap["threshold-algorithm"] = ThresholdGradingAlgorithm(
+			threshold.ThresholdA,
+			threshold.ThresholdB,
+			threshold.ThresholdC,
+		)
+	}
+
+	if gradingAlgorithm, ok := algorithMap[name]; ok {
+		return gradingAlgorithm
+	}
+
+	log.Error("Invalid grading algorithm:", name)
+
+	return nil
 }

@@ -1,5 +1,9 @@
 package assess
 
+import (
+	"github.com/Git-Gopher/go-gopher/assess/markers/analysis"
+)
+
 type Candidate struct {
 	Username string  `json:"username"`
 	Grades   []Grade `json:"grades"`
@@ -14,41 +18,15 @@ type Grade struct {
 	Details      string `json:"details"`
 }
 
-// D Default marker without grading.
-func D(m Marker) struct {
-	Marker
-	*GradingAlgorithm
-} {
-	return struct {
-		Marker
-		*GradingAlgorithm
-	}{m, nil}
-}
-
-// C Custom marker with custom grading algorithm.
-func C(m Marker, g GradingAlgorithm) struct {
-	Marker
-	GradingAlgorithm
-} {
-	return struct {
-		Marker
-		GradingAlgorithm
-	}{m, g}
-}
-
 // nolint: gocognit
-func RunMarker(m MarkerCtx, def GradingAlgorithm, markers ...struct {
-	Marker
-	*GradingAlgorithm
-},
-) []Candidate {
+func RunMarker(m analysis.MarkerCtx, markers []*analysis.Analyzer) []Candidate {
 	candiateMap := make(map[string]*Candidate)
 	contributionMap := make(map[string]int)
 
 	for _, marker := range markers {
-		name, grades := marker.Marker(m)
+		name, grades := marker.Run(m)
 
-		gradeMap := make(map[string]Mark)
+		gradeMap := make(map[string]analysis.Mark)
 		for _, grade := range grades {
 			gradeMap[grade.Username] = grade
 		}
@@ -78,7 +56,7 @@ func RunMarker(m MarkerCtx, def GradingAlgorithm, markers ...struct {
 		for username := range candiateMap {
 			contribution := contributionMap[username]
 
-			var grade Mark
+			var grade analysis.Mark
 			var ok bool
 			if grade, ok = gradeMap[username]; !ok {
 				// TODO less contribution
@@ -117,28 +95,18 @@ func RunMarker(m MarkerCtx, def GradingAlgorithm, markers ...struct {
 				details += v.Display(m.Author) + "\n"
 			}
 
-			points := 0
-			if marker.GradingAlgorithm != nil {
-				// use custom grader
-				grader := *marker.GradingAlgorithm
-				grader(len(grade.Violations), grade.Total)
-			} else {
-				// default grading
-				points = def(len(grade.Violations), grade.Total)
-			}
-
 			candiateMap[username].Grades = append(
 				candiateMap[username].Grades,
 				Grade{
 					Name:         name,
-					Grade:        points,
+					Grade:        grade.Grade.Grade,
 					Contribution: grade.Total,
 					Violation:    len(grade.Violations),
 					Details:      details,
 				},
 			)
 
-			candiateMap[username].Total += points
+			candiateMap[username].Total += grade.Grade.Grade
 		}
 	}
 

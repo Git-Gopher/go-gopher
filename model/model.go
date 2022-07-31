@@ -2,7 +2,9 @@ package model
 
 import (
 	"fmt"
-	"log"
+
+	log "github.com/sirupsen/logrus"
+
 	"time"
 
 	"github.com/Git-Gopher/go-gopher/model/enriched"
@@ -21,7 +23,7 @@ func FetchEnrichedModel(repo *git.Repository, repoOwner, repoName string) (*enri
 	}
 
 	elapsed := time.Since(start)
-	log.Printf("Scraped remote GitHub repository in %s", elapsed)
+	log.Infof("Scraped remote GitHub repository in %s", elapsed)
 
 	// loading local Git repository.
 	start = time.Now()
@@ -31,7 +33,7 @@ func FetchEnrichedModel(repo *git.Repository, repoOwner, repoName string) (*enri
 		return nil, fmt.Errorf("failed to create local model: %w", err)
 	}
 	elapsed = time.Since(start)
-	log.Printf("Loaded local Git repository in %s", elapsed)
+	log.Infof("Loaded local Git repository in %s", elapsed)
 
 	enrichedModel := enriched.NewEnrichedModel(*gitModel, *githubModel)
 
