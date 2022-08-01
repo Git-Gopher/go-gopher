@@ -2,12 +2,12 @@ package detector
 
 import (
 	"fmt"
-	"log"
 	"strings"
 
 	"github.com/Git-Gopher/go-gopher/model/enriched"
 	"github.com/Git-Gopher/go-gopher/model/local"
 	"github.com/Git-Gopher/go-gopher/violation"
+	log "github.com/sirupsen/logrus"
 )
 
 // Branch name.

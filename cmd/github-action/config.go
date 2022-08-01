@@ -3,10 +3,10 @@ package main
 import (
 	"context"
 	"fmt"
-	"log"
 
 	"github.com/Git-Gopher/go-gopher/config"
 	"github.com/sethvargo/go-envconfig"
+	log "github.com/sirupsen/logrus"
 	"github.com/urfave/cli/v2"
 )
 

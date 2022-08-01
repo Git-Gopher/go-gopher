@@ -1,6 +1,7 @@
-package assess
+package analysis
 
 import (
+	"github.com/Git-Gopher/go-gopher/assess/options"
 	"github.com/Git-Gopher/go-gopher/detector"
 	"github.com/Git-Gopher/go-gopher/model/enriched"
 	"github.com/Git-Gopher/go-gopher/utils"
@@ -11,6 +12,12 @@ type Mark struct {
 	Username   string
 	Violations []violation.Violation
 	Total      int
+	Grade      Grade
+}
+
+type Grade struct {
+	Grade int
+	Total int
 }
 
 type MarkerCtx struct {
@@ -19,22 +26,15 @@ type MarkerCtx struct {
 	Author       utils.Authors
 }
 
-type Marker func(MarkerCtx) (string, []Mark)
-
-// List all markers.
-var _ []Marker = []Marker{
-	Commit,
-	CommitMessage,
-	Branching,
-	PullRequest,
-	General,
-}
+type MarkerRun func(MarkerCtx) (string, []Mark)
 
 // DetectorMarker is a helper method to run a detector as a marker.
 func DetectorMarker(
 	m MarkerCtx, // ctx
 	ds []detector.Detector, // detector
 	c map[string]int, // contribution map
+	x int, // contribution multipler
+	g options.GradingAlgorithm, // grading algorithm.
 ) []Mark {
 	// violations map to author
 	violationsMap := make(map[string][]violation.Violation)
@@ -69,7 +69,11 @@ func DetectorMarker(
 		marks = append(marks, Mark{
 			Username:   username,
 			Violations: violations,
-			Total:      count,
+			Total:      count * x,
+			Grade: Grade{
+				Grade: g(len(violations), count*x),
+				Total: 3,
+			},
 		})
 	}
 

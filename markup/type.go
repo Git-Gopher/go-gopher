@@ -2,7 +2,8 @@ package markup
 
 import (
 	"fmt"
-	"log"
+
+	log "github.com/sirupsen/logrus"
 )
 
 // GitHubLink - GitHub link.

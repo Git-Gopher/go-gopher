@@ -3,7 +3,6 @@ package main
 import (
 	"errors"
 	"fmt"
-	"log"
 	"os"
 
 	"github.com/Git-Gopher/go-gopher/cache"
@@ -15,6 +14,7 @@ import (
 	"github.com/Git-Gopher/go-gopher/violation"
 	"github.com/Git-Gopher/go-gopher/workflow"
 	"github.com/go-git/go-git/v5"
+	log "github.com/sirupsen/logrus"
 	"github.com/urfave/cli/v2"
 )
 

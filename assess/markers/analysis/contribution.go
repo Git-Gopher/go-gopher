@@ -1,4 +1,4 @@
-package assess
+package analysis
 
 import (
 	"github.com/Git-Gopher/go-gopher/model/enriched"

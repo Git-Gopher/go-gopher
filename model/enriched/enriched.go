@@ -1,11 +1,10 @@
 package enriched
 
 import (
-	"log"
-
 	"github.com/Git-Gopher/go-gopher/model/local"
 	"github.com/Git-Gopher/go-gopher/model/remote"
 	"github.com/Git-Gopher/go-gopher/utils"
+	log "github.com/sirupsen/logrus"
 )
 
 type EnrichedModel struct {

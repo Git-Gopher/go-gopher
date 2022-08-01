@@ -1,14 +1,19 @@
 package main
 
 import (
-	"log"
 	"os"
 
 	"github.com/Git-Gopher/go-gopher/version"
+	log "github.com/sirupsen/logrus"
 	"github.com/urfave/cli/v2"
 )
 
 func main() {
+	log.SetFormatter(&log.TextFormatter{
+		ForceColors:  true,
+		PadLevelText: true,
+	})
+
 	app := cli.NewApp()
 
 	app.Name = "go-gopher-marker"
@@ -17,17 +22,25 @@ func main() {
 	app.Version = version.BuildVersion()
 	app.Commands = []*cli.Command{
 		{
-			Name:  "single",
-			Usage: "grade a single repository",
-			Flags: []cli.Flag{
-				&cli.StringFlag{
-					Name:     "url",
-					Usage:    "the url of the repository to grade",
-					Aliases:  []string{"u"},
-					Required: true,
-				},
-			},
-			Action: singleCommand,
+			Name:   "url",
+			Usage:  "grade a single repository with GitHub URL",
+			Action: singleUrlCommand,
+		},
+		{
+			Name:   "local",
+			Usage:  "grade a single local repository",
+			Action: singleLocalCommand,
+		},
+		{
+			Name:   "folder",
+			Usage:  "grade a folder of repositories",
+			Action: folderLocalCommand,
+		},
+	}
+	app.Flags = []cli.Flag{
+		&cli.StringFlag{
+			Name:  "token",
+			Usage: "GitHub token",
 		},
 	}
 
