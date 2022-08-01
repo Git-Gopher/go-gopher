@@ -3,9 +3,8 @@ package main
 import (
 	"os"
 
-	log "github.com/sirupsen/logrus"
-
 	"github.com/Git-Gopher/go-gopher/version"
+	log "github.com/sirupsen/logrus"
 	"github.com/urfave/cli/v2"
 )
 

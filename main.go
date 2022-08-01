@@ -9,8 +9,6 @@ import (
 	"os"
 	"path/filepath"
 
-	log "github.com/sirupsen/logrus"
-
 	"github.com/Git-Gopher/go-gopher/cache"
 	"github.com/Git-Gopher/go-gopher/config"
 	"github.com/Git-Gopher/go-gopher/markup"
@@ -25,6 +23,7 @@ import (
 	githttp "github.com/go-git/go-git/v5/plumbing/transport/http"
 	"github.com/go-git/go-git/v5/storage/memory"
 	"github.com/google/go-github/v45/github"
+	log "github.com/sirupsen/logrus"
 	"github.com/urfave/cli/v2"
 	"golang.org/x/oauth2"
 )

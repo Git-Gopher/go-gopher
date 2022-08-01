@@ -9,8 +9,6 @@ import (
 	"path/filepath"
 	"time"
 
-	log "github.com/sirupsen/logrus"
-
 	"github.com/Git-Gopher/go-gopher/cache"
 	"github.com/Git-Gopher/go-gopher/config"
 	"github.com/Git-Gopher/go-gopher/detector"
@@ -18,6 +16,7 @@ import (
 	"github.com/Git-Gopher/go-gopher/model/remote"
 	"github.com/Git-Gopher/go-gopher/utils"
 	"github.com/Git-Gopher/go-gopher/violation"
+	log "github.com/sirupsen/logrus"
 )
 
 // XXX: This is a hack to get the name of the detector.

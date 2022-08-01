@@ -8,7 +8,10 @@ import (
 func LoadOptions(log *log.Logger) *options.Options {
 	o := options.Options{}
 	r := options.NewFileReader(log, &o)
-	r.Read("options.yml")
+
+	if err := r.Read("options.yml"); err != nil {
+		log.Fatalf("failed to read options: %v", err)
+	}
 
 	return &o
 }

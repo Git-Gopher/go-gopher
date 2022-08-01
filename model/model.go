@@ -2,15 +2,13 @@ package model
 
 import (
 	"fmt"
-
-	log "github.com/sirupsen/logrus"
-
 	"time"
 
 	"github.com/Git-Gopher/go-gopher/model/enriched"
 	"github.com/Git-Gopher/go-gopher/model/local"
 	"github.com/Git-Gopher/go-gopher/model/remote"
 	"github.com/go-git/go-git/v5"
+	log "github.com/sirupsen/logrus"
 )
 
 func FetchEnrichedModel(repo *git.Repository, repoOwner, repoName string) (*enriched.EnrichedModel, error) {

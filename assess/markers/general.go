@@ -18,6 +18,7 @@ func NewGeneral(settings *options.GeneralSettings) *analysis.Analyzer {
 			unresolved := detector.NewCommitDetector(detector.UnresolvedDetect())
 
 			g := options.GetGradingAlgorithm(settings.GradingAlgorithm, settings.ThresholdSettings)
+
 			return "General", analysis.DetectorMarker(m,
 				[]detector.Detector{unresolved},
 				m.Contribution.CommitCountMap,

@@ -18,6 +18,7 @@ func NewBranching(settings *options.BranchingSettings) *analysis.Analyzer {
 			feature := detector.NewFeatureBranchDetector("FeatureBranchDetector")
 
 			g := options.GetGradingAlgorithm(settings.GradingAlgorithm, settings.ThresholdSettings)
+
 			return "Branching", analysis.DetectorMarker(m,
 				[]detector.Detector{consistent, stale, feature},
 				m.Contribution.CommitCountMap,

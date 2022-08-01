@@ -22,19 +22,19 @@ func main() {
 	app.Version = version.BuildVersion()
 	app.Commands = []*cli.Command{
 		{
-			Name:  "url",
-			Usage: "grade a single repository with GitHub URL",
+			Name:   "url",
+			Usage:  "grade a single repository with GitHub URL",
 			Action: singleUrlCommand,
 		},
 		{
-			Name:  "local",
-			Usage: "grade a single local repository",
+			Name:   "local",
+			Usage:  "grade a single local repository",
 			Action: singleLocalCommand,
 		},
 		{
-			Name:  "folder",
-			Usage: "grade a folder of repositories",
-			Action: singleLocalCommand,
+			Name:   "folder",
+			Usage:  "grade a folder of repositories",
+			Action: folderLocalCommand,
 		},
 	}
 	app.Flags = []cli.Flag{
@@ -42,7 +42,7 @@ func main() {
 			Name:  "token",
 			Usage: "GitHub token",
 		},
-	},
+	}
 
 	if err := app.Run(os.Args); err != nil {
 		log.Fatal(err)

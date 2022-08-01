@@ -1,12 +1,12 @@
 package options
 
 import (
+	_ "embed"
+	"errors"
 	"fmt"
 	"io/ioutil"
 	"os"
 	"path/filepath"
-
-	_ "embed"
 
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
@@ -62,8 +62,9 @@ func (r *FileReader) generateDefault(file string) error {
 
 func (r *FileReader) parseOption() error {
 	if err := viper.ReadInConfig(); err != nil {
-		if _, ok := err.(viper.ConfigFileNotFoundError); ok {
+		if errors.As(err, &viper.ConfigFileNotFoundError{}) {
 			r.log.Info("No options file found")
+
 			return nil
 		}
 

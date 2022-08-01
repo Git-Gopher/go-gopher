@@ -18,7 +18,6 @@ type Grade struct {
 	Details      string `json:"details"`
 }
 
-// nolint: gocognit
 func RunMarker(m analysis.MarkerCtx, markers []*analysis.Analyzer) []Candidate {
 	candiateMap := make(map[string]*Candidate)
 	contributionMap := make(map[string]int)

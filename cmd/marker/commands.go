@@ -1,7 +1,12 @@
 package main
 
 import (
+	"context"
 	"fmt"
+	"io/fs"
+	"path/filepath"
+	"runtime"
+	"sync"
 
 	"github.com/Git-Gopher/go-gopher/assess"
 	"github.com/Git-Gopher/go-gopher/assess/markers/analysis"
@@ -23,8 +28,6 @@ var (
 
 func singleUrlCommand(cCtx *cli.Context) error {
 	log.Printf("BuildVersion: %v\n", version.BuildVersion())
-	utils.Environment(".env")
-	// Handle flags.
 	githubURL := cCtx.Args().Get(0)
 	if githubURL == "" {
 		return errGitHubURL
@@ -88,14 +91,17 @@ func singleUrlCommand(cCtx *cli.Context) error {
 
 func singleLocalCommand(cCtx *cli.Context) error {
 	log.Printf("BuildVersion: %v\n", version.BuildVersion())
-	utils.Environment(".env")
-	// Handle flags.
+
 	directory := cCtx.Args().Get(0)
 	if directory == "" {
 		return errLocalDir
 	}
 
-	// Clone repository into memory.
+	return runLocalRepository(directory)
+}
+
+func runLocalRepository(directory string) error {
+	// Open repository locally.
 	repo, err := git.PlainOpen(directory)
 	if err != nil {
 		return fmt.Errorf("failed to clone repository: %w", err)
@@ -141,6 +147,61 @@ func singleLocalCommand(cCtx *cli.Context) error {
 	if err := IndividualReports(candidates); err != nil {
 		return fmt.Errorf("failed to generate individual reports: %w", err)
 	}
+
+	return nil
+}
+
+func folderLocalCommand(cCtx *cli.Context) error {
+	directory := cCtx.Args().Get(0)
+	if directory == "" {
+		return errLocalDir
+	}
+
+	repos := make([]string, 0)
+
+	err := filepath.Walk(directory, func(path string, info fs.FileInfo, err error) error {
+		if info.IsDir() && info.Name() == ".git" {
+			repos = append(repos, filepath.Dir(path))
+
+			return filepath.SkipDir
+		}
+
+		return nil
+	})
+	if err != nil {
+		return fmt.Errorf("failed to walk directory: %w", err)
+	}
+
+	var wg sync.WaitGroup
+	ctx, cancel := context.WithCancel(context.Background())
+	repoChan := make(chan string, runtime.NumCPU())
+
+	// Load repos into channel.
+	go func() {
+		for _, repo := range repos {
+			wg.Add(1)
+			repoChan <- repo
+		}
+	}()
+
+	for i := 0; i < runtime.NumCPU()-1; i++ {
+		go func() {
+			select {
+			case repo := <-repoChan:
+				if err := runLocalRepository(repo); err != nil {
+					log.Errorf("failed to run local repository: %v", err)
+				}
+				wg.Done()
+			case <-ctx.Done():
+				return
+			}
+		}()
+	}
+
+	wg.Wait()
+	cancel()
+
+	log.Printf("# Done %s #\n", directory)
 
 	return nil
 }

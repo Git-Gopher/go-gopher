@@ -17,6 +17,7 @@ func NewCommitMessage(settings *options.CommitMessageSetting) *analysis.Analyzer
 			short := detector.NewCommitDetector(detector.ShortCommitMessageDetect())
 
 			g := options.GetGradingAlgorithm(settings.GradingAlgorithm, settings.ThresholdSettings)
+
 			return "CommitMessage", analysis.DetectorMarker(m,
 				[]detector.Detector{diff, short},
 				m.Contribution.CommitCountMap,

@@ -18,6 +18,7 @@ func NewPullRequest(settings *options.PullRequestSettings) *analysis.Analyzer {
 			issue := detector.NewPullRequestDetector(detector.PullRequestIssueDetector())
 
 			g := options.GetGradingAlgorithm(settings.GradingAlgorithm, settings.ThresholdSettings)
+
 			return "PullRequest", analysis.DetectorMarker(m,
 				[]detector.Detector{approved, resolved, issue},
 				m.Contribution.CommitCountMap,

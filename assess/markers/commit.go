@@ -18,6 +18,7 @@ func NewCommit(settings *options.CommitSettings) *analysis.Analyzer {
 			empty := detector.NewCommitDetector(detector.EmptyCommitDetect())
 
 			g := options.GetGradingAlgorithm(settings.GradingAlgorithm, settings.ThresholdSettings)
+
 			return "Commit", analysis.DetectorMarker(
 				m,
 				[]detector.Detector{atomicity, binaries, empty},
