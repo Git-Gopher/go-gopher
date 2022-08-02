@@ -504,6 +504,7 @@ func readConfig(ctx *cli.Context) *config.Config {
 // Helper function to create a markdown summary of the violations.
 func markdownSummary(authors utils.Authors, vs []violation.Violation) string {
 	md := markup.CreateMarkdown("Workflow Summary")
+	md.AddLine(fmt.Sprintf("Created with git-gopher version `%s`", version.BuildVersion()))
 
 	// Separate violation types.
 	var violations []violation.Violation
