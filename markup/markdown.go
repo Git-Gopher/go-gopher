@@ -73,7 +73,13 @@ func (m *Markdown) Quote(text string) *Markdown {
 	return m
 }
 
-func (m *Markdown) Code(text string, language string) *Markdown {
+func (m *Markdown) Code(text string) *Markdown {
+	m.AddLine(fmt.Sprintf("`%s`", text))
+
+	return m
+}
+
+func (m *Markdown) CodeBlock(text string, language string) *Markdown {
 	m.AddLine(fmt.Sprintf("```\n%s\n```", text))
 
 	return m
