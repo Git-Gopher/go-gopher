@@ -90,7 +90,7 @@ func DiffMatchesMessageDetect() (string, CommitDetect) {
 		for _, diff := range commit.DiffToParents {
 			for _, word := range words {
 				all := diff.Addition + diff.Deletion + diff.Equal + diff.Name
-				if strings.Contains(all, word) {
+				if strings.Contains(strings.ToLower(all), strings.ToLower(word)) {
 					return true, nil, nil
 				}
 			}

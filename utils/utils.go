@@ -22,6 +22,7 @@ import (
 )
 
 var (
+	GoogleFormURL        = "https://forms.gle/gx8P86PefbBPH9J88"
 	ErrUnsupportedSchema = errors.New("unsupported schema")
 	ErrIllegalPath       = errors.New("illegal path")
 	ErrRepo              = errors.New("repository is nil")
