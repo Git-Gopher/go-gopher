@@ -32,7 +32,7 @@ func (r *FileReader) Read(file string) error {
 
 	if _, err := os.Stat(file); err != nil {
 		r.log.Info("Generating default options")
-		if err := r.generateDefault(file); err != nil {
+		if err := r.GenerateDefault(file); err != nil {
 			return fmt.Errorf("can't generate default options: %w", err)
 		}
 	}
@@ -51,7 +51,7 @@ func (r *FileReader) Read(file string) error {
 	return nil
 }
 
-func (r *FileReader) generateDefault(file string) error {
+func (r *FileReader) GenerateDefault(file string) error {
 	err := ioutil.WriteFile(file, optionsByte, 0o600)
 	if err != nil {
 		return fmt.Errorf("can't write default options: %w", err)

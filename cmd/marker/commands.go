@@ -10,10 +10,10 @@ import (
 
 	"github.com/Git-Gopher/go-gopher/assess"
 	"github.com/Git-Gopher/go-gopher/assess/markers/analysis"
+	"github.com/Git-Gopher/go-gopher/assess/options"
 	"github.com/Git-Gopher/go-gopher/model"
 	"github.com/Git-Gopher/go-gopher/model/enriched"
 	"github.com/Git-Gopher/go-gopher/utils"
-	"github.com/Git-Gopher/go-gopher/version"
 	"github.com/go-git/go-git/v5"
 	githttp "github.com/go-git/go-git/v5/plumbing/transport/http"
 	"github.com/go-git/go-git/v5/storage/memory"
@@ -26,15 +26,25 @@ var (
 	errLocalDir  = fmt.Errorf("missing Local Directory")
 )
 
-func singleUrlCommand(cCtx *cli.Context) error {
-	log.Printf("BuildVersion: %v\n", version.BuildVersion())
+var _ Commands = &Cmds{}
+
+type Commands interface {
+	SingleUrlCommand(cCtx *cli.Context, flags *Flags) error
+	SingleLocalCommand(cCtx *cli.Context, flags *Flags) error
+	FolderLocalCommand(cCtx *cli.Context, flags *Flags) error
+	GenerateConfigCommand(cCtx *cli.Context, flags *Flags) error
+}
+
+type Cmds struct{}
+
+func (c *Cmds) SingleUrlCommand(cCtx *cli.Context, flags *Flags) error {
 	githubURL := cCtx.Args().Get(0)
 	if githubURL == "" {
 		return errGitHubURL
 	}
 
 	var auth *githttp.BasicAuth
-	if cCtx.String("token") != "" {
+	if flags.GithubToken != "" {
 		auth = &githttp.BasicAuth{
 			Username: "non-empty",
 			Password: cCtx.String("token"),
@@ -50,57 +60,23 @@ func singleUrlCommand(cCtx *cli.Context) error {
 		return fmt.Errorf("failed to clone repository: %w", err)
 	}
 
-	// Get the repositoryName.
-	repoOwner, repoName, err := utils.OwnerNameFromUrl(githubURL)
-	if err != nil {
-		return fmt.Errorf("failed to get owner and repo name: %w", err)
-	}
-
-	// Create enrichedModel.
-	enrichedModel, err := model.FetchEnrichedModel(repo, repoOwner, repoName)
-	if err != nil {
-		return fmt.Errorf("failed to create enriched model: %w", err)
-	}
-
-	// Populate authors from enrichedModel.
-	authors := enriched.PopulateAuthors(enrichedModel)
-
-	// Read marker configs
-	o := LoadOptions(log.StandardLogger())
-	analyzers := assess.LoadAnalyzer(o)
-
-	candidates := assess.RunMarker(
-		analysis.MarkerCtx{
-			Model:        enrichedModel,
-			Contribution: analysis.NewContribution(*enrichedModel),
-			Author:       authors,
-		},
-		analyzers,
-	)
-
-	for _, candidate := range candidates {
-		log.Printf("#### @%s ####\n", candidate.Username)
-	}
-
-	if err := IndividualReports(candidates); err != nil {
-		return fmt.Errorf("failed to generate individual reports: %w", err)
+	if err = c.runMarker(repo, githubURL); err != nil {
+		return err
 	}
 
 	return nil
 }
 
-func singleLocalCommand(cCtx *cli.Context) error {
-	log.Printf("BuildVersion: %v\n", version.BuildVersion())
-
+func (c *Cmds) SingleLocalCommand(cCtx *cli.Context, flags *Flags) error {
 	directory := cCtx.Args().Get(0)
 	if directory == "" {
 		return errLocalDir
 	}
 
-	return runLocalRepository(directory)
+	return c.runLocalRepository(directory)
 }
 
-func runLocalRepository(directory string) error {
+func (c *Cmds) runLocalRepository(directory string) error {
 	// Open repository locally.
 	repo, err := git.PlainOpen(directory)
 	if err != nil {
@@ -112,46 +88,14 @@ func runLocalRepository(directory string) error {
 		return fmt.Errorf("failed to get url: %w", err)
 	}
 
-	// Get the repositoryName.
-	repoOwner, repoName, err := utils.OwnerNameFromUrl(githubURL)
-	if err != nil {
-		return fmt.Errorf("failed to get owner and repo name: %w", err)
-	}
-
-	// Create enrichedModel.
-	enrichedModel, err := model.FetchEnrichedModel(repo, repoOwner, repoName)
-	if err != nil {
-		return fmt.Errorf("failed to create enriched model: %w", err)
-	}
-
-	// Populate authors from enrichedModel.
-	authors := enriched.PopulateAuthors(enrichedModel)
-
-	// Read marker configs
-	o := LoadOptions(log.StandardLogger())
-	analyzers := assess.LoadAnalyzer(o)
-
-	candidates := assess.RunMarker(
-		analysis.MarkerCtx{
-			Model:        enrichedModel,
-			Contribution: analysis.NewContribution(*enrichedModel),
-			Author:       authors,
-		},
-		analyzers,
-	)
-
-	for _, candidate := range candidates {
-		log.Printf("#### @%s ####\n", candidate.Username)
-	}
-
-	if err := IndividualReports(candidates); err != nil {
-		return fmt.Errorf("failed to generate individual reports: %w", err)
+	if err = c.runMarker(repo, githubURL); err != nil {
+		return err
 	}
 
 	return nil
 }
 
-func folderLocalCommand(cCtx *cli.Context) error {
+func (c *Cmds) FolderLocalCommand(cCtx *cli.Context, flags *Flags) error {
 	directory := cCtx.Args().Get(0)
 	if directory == "" {
 		return errLocalDir
@@ -188,7 +132,7 @@ func folderLocalCommand(cCtx *cli.Context) error {
 		go func() {
 			select {
 			case repo := <-repoChan:
-				if err := runLocalRepository(repo); err != nil {
+				if err := c.runLocalRepository(repo); err != nil {
 					log.Errorf("failed to run local repository: %v", err)
 				}
 				wg.Done()
@@ -202,6 +146,59 @@ func folderLocalCommand(cCtx *cli.Context) error {
 	cancel()
 
 	log.Printf("# Done %s #\n", directory)
+
+	return nil
+}
+
+func (c *Cmds) GenerateConfigCommand(cCtx *cli.Context, flags *Flags) error {
+	r := options.NewFileReader(log.StandardLogger(), nil)
+	if err := r.GenerateDefault(flags.OptionsDir); err != nil {
+		return fmt.Errorf("failed to generate default options: %w", err)
+	}
+
+	if err := utils.GenerateEnv(flags.EnvDir); err != nil {
+		return fmt.Errorf("failed to generate env: %w", err)
+	}
+
+	return nil
+}
+
+func (c *Cmds) runMarker(repo *git.Repository, githubURL string) error {
+	// Get the repositoryName.
+	repoOwner, repoName, err := utils.OwnerNameFromUrl(githubURL)
+	if err != nil {
+		return fmt.Errorf("failed to get owner and repo name: %w", err)
+	}
+
+	// Create enrichedModel.
+	enrichedModel, err := model.FetchEnrichedModel(repo, repoOwner, repoName)
+	if err != nil {
+		return fmt.Errorf("failed to create enriched model: %w", err)
+	}
+
+	// Populate authors from enrichedModel.
+	authors := enriched.PopulateAuthors(enrichedModel)
+
+	// Read marker configs
+	o := LoadOptions(log.StandardLogger())
+	analyzers := assess.LoadAnalyzer(o)
+
+	candidates := assess.RunMarker(
+		analysis.MarkerCtx{
+			Model:        enrichedModel,
+			Contribution: analysis.NewContribution(*enrichedModel),
+			Author:       authors,
+		},
+		analyzers,
+	)
+
+	for _, candidate := range candidates {
+		log.Printf("#### @%s ####\n", candidate.Username)
+	}
+
+	if err := IndividualReports(candidates); err != nil {
+		return fmt.Errorf("failed to generate individual reports: %w", err)
+	}
 
 	return nil
 }
