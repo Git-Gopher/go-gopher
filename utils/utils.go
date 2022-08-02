@@ -28,17 +28,6 @@ var (
 	ErrRepo              = errors.New("repository is nil")
 )
 
-// Load the environment variables from the .env file.
-func Environment(location string) {
-	if err := godotenv.Load(location); err != nil {
-		log.Println("Error loading .env file")
-	}
-
-	if os.Getenv("GITHUB_TOKEN") == "" {
-		log.Fatalln("Error loading env GITHUB_TOKEN")
-	}
-}
-
 // Fetch the owner and the name from the given URL.
 // Supports https and ssh URLs.
 func OwnerNameFromUrl(rawUrl string) (string, string, error) {
