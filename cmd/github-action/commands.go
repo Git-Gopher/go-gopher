@@ -213,5 +213,9 @@ func markdownSummary(authors utils.Authors, vs []violation.Violation) string {
 	md.Table(headers, rows)
 	md.EndCollapsable()
 
+	// Google form
+	md.AddLine("Have any feedback? Feel free to submit it")
+	markup.Link("here", utils.GoogleFormURL)
+
 	return md.Render()
 }
