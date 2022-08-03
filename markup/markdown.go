@@ -156,16 +156,16 @@ func (m *Markdown) Task(items []TaskItem, numbered bool) *Markdown {
 }
 
 func (m *Markdown) Table(headers []string, rows [][]string) *Markdown {
-	t := ""
+	var tSd strings.Builder
 
-	t += fmt.Sprintf("| %s |", strings.Join(headers, " | "))
-	t += fmt.Sprintf("%s|%s", LineBreak, strings.Repeat(" --- |", len(headers)))
+	tSd.WriteString(fmt.Sprintf("| %s |", strings.Join(headers, " | ")))
+	tSd.WriteString(fmt.Sprintf("%s|%s", LineBreak, strings.Repeat(" --- |", len(headers))))
 
 	for _, row := range rows {
-		t += fmt.Sprintf("%s| %s |", LineBreak, strings.Join(row, " | "))
+		tSd.WriteString(fmt.Sprintf("%s| %s |", LineBreak, strings.Join(row, " | ")))
 	}
 
-	m.AddLine(t)
+	m.AddLine(tSd.String())
 
 	return m
 }

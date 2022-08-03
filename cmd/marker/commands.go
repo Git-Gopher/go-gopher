@@ -47,7 +47,7 @@ func (c *Cmds) SingleUrlCommand(cCtx *cli.Context, flags *Flags) error {
 	if flags.GithubToken != "" {
 		auth = &githttp.BasicAuth{
 			Username: "non-empty",
-			Password: cCtx.String("token"),
+			Password: flags.GithubToken,
 		}
 	}
 
@@ -80,7 +80,7 @@ func (c *Cmds) runLocalRepository(directory string) error {
 	// Open repository locally.
 	repo, err := git.PlainOpen(directory)
 	if err != nil {
-		return fmt.Errorf("failed to clone repository: %w", err)
+		return fmt.Errorf("failed to open repository: %w", err)
 	}
 
 	githubURL, err := utils.Url(repo)

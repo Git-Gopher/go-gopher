@@ -1,6 +1,8 @@
 package assess
 
 import (
+	"strings"
+
 	"github.com/Git-Gopher/go-gopher/assess/markers/analysis"
 )
 
@@ -89,9 +91,10 @@ func RunMarker(m analysis.MarkerCtx, markers []*analysis.Analyzer) []Candidate {
 				continue
 			}
 
-			details := ""
+			var detailsSb strings.Builder
 			for _, v := range grade.Violations {
-				details += v.Display(m.Author) + "\n"
+				detailsSb.WriteString(v.Display(m.Author))
+				detailsSb.WriteString("\n")
 			}
 
 			candiateMap[username].Grades = append(
@@ -101,7 +104,7 @@ func RunMarker(m analysis.MarkerCtx, markers []*analysis.Analyzer) []Candidate {
 					Grade:        grade.Grade.Grade,
 					Contribution: grade.Total,
 					Violation:    len(grade.Violations),
-					Details:      details,
+					Details:      detailsSb.String(),
 				},
 			)
 
