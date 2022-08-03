@@ -10,6 +10,7 @@ require (
 	github.com/google/go-github/v45 v45.2.0
 	github.com/joho/godotenv v1.4.0
 	github.com/montanaflynn/stats v0.6.6
+	github.com/scorpionknifes/go-pcre v0.0.0-20210805092536-77486363b797
 	github.com/sethvargo/go-envconfig v0.8.0
 	github.com/shurcooL/githubv4 v0.0.0-20220520033151-0b4e3294ff00
 	github.com/sirupsen/logrus v1.9.0
@@ -27,7 +28,6 @@ require (
 	github.com/mitchellh/mapstructure v1.5.0 // indirect
 	github.com/pelletier/go-toml v1.9.5 // indirect
 	github.com/pelletier/go-toml/v2 v2.0.1 // indirect
-	github.com/scorpionknifes/go-pcre v0.0.0-20210805092536-77486363b797 // indirect
 	github.com/spf13/afero v1.8.2 // indirect
 	github.com/spf13/cast v1.5.0 // indirect
 	github.com/spf13/jwalterweatherman v1.1.0 // indirect

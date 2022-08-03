@@ -1,6 +1,10 @@
 package remote
 
-import "fmt"
+import (
+	"context"
+	"fmt"
+	"sync"
+)
 
 type Author struct {
 	Login     string
@@ -67,34 +71,74 @@ type Committer struct {
 // where we can use pointers within our structs, the second is easier in terms of managing complexity
 // but also might add complexity in constructing objects multiple times?
 func ScrapeRemoteModel(owner, name string) (*RemoteModel, error) {
-	s := NewScraper()
-	prs, err := s.FetchPullRequests(owner, name)
-	if err != nil {
-		return nil, fmt.Errorf("Failed to fetch pull requests for GitHub model: %w", err)
-	}
-
-	issues, err := s.FetchIssues(owner, name)
-	if err != nil {
-		return nil, fmt.Errorf("Failed to fetch issues for GitHub model: %w", err)
-	}
-
-	url, err := s.FetchURL(owner, name)
-	if err != nil {
-		return nil, fmt.Errorf("Failed to fetch URL for GitHub model: %w", err)
-	}
-
-	committers, err := s.FetchCommitters(owner, name)
-	if err != nil {
-		return nil, fmt.Errorf("Failed to fetch committers for GitHub model: %w", err)
-	}
-
 	ghm := RemoteModel{
 		Owner:        owner,
 		Name:         name,
-		URL:          url,
-		PullRequests: prs,
-		Issues:       issues,
-		Committers:   committers,
+		URL:          "",
+		PullRequests: nil,
+		Issues:       nil,
+		Committers:   nil,
+	}
+
+	s := NewScraper()
+
+	var err error
+	var wg sync.WaitGroup
+
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
+	errCh := make(chan error)
+	waitCh := make(chan struct{})
+
+	wg.Add(1)
+	go func() {
+		ghm.PullRequests, err = s.FetchPullRequests(ctx, owner, name)
+		if err != nil {
+			errCh <- fmt.Errorf("Failed to fetch issues for GitHub model: %w", err)
+		}
+		wg.Done()
+	}()
+
+	wg.Add(1)
+	go func() {
+		ghm.Issues, err = s.FetchIssues(ctx, owner, name)
+		if err != nil {
+			errCh <- fmt.Errorf("Failed to fetch issues for GitHub model: %w", err)
+		}
+		wg.Done()
+	}()
+
+	wg.Add(1)
+	go func() {
+		ghm.URL, err = s.FetchURL(ctx, owner, name)
+		if err != nil {
+			errCh <- fmt.Errorf("Failed to fetch issues for GitHub model: %w", err)
+		}
+		wg.Done()
+	}()
+
+	wg.Add(1)
+	go func() {
+		ghm.Committers, err = s.FetchCommitters(ctx, owner, name)
+		if err != nil {
+			errCh <- fmt.Errorf("Failed to fetch issues for GitHub model: %w", err)
+		}
+		wg.Done()
+	}()
+
+	go func() {
+		wg.Wait()
+		close(waitCh)
+	}()
+
+	select {
+	case <-waitCh:
+		// All done
+	case err := <-errCh:
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	return &ghm, nil
