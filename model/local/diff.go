@@ -2,16 +2,14 @@ package local
 
 import (
 	"fmt"
-	"regexp"
 	"strings"
 
 	"github.com/go-git/go-git/v5/plumbing/format/diff"
 	"github.com/go-git/go-git/v5/plumbing/object"
+	"github.com/scorpionknifes/go-pcre"
 )
 
-var (
-	splitLinesRegexp = regexp.MustCompile(`[^\n]*(\n|$)`)
-)
+var splitLinesRegexp = pcre.MustCompileJIT(`[^\n]*(\n|$)`, 0, pcre.STUDY_JIT_COMPILE)
 
 func FetchDiffs(patch *object.Patch) ([]Diff, error) {
 	filePatches := patch.FilePatches()
@@ -23,25 +21,27 @@ func FetchDiffs(patch *object.Patch) ([]Diff, error) {
 
 		var name string
 		from, to := fp.Files()
-		if from == nil {
+
+		switch {
+		case from == nil:
 			// New File is created.
 			name = to.Path()
-		} else if to == nil {
+		case to == nil:
 			// File is deleted.
 			name = from.Path()
-		} else if from.Path() != to.Path() {
+		case from.Path() != to.Path():
 			// File is renamed. Not supported.
 			// cs.Name = fmt.Sprintf("%s => %s", from.Path(), to.Path())
-		} else {
+		default:
 			name = from.Path()
 		}
-
 		if len(chunks) == 0 {
 			// chunk len == 0 means patch is binary.
 			diffs = append(diffs, Diff{
 				Name:     name,
 				IsBinary: fp.IsBinary(),
 			})
+
 			continue
 		}
 
@@ -92,11 +92,7 @@ func Defragment(chunks []diff.Chunk) (string, string, string, error) {
 		}
 	}
 
-	equal := equalSb.String()
-	add := addSb.String()
-	delete := deleteSb.String()
-
-	return equal, add, delete, nil
+	return equalSb.String(), addSb.String(), deleteSb.String(), nil
 }
 
 func DefragmentToDiffPoint(chunks []diff.Chunk) ([]DiffPoint, error) {
@@ -106,7 +102,10 @@ func DefragmentToDiffPoint(chunks []diff.Chunk) ([]DiffPoint, error) {
 	toLine := 0
 
 	for i, chunk := range chunks {
-		lines := splitLines(chunk.Content())
+		lines, err := splitLines(chunk.Content())
+		if err != nil {
+			return nil, fmt.Errorf("failed to split lines: %w", err)
+		}
 		nLines := len(lines)
 
 		s := chunk.Content()
@@ -149,10 +148,20 @@ func DefragmentToDiffPoint(chunks []diff.Chunk) ([]DiffPoint, error) {
 	return diffPoints, nil
 }
 
-func splitLines(s string) []string {
-	out := splitLinesRegexp.FindAllString(s, -1)
-	if out[len(out)-1] == "" {
-		out = out[:len(out)-1]
+func splitLines(s string) ([]string, error) {
+	matches, err := splitLinesRegexp.FindAll(s, 0)
+	if err != nil {
+		return nil, fmt.Errorf("failed to find all: %w", err)
 	}
-	return out
+
+	if matches[len(matches)-1].Finding == "" {
+		matches = matches[:len(matches)-1]
+	}
+
+	lines := make([]string, len(matches))
+	for i, m := range matches {
+		lines[i] = m.Finding
+	}
+
+	return lines, nil
 }

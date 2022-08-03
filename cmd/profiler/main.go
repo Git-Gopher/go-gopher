@@ -19,7 +19,7 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-const repoName = "assignment-3-and-project-team-01"
+const repoName = "assignment-3-and-project-team-05"
 
 // var (
 // 	cpuprofile = flag.String("cpuprofile", "cpu.prof", "write cpu profile to `file`")

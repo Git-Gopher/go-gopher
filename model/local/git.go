@@ -133,7 +133,7 @@ func NewCommit(r *git.Repository, c *object.Commit) *Commit {
 		if err != nil {
 			return nil
 		}
-		err = iter.ForEach(func(o *object.Tree) error {
+		if err := iter.ForEach(func(o *object.Tree) error {
 			changes, err := o.Diff(&object.Tree{Hash: plumbing.NewHash(EmptyTreeHash)})
 			if err != nil {
 				return fmt.Errorf("failed to fetch tree root diff: %w", err)
@@ -151,9 +151,7 @@ func NewCommit(r *git.Repository, c *object.Commit) *Commit {
 			diffs = append(diffs, diff...)
 
 			return err
-		})
-
-		if err != nil {
+		}); err != nil {
 			return nil
 		}
 	} else {
