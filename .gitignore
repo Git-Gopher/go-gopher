@@ -1,5 +1,7 @@
 # project
 /.env
+options.yml
+prof/
 **/cache.json
 **/__debug_bin
 **/*.csv

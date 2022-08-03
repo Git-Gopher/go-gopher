@@ -2,83 +2,157 @@ package local
 
 import (
 	"fmt"
+	"regexp"
 	"strings"
 
-	"github.com/bluekeyes/go-gitdiff/gitdiff"
+	"github.com/go-git/go-git/v5/plumbing/format/diff"
 	"github.com/go-git/go-git/v5/plumbing/object"
 )
 
-func FetchDiffs(patch *object.Patch) ([]Diff, error) {
-	files, _, err := gitdiff.Parse(strings.NewReader(patch.String()))
-	if err != nil {
-		return nil, fmt.Errorf("Failed to parse diff: %w", err)
-	}
-	diffs := make([]Diff, len(files))
-	for i, f := range files {
-		equal, added, deleted, err := Defragment(f.TextFragments)
-		if err != nil {
-			return nil, fmt.Errorf("Failed to defragment diffs: %w", err)
-		}
+var (
+	splitLinesRegexp = regexp.MustCompile(`[^\n]*(\n|$)`)
+)
 
-		diffPoints, err := DefragmentToDiffPoint(f.TextFragments)
-		if err != nil {
-			return nil, fmt.Errorf("Failed to defragment diff points: %w", err)
-		}
+func FetchDiffs(patch *object.Patch) ([]Diff, error) {
+	filePatches := patch.FilePatches()
+
+	diffs := make([]Diff, 0)
+
+	for _, fp := range filePatches {
+		chunks := fp.Chunks()
 
 		var name string
-		if f.IsNew || f.IsRename {
-			name = f.NewName
+		from, to := fp.Files()
+		if from == nil {
+			// New File is created.
+			name = to.Path()
+		} else if to == nil {
+			// File is deleted.
+			name = from.Path()
+		} else if from.Path() != to.Path() {
+			// File is renamed. Not supported.
+			// cs.Name = fmt.Sprintf("%s => %s", from.Path(), to.Path())
 		} else {
-			name = f.OldName
+			name = from.Path()
 		}
 
-		diffs[i] = Diff{
-			Name: name,
-			// XXX: IsBinary doesn't pick up well, use zero text fragments as a approximation
-			IsBinary: f.IsBinary || len(f.TextFragments) == 0,
+		if len(chunks) == 0 {
+			// chunk len == 0 means patch is binary.
+			diffs = append(diffs, Diff{
+				Name:     name,
+				IsBinary: fp.IsBinary(),
+			})
+			continue
+		}
+
+		equal, added, deleted, err := Defragment(chunks)
+		if err != nil {
+			return nil, fmt.Errorf("failed to defragment: %w", err)
+		}
+
+		diffPoints, err := DefragmentToDiffPoint(chunks)
+		if err != nil {
+			return nil, fmt.Errorf("failed to defragment to diff point: %w", err)
+		}
+
+		diffs = append(diffs, Diff{
+			Name:     name,
 			Addition: added,
 			Deletion: deleted,
 			Equal:    equal,
 
 			Points: diffPoints,
-		}
+		})
 	}
 
 	return diffs, nil
 }
 
-func Defragment(fragment []*gitdiff.TextFragment) (equal, added, deleted string, err error) {
-	for _, f := range fragment {
-		for _, l := range f.Lines {
-			switch l.Op {
-			case gitdiff.LineOp(Equal):
-				equal += l.Line
-			case gitdiff.LineOp(Add):
-				added += l.Line
-			case gitdiff.LineOp(Delete):
-				deleted += l.Line
-			default:
-				return "", "", "", ErrUnknownLineOp
-			}
+func Defragment(chunks []diff.Chunk) (string, string, string, error) {
+	var addSb strings.Builder
+	var deleteSb strings.Builder
+	var equalSb strings.Builder
+
+	for _, chunk := range chunks {
+		s := chunk.Content()
+		if len(s) == 0 {
+			continue
+		}
+
+		switch chunk.Type() {
+		case diff.Add:
+			addSb.WriteString(s)
+			addSb.WriteString("\n")
+		case diff.Delete:
+			deleteSb.WriteString(s)
+			deleteSb.WriteString("\n")
+		case diff.Equal:
+			equalSb.WriteString(s)
+			equalSb.WriteString("\n")
 		}
 	}
 
-	return equal, added, deleted, nil
+	equal := equalSb.String()
+	add := addSb.String()
+	delete := deleteSb.String()
+
+	return equal, add, delete, nil
 }
 
-func DefragmentToDiffPoint(fragments []*gitdiff.TextFragment) ([]DiffPoint, error) {
-	diffPoints := make([]DiffPoint, len(fragments))
-	for i, f := range fragments {
+func DefragmentToDiffPoint(chunks []diff.Chunk) ([]DiffPoint, error) {
+	diffPoints := make([]DiffPoint, len(chunks))
+
+	fromLine := 0
+	toLine := 0
+
+	for i, chunk := range chunks {
+		lines := splitLines(chunk.Content())
+		nLines := len(lines)
+
+		s := chunk.Content()
+		if len(s) == 0 {
+			diffPoints[i] = DiffPoint{}
+
+			continue
+		}
+
+		linesAdded := 0
+		linesDeleted := 0
+
+		switch chunk.Type() {
+		case diff.Add:
+			fromLine += nLines
+			toLine += nLines
+			linesAdded = nLines
+		case diff.Delete:
+			if nLines != 0 {
+				fromLine++
+			}
+			fromLine += nLines - 1
+			linesDeleted = nLines
+		case diff.Equal:
+			if nLines != 0 {
+				toLine++
+			}
+			toLine += nLines - 1
+		}
+
 		point := DiffPoint{
-			OldPosition:  f.OldPosition,
-			OldLines:     f.OldLines,
-			NewPosition:  f.NewPosition,
-			NewLines:     f.NewLines,
-			LinesAdded:   f.LinesAdded,
-			LinesDeleted: f.LinesDeleted,
+			OldPosition:  int64(fromLine),
+			NewPosition:  int64(toLine),
+			LinesAdded:   int64(linesAdded),
+			LinesDeleted: int64(linesDeleted),
 		}
 		diffPoints[i] = point
 	}
 
 	return diffPoints, nil
+}
+
+func splitLines(s string) []string {
+	out := splitLinesRegexp.FindAllString(s, -1)
+	if out[len(out)-1] == "" {
+		out = out[:len(out)-1]
+	}
+	return out
 }
