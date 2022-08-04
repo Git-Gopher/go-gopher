@@ -6,6 +6,7 @@ import (
 	"os"
 	"runtime"
 	"runtime/pprof"
+	"time"
 
 	"github.com/Git-Gopher/go-gopher/assess"
 	"github.com/Git-Gopher/go-gopher/assess/markers/analysis"
@@ -18,9 +19,16 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
+const repoName = "assignment-3-and-project-team-01"
+
+// var (
+// 	cpuprofile = flag.String("cpuprofile", "cpu.prof", "write cpu profile to `file`")
+// 	memprofile = flag.String("memprofile", "mem.prof", "write memory profile to `file`")
+// )
+
 var (
-	cpuprofile = flag.String("cpuprofile", "cpu.prof", "write cpu profile to `file`")
-	memprofile = flag.String("memprofile", "mem.prof", "write memory profile to `file`")
+	cpuprofile = flag.String("cpuprofile", fmt.Sprintf("prof/%s-cpu.prof", repoName), "write cpu profile to `file`")
+	memprofile = flag.String("memprofile", fmt.Sprintf("prof/%s-mem.prof", repoName), "write memory profile to `file`")
 )
 
 func main() {
@@ -47,7 +55,7 @@ func main() {
 		PadLevelText: true,
 	})
 
-	err := fetch("https://github.com/GitWorkflowPractice/assignment-3-and-project-team-05")
+	err := fetch("https://github.com/GitWorkflowPractice/" + repoName)
 	if err != nil {
 		log.Panicf("failed to fetch: %s", err)
 	}
@@ -103,6 +111,8 @@ func fetch(githubURL string) error {
 	o := LoadOptions(log.StandardLogger())
 	analyzers := assess.LoadAnalyzer(o)
 
+	start := time.Now()
+
 	candidates := assess.RunMarker(
 		analysis.MarkerCtx{
 			Model:        enrichedModel,
@@ -111,6 +121,9 @@ func fetch(githubURL string) error {
 		},
 		analyzers,
 	)
+
+	elapsed := time.Since(start)
+	log.Infof("Ran marker in %s", elapsed)
 
 	for _, candidate := range candidates {
 		log.Printf("#### @%s ####\n", candidate.Username)

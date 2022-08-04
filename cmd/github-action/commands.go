@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"os"
+	"strings"
 
 	"github.com/Git-Gopher/go-gopher/cache"
 	"github.com/Git-Gopher/go-gopher/markup"
@@ -101,19 +102,19 @@ func workflowSummary(authors utils.Authors, v, c, t int, vs []violation.Violatio
 		}
 	}
 
-	var vsd string
+	var vSd strings.Builder
 	for _, v := range violations {
-		vsd += v.Display(authors)
+		vSd.WriteString(v.Display(authors))
 	}
-	markup.Group("Violations", vsd)
+	markup.Group("Violations", vSd.String())
 
-	var ssd string
+	var sSd strings.Builder
 	for _, v := range suggestions {
-		ssd += v.Display(authors)
+		sSd.WriteString(v.Display(authors))
 	}
-	markup.Group("Suggestions", ssd)
+	markup.Group("Suggestions", sSd.String())
 
-	var asd string
+	var aSd strings.Builder
 	counts := make(map[string]int)
 	for _, v := range vs {
 		email := v.Email()
@@ -125,13 +126,13 @@ func workflowSummary(authors utils.Authors, v, c, t int, vs []violation.Violatio
 	}
 
 	for login, count := range counts {
-		asd += fmt.Sprintf("%s: %d\n", login, count)
+		aSd.WriteString(fmt.Sprintf("%s: %d\n", login, count))
 	}
 
-	asd += fmt.Sprintf("violated: %d\n", v)
-	asd += fmt.Sprintf("count: %d\n", c)
-	asd += fmt.Sprintf("total: %d\n", t)
-	markup.Group("Summary", asd)
+	aSd.WriteString(fmt.Sprintf("violated: %d\n", v))
+	aSd.WriteString(fmt.Sprintf("count: %d\n", c))
+	aSd.WriteString(fmt.Sprintf("total: %d\n", t))
+	markup.Group("Summary", aSd.String())
 }
 
 // Helper function to create a markdown summary of the violations.

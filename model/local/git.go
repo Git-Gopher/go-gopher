@@ -68,10 +68,7 @@ type Diff struct {
 
 type DiffPoint struct {
 	OldPosition int64
-	OldLines    int64
-
 	NewPosition int64
-	NewLines    int64
 
 	LinesAdded   int64
 	LinesDeleted int64
@@ -136,29 +133,25 @@ func NewCommit(r *git.Repository, c *object.Commit) *Commit {
 		if err != nil {
 			return nil
 		}
-		err = iter.ForEach(func(o *object.Tree) error {
-			var patch *object.Patch
-			var changes object.Changes
-			var diff []Diff
-
-			changes, err = o.Diff(&object.Tree{Hash: plumbing.NewHash(EmptyTreeHash)})
+		if err := iter.ForEach(func(o *object.Tree) error {
+			changes, err := o.Diff(&object.Tree{Hash: plumbing.NewHash(EmptyTreeHash)})
 			if err != nil {
 				return fmt.Errorf("failed to fetch tree root diff: %w", err)
 			}
-			patch, err = changes.Patch()
+
+			patch, err := changes.Patch()
 			if err != nil {
 				return fmt.Errorf("failed to fetch root patch: %w", err)
 			}
-			diff, err = FetchDiffs(patch)
+
+			diff, err := FetchDiffs(patch)
 			if err != nil {
 				return fmt.Errorf("failed to fetch root diff: %w", err)
 			}
 			diffs = append(diffs, diff...)
 
 			return err
-		})
-
-		if err != nil {
+		}); err != nil {
 			return nil
 		}
 	} else {
@@ -254,6 +247,7 @@ func NewGitModel(repo *git.Repository) (*GitModel, error) {
 	}
 
 	// Branches
+	branches := []plumbing.Hash{}
 	bIter, err := repo.Branches()
 	if err != nil {
 		return nil, fmt.Errorf("Failed to retrieve branches from repository: %w", err)
@@ -262,6 +256,7 @@ func NewGitModel(repo *git.Repository) (*GitModel, error) {
 		if b == nil {
 			return fmt.Errorf("NewGitModel branch: %w", ErrBranchEmpty)
 		}
+		branches = append(branches, b.Hash())
 
 		var c *object.Commit
 		c, err = repo.CommitObject(b.Hash())
@@ -291,20 +286,6 @@ func NewGitModel(repo *git.Repository) (*GitModel, error) {
 	gitModel.MainGraph.BranchName = ref.Hash().String()
 
 	// BranchMatrix
-	branches := []plumbing.Hash{}
-	bIter, err = repo.Branches()
-	if err != nil {
-		return nil, fmt.Errorf("Failed to retrieve branches from repository: %w", err)
-	}
-	_ = bIter.ForEach(func(b *plumbing.Reference) error {
-		if b == nil {
-			return nil
-		}
-		branches = append(branches, b.Hash())
-
-		return nil
-	})
-
 	gitModel.BranchMatrix, err = CreateBranchMatrix(repo, branches)
 	if err != nil {
 		return nil, fmt.Errorf("Failed to create branch matrix: %w", err)

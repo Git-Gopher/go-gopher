@@ -34,7 +34,7 @@ type PageInfo struct {
 }
 
 // nolint
-func (s *Scraper) FetchIssueComments(owner, name string, number int, cursor string) ([]*Comment, error) {
+func (s *Scraper) FetchIssueComments(ctx context.Context, owner, name string, number int, cursor string) ([]*Comment, error) {
 	var q struct {
 		Repository struct {
 			Issue struct {
@@ -66,7 +66,7 @@ func (s *Scraper) FetchIssueComments(owner, name string, number int, cursor stri
 	}
 
 	for {
-		if err := s.Client.Query(context.Background(), &q, variables); err != nil {
+		if err := s.Client.Query(ctx, &q, variables); err != nil {
 			return nil, fmt.Errorf("Failed to fetch additional pull request closing issues references: %w", err)
 		}
 
@@ -94,7 +94,13 @@ func (s *Scraper) FetchIssueComments(owner, name string, number int, cursor stri
 	return all, nil
 }
 
-func (s *Scraper) FetchPullRequestClosingIssues(owner, name string, number int, cursor string) ([]*Issue, error) {
+func (s *Scraper) FetchPullRequestClosingIssues(
+	ctx context.Context,
+	owner,
+	name string,
+	number int,
+	cursor string,
+) ([]*Issue, error) {
 	var q struct {
 		Repository struct {
 			PullRequest struct {
@@ -127,7 +133,7 @@ func (s *Scraper) FetchPullRequestClosingIssues(owner, name string, number int, 
 	}
 
 	for {
-		if err := s.Client.Query(context.Background(), q, variables); err != nil {
+		if err := s.Client.Query(ctx, q, variables); err != nil {
 			return nil, fmt.Errorf("Failed to fetch additional pull request closing issues references: %w", err)
 		}
 
@@ -157,7 +163,7 @@ func (s *Scraper) FetchPullRequestClosingIssues(owner, name string, number int, 
 }
 
 // nolint
-func (s *Scraper) FetchPullRequestComments(owner, name string, number int, cursor string) ([]*Comment, error) {
+func (s *Scraper) FetchPullRequestComments(ctx context.Context, owner, name string, number int, cursor string) ([]*Comment, error) {
 	var q struct {
 		Repository struct {
 			PullRequest struct {
@@ -189,7 +195,7 @@ func (s *Scraper) FetchPullRequestComments(owner, name string, number int, curso
 	}
 
 	for {
-		if err := s.Client.Query(context.Background(), q, variables); err != nil {
+		if err := s.Client.Query(ctx, q, variables); err != nil {
 			return nil, fmt.Errorf("Failed to fetch additional pull request closing issues references: %v", err)
 		}
 
@@ -217,7 +223,7 @@ func (s *Scraper) FetchPullRequestComments(owner, name string, number int, curso
 	return all, nil
 }
 
-func (s *Scraper) FetchIssues(owner, name string) ([]*Issue, error) {
+func (s *Scraper) FetchIssues(ctx context.Context, owner, name string) ([]*Issue, error) {
 	var q struct {
 		Repository struct {
 			Issues struct {
@@ -266,7 +272,7 @@ func (s *Scraper) FetchIssues(owner, name string) ([]*Issue, error) {
 	}
 
 	for {
-		if err := s.Client.Query(context.Background(), &q, variables); err != nil {
+		if err := s.Client.Query(ctx, &q, variables); err != nil {
 			return nil, fmt.Errorf("Failed to fetch issues: %w", err)
 		}
 
@@ -306,7 +312,7 @@ func (s *Scraper) FetchIssues(owner, name string) ([]*Issue, error) {
 			}
 
 			if is.Comments.PageInfo.HasNextPage {
-				acs, err := s.FetchPullRequestComments(owner, name, is.Number,
+				acs, err := s.FetchPullRequestComments(ctx, owner, name, is.Number,
 					string(is.Comments.PageInfo.EndCursor))
 				if err != nil {
 					return nil, fmt.Errorf("Failed to fetch issue comments: %w", err)
@@ -327,7 +333,7 @@ func (s *Scraper) FetchIssues(owner, name string) ([]*Issue, error) {
 }
 
 // Fetch all pull requests associated with the repository.
-func (s *Scraper) FetchPullRequests(owner, name string) ([]*PullRequest, error) {
+func (s *Scraper) FetchPullRequests(ctx context.Context, owner, name string) ([]*PullRequest, error) {
 	var q struct {
 		Repository struct {
 			PullRequests struct {
@@ -410,7 +416,7 @@ func (s *Scraper) FetchPullRequests(owner, name string) ([]*PullRequest, error) 
 	}
 
 	for {
-		if err := s.Client.Query(context.Background(), &q, variables); err != nil {
+		if err := s.Client.Query(ctx, &q, variables); err != nil {
 			return nil, fmt.Errorf("Failed to fetch pull requests: %w", err)
 		}
 
@@ -454,7 +460,7 @@ func (s *Scraper) FetchPullRequests(owner, name string) ([]*PullRequest, error) 
 			}
 
 			if mpr.ClosingIssuesReferences.PageInfo.HasNextPage {
-				acir, err := s.FetchPullRequestClosingIssues(owner, name, pr.Number,
+				acir, err := s.FetchPullRequestClosingIssues(ctx, owner, name, pr.Number,
 					string(mpr.ClosingIssuesReferences.PageInfo.EndCursor))
 				if err != nil {
 					return nil, fmt.Errorf("Failed to fetch pull request closing issue references: %w", err)
@@ -480,7 +486,7 @@ func (s *Scraper) FetchPullRequests(owner, name string) ([]*PullRequest, error) 
 			}
 
 			if mpr.Comments.PageInfo.HasNextPage {
-				acs, err := s.FetchPullRequestComments(owner, name, pr.Number,
+				acs, err := s.FetchPullRequestComments(ctx, owner, name, pr.Number,
 					string(mpr.Comments.PageInfo.EndCursor))
 				if err != nil {
 					return nil, fmt.Errorf("Failed to fetch pull request comments: %w", err)
@@ -521,7 +527,7 @@ func (s *Scraper) FetchPullRequests(owner, name string) ([]*PullRequest, error) 
 
 // Fetch basic information that doesn't require pagnation (url).
 // Although this can be constructed from the owner and name I would rather fetch it.
-func (s *Scraper) FetchURL(owner, name string) (string, error) {
+func (s *Scraper) FetchURL(ctx context.Context, owner, name string) (string, error) {
 	var q struct {
 		Repository struct {
 			Url string
@@ -533,7 +539,7 @@ func (s *Scraper) FetchURL(owner, name string) (string, error) {
 		"name":  githubv4.String(name),
 	}
 
-	if err := s.Client.Query(context.Background(), &q, variables); err != nil {
+	if err := s.Client.Query(ctx, &q, variables); err != nil {
 		return "", fmt.Errorf("Failed to fetch pull requests: %w", err)
 	}
 
@@ -541,7 +547,7 @@ func (s *Scraper) FetchURL(owner, name string) (string, error) {
 }
 
 // FetchCommitters, get all committers from a repo.
-func (s *Scraper) FetchCommitters(owner, name string) ([]Committer, error) {
+func (s *Scraper) FetchCommitters(ctx context.Context, owner, name string) ([]Committer, error) {
 	var q struct {
 		Repository struct {
 			DefaultBranchRef struct {
@@ -580,7 +586,7 @@ func (s *Scraper) FetchCommitters(owner, name string) ([]Committer, error) {
 	}
 
 	for {
-		if err := s.Client.Query(context.Background(), &q, variables); err != nil {
+		if err := s.Client.Query(ctx, &q, variables); err != nil {
 			return nil, fmt.Errorf("Failed to fetch committers: %w", err)
 		}
 

@@ -8,6 +8,7 @@ import (
 	"io/ioutil"
 	"os"
 	"path/filepath"
+	"strings"
 
 	"github.com/Git-Gopher/go-gopher/cache"
 	"github.com/Git-Gopher/go-gopher/config"
@@ -446,19 +447,19 @@ func workflowSummary(authors utils.Authors, v, c, t int, vs []violation.Violatio
 		}
 	}
 
-	var vsd string
+	var vSb strings.Builder
 	for _, v := range violations {
-		vsd += v.Display(authors)
+		vSb.WriteString(v.Display(authors))
 	}
-	markup.Group("Violations", vsd)
+	markup.Group("Violations", vSb.String())
 
-	var ssd string
+	var sSb strings.Builder
 	for _, v := range suggestions {
-		ssd += v.Display(authors)
+		sSb.WriteString(v.Display(authors))
 	}
-	markup.Group("Suggestions", ssd)
+	markup.Group("Suggestions", sSb.String())
 
-	var asd string
+	var aSb strings.Builder
 	counts := make(map[string]int)
 	for _, v := range vs {
 		email := v.Email()
@@ -470,13 +471,13 @@ func workflowSummary(authors utils.Authors, v, c, t int, vs []violation.Violatio
 	}
 
 	for login, count := range counts {
-		asd += fmt.Sprintf("%s: %d\n", login, count)
+		aSb.WriteString(fmt.Sprintf("%s: %d\n", login, count))
 	}
 
-	asd += fmt.Sprintf("violated: %d\n", v)
-	asd += fmt.Sprintf("count: %d\n", c)
-	asd += fmt.Sprintf("total: %d\n", t)
-	markup.Group("Summary", asd)
+	aSb.WriteString(fmt.Sprintf("violated: %d\n", v))
+	aSb.WriteString(fmt.Sprintf("count: %d\n", c))
+	aSb.WriteString(fmt.Sprintf("total: %d\n", t))
+	markup.Group("Summary", aSb.String())
 }
 
 // Fetch custom or default config. Fatal on bad custom config.
