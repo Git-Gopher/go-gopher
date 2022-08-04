@@ -6,22 +6,29 @@ Github flow has several rules associated with proper usage, however your grade w
 
 Categories are categories under which you will be marked and will appear on your marking transcript. Categories collect a series of rules that will be enabled or disabled for marking depending on which phase (Alpha, Beta, Final Project) of the project you are working in.
 
-| Category       | Rule                        | Alpha | Beta | Final Project |
+## Violations
+
+| Category       | Rule                  | Alpha | Beta | Final Project |
+| -------------- | --------------------- | ----- | ---- | ------------- |
+| Commit         | No Binaries           | ✓     | ✓    | ✓             |
+| Commit         | Empty Commits         | ✓     | ✓    | ✓             |
+| Commit Message | Short Commit Message  | ✓     | ✓    | ✓             |
+| Branching      | Stale Branch          |       |      | ✓             |
+| Pull Request   | Feature Branching     |       | ✓    | ✓             |
+| Pull Request   | Approved Pull Request |       | ✓    | ✓             |
+| General        | Force Pushes          |       | ✓    | ✓             |
+| General        | Unresolved Commit     | ✓     | ✓    | ✓             |
+
+## Suggestions
+
+Suggestions are **NOT** marked at all for any of your project phases. These are just useful etiquettes
+| Category | Rule | Alpha | Beta | Final Project |
 | -------------- | --------------------------- | ----- | ---- | ------------- |
-| Commit         | Commit Atomicity            | ✓     | ✓    | ✓             |
-| Commit         | No Binaries                 | ✓     | ✓    | ✓             |
-| Commit         | Empty Commits               | ✓     | ✓    | ✓             |
-| Commit Message | Commit Message Matches Diff |       | ✓    | ✓             |
-| Commit Message | Short Commit Message        | ✓     | ✓    | ✓             |
-| Branching      | Stale Branch                |       |      | ✓             |
-| Branching      | Consistent Branch Name      |       | ✓    | ✓             |
-| Pull Request   | Feature Branching           |       | ✓    | ✓             |
-| Pull Request   | Linked Pull Request Issue   |       | ✓    | ✓             |
-| Pull Request   | Approved Pull Request       |       | ✓    | ✓             |
-| Pull Request   | Resolved Conversations      |       | ✓    | ✓             |
-| Pull Request   | Constructive Feedback       |       | ✓    | ✓             |
-| General        | Force Pushes                |       | ✓    | ✓             |
-| General        | Unresolved Commit           | ✓     | ✓    | ✓             |
+| Commit | Commit Atomicity | | | |
+| Commit Message | Commit Message Matches Diff | | | |
+| Branching | Consistent Branch Name | | | |
+| Pull Request | Linked Pull Request Issue | | | |
+| Pull Request | Resolved Conversations | | | |
 
 ## Outline
 
