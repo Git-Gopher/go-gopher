@@ -63,7 +63,7 @@ type Diff struct {
 	Addition string
 	Deletion string
 
-	Points []DiffPoint
+	Points []DiffPoint `json:"-"`
 }
 
 type DiffPoint struct {
@@ -80,18 +80,17 @@ type Commit struct {
 	// Hash of the commit object.
 	Hash Hash
 	// TreeHash is the hash of the root tree of the commit.
-	TreeHash Hash
+	TreeHash Hash `json:"-"`
 	// ParentHashes are the hashes of the parent commits of the commit.
-	ParentHashes []Hash
+	ParentHashes []Hash `json:"-"`
 	// Author is the original author of the commit.
 	Author Signature
 	// Committer is the one performing the commit, might be different from Author.
-	Committer Signature
+	Committer Signature `json:"-"`
 	// Message is the commit message, contains arbitrary text.
-	Message string
-	// TODO: Import go-git types
+	Message       string
 	Content       string
-	DiffToParents []Diff
+	DiffToParents []Diff `json:"-"`
 }
 
 type Committer struct {

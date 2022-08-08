@@ -1,7 +1,7 @@
 package discord
 
 import (
-	"encoding/base64"
+	"errors"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -10,24 +10,14 @@ import (
 )
 
 var (
-	Token     = "TVRBd05qQXhOVEkzTnpBMk16azVPVFV3T1EuRzNtLWFHLnNac3RUNi1icnBMWTEtZzVlMnl6Q25nVVdvN28wX2NlakdNSkNz"
-	ChannelID = "1006004369990369352"
+	ErrDiscordTokenNotSet = errors.New("DISCORD_TOKEN is not set")
+	ChannelID             = "1006004369990369352"
 )
 
-// Just so that nobody can run strings on our binary.
-func DecodeToken() (string, error) {
-	data, err := base64.StdEncoding.DecodeString(Token)
-	if err != nil {
-		return "", fmt.Errorf("failed to decode token: %w", err)
-	}
-
-	return string(data), nil
-}
-
 func SendLog(filename string) error {
-	token, err := DecodeToken()
-	if err != nil {
-		return fmt.Errorf("failed to decode token: %w", err)
+	token := os.Getenv("DISCORD_TOKEN")
+	if token == "" {
+		return ErrDiscordTokenNotSet
 	}
 
 	dg, err := discordgo.New("Bot " + token)

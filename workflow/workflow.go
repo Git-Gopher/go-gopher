@@ -315,11 +315,12 @@ func (w *Workflow) WriteLog(em enriched.EnrichedModel, cfg *config.Config) (stri
 	}
 
 	type log struct {
+		Name       string         `json:"name"`
+		URL        string         `json:"url"`
 		Date       time.Time      `json:"date"`
+		Violations []logViolation `json:"violations"`
 		Workflow   Workflow       `json:"workflow"`
 		Config     config.Config  `json:"config"`
-		Violations []logViolation `json:"violations"`
-		// Model      enriched.EnrichedModel `json:"model"`
 	}
 
 	LogViolations := make([]logViolation, len(w.Violations))
@@ -346,11 +347,12 @@ func (w *Workflow) WriteLog(em enriched.EnrichedModel, cfg *config.Config) (stri
 	}
 
 	l := log{
+		Name:       em.Name,
+		URL:        em.URL,
 		Date:       time.Now(),
+		Violations: LogViolations,
 		Workflow:   *w,
 		Config:     *cfg,
-		Violations: LogViolations,
-		// Model:      em,
 	}
 
 	bytes, err := json.MarshalIndent(l, "", "")

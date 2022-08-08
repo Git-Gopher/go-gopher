@@ -121,7 +121,9 @@ func main() {
 				}
 
 				err = discord.SendLog(fn)
-				fmt.Printf("discord err: %v\n", err)
+				if err != nil {
+					log.Fatalf("Could not send log: %v", err)
+				}
 
 				return nil
 			},
