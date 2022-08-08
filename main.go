@@ -236,7 +236,7 @@ func main() {
 		},
 		{
 			Name:  "team",
-			Usage: "Add wqsz7xn and scorpionknives as team members to each repository within the organization",
+			Usage: "Add wqsz7xn and scorpionknifes as team members to each repository within the organization",
 			Action: func(ctx *cli.Context) error {
 				utils.Environment(".env")
 				orgName := ctx.Args().Get(0)
@@ -260,11 +260,33 @@ func main() {
 				}
 
 				slug := "git-gopher"
+				perm := "pull"
 
 				team, res, err := client.Teams.GetTeamBySlug(ctx.Context, orgName, slug)
 				if res.StatusCode == 200 || team != nil {
-					log.Fatalf("Team %s for organization %s already exists", slug, orgName)
+					log.Printf("Team %s for organization %s already exists. Adding team to all new repositories (duplicates don't matter)...", slug, orgName)
+					repos, _, err := client.Repositories.ListByOrg(ctx.Context, orgName, nil)
+					if err != nil {
+						log.Fatalf("Failed to fetch repositories for organization: %v", err)
+					}
+					count := 0
+					for _, r := range repos {
+
+						res, err := client.Teams.AddTeamRepoByID(ctx.Context, *org.ID, *team.ID, orgName, *r.Name, &github.TeamAddTeamRepoOptions{
+							Permission: perm,
+						})
+						if res.StatusCode != 204 || err != nil {
+							log.Fatalf("Failed to add team to repository: %v", err)
+						}
+						count += 1
+						log.Printf("Added team %s to repository %s", slug, *r.Name)
+					}
+
+					log.Printf("Added team %s to %d repositories", slug, count)
+
+					return nil
 				}
+
 				if err != nil {
 					log.Fatalf("Failed to fetch team by slug: %s, %v", res.Status, err)
 				}
@@ -282,7 +304,6 @@ func main() {
 					repoNames = append(repoNames, *r.FullName)
 				}
 
-				perms := "push"
 				description := "Read access for Git-Gopher to download logs from private repos"
 				privacy := "secret"
 
@@ -290,7 +311,7 @@ func main() {
 				team, r, err := client.Teams.CreateTeam(ctx.Context, orgName, github.NewTeam{
 					Name:        slug,
 					Description: &description,
-					Permission:  &perms,
+					Permission:  &perm,
 					Privacy:     &privacy,
 					RepoNames:   repoNames,
 				})
