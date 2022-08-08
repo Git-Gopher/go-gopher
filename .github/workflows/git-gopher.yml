@@ -8,7 +8,7 @@ env:
 
 jobs:
   action:
-    runs-on: ubuntu-latest
+    runs-on: gitgopher/ubuntu:latest
     steps:
       - name: Checkout
         uses: actions/checkout@v3
