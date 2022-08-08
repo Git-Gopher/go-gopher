@@ -17,7 +17,7 @@ func NewBinaryViolation(
 			name:     "BinaryViolation",
 			email:    email,
 			time:     time,
-			severity: Suggestion,
+			severity: Violated,
 		},
 		file: file,
 	}
