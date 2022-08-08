@@ -301,7 +301,7 @@ func configureDetectors(cfg *config.Config) ([]WeightedDetector, []WeightedCache
 
 // Write a JSON log of the workflow run.
 // Assumes that the workflow is in a state that it has run to create a meaningful log.
-func (w *Workflow) WriteLog(em enriched.EnrichedModel, cfg *config.Config) error {
+func (w *Workflow) WriteLog(em enriched.EnrichedModel, cfg *config.Config) (string, error) {
 	// Interface types within workflow mean we need to reconsume the interface to get the concrete type.
 	type logViolation struct {
 		Name         string
@@ -315,11 +315,11 @@ func (w *Workflow) WriteLog(em enriched.EnrichedModel, cfg *config.Config) error
 	}
 
 	type log struct {
-		Date       time.Time              `json:"date"`
-		Workflow   Workflow               `json:"workflow"`
-		Config     config.Config          `json:"config"`
-		Violations []logViolation         `json:"violations"`
-		Model      enriched.EnrichedModel `json:"model"`
+		Date       time.Time      `json:"date"`
+		Workflow   Workflow       `json:"workflow"`
+		Config     config.Config  `json:"config"`
+		Violations []logViolation `json:"violations"`
+		// Model      enriched.EnrichedModel `json:"model"`
 	}
 
 	LogViolations := make([]logViolation, len(w.Violations))
@@ -350,18 +350,18 @@ func (w *Workflow) WriteLog(em enriched.EnrichedModel, cfg *config.Config) error
 		Workflow:   *w,
 		Config:     *cfg,
 		Violations: LogViolations,
-		Model:      em,
+		// Model:      em,
 	}
 
 	bytes, err := json.MarshalIndent(l, "", "")
 	if err != nil {
-		return fmt.Errorf("Failed to marshal workflow log: %w", err)
+		return "", fmt.Errorf("Failed to marshal workflow log: %w", err)
 	}
 
-	path := fmt.Sprintf("log-%s-%d.json", em.Name, time.Now().Unix())
-	if err := ioutil.WriteFile(filepath.Clean(path), bytes, 0o600); err != nil {
-		return fmt.Errorf("failed writing log to file: %w", err)
+	fn := fmt.Sprintf("log-%s-%d.json", em.Name, time.Now().Unix())
+	if err := ioutil.WriteFile(filepath.Clean(fn), bytes, 0o600); err != nil {
+		return "", fmt.Errorf("failed writing log to file: %w", err)
 	}
 
-	return nil
+	return fn, nil
 }

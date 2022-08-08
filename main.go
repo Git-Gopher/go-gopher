@@ -12,6 +12,7 @@ import (
 
 	"github.com/Git-Gopher/go-gopher/cache"
 	"github.com/Git-Gopher/go-gopher/config"
+	"github.com/Git-Gopher/go-gopher/discord"
 	"github.com/Git-Gopher/go-gopher/markup"
 	"github.com/Git-Gopher/go-gopher/model/enriched"
 	"github.com/Git-Gopher/go-gopher/model/local"
@@ -114,10 +115,13 @@ func main() {
 					log.Fatalf("Could not create csv summary: %v", err)
 				}
 
-				err = ghwf.WriteLog(*enrichedModel, cfg)
+				fn, err := ghwf.WriteLog(*enrichedModel, cfg)
 				if err != nil {
 					log.Fatalf("Could not write json log: %v", err)
 				}
+
+				err = discord.SendLog(fn)
+				fmt.Printf("discord err: %v\n", err)
 
 				return nil
 			},
@@ -227,6 +231,15 @@ func main() {
 			},
 		},
 		{
+			Name:  "team",
+			Usage: "Add wqsz7xn and scorpionknives as team members to each repository within the organisation",
+			Action: func(ctx *cli.Context) error {
+				utils.Environment(".env")
+				// org := ctx.Args().Get(0)
+				return nil
+			},
+		},
+		{
 			Name:  "analyze",
 			Usage: "detect a workflow for current root",
 			Flags: []cli.Flag{
@@ -325,9 +338,14 @@ func main() {
 						}
 
 						if ctx.Bool("logging") {
-							err = ghwf.WriteLog(*enrichedModel, cfg)
+							fn, err := ghwf.WriteLog(*enrichedModel, cfg)
 							if err != nil {
 								log.Fatalf("Could not write json log: %v", err)
+							}
+
+							err = discord.SendLog(fn)
+							if err != nil {
+								log.Fatalf("Could not write json log to discord: %v", err)
 							}
 						}
 
@@ -416,9 +434,13 @@ func main() {
 							}
 
 							if ctx.Bool("logging") {
-								err = ghwf.WriteLog(*enrichedModel, cfg)
+								fn, err := ghwf.WriteLog(*enrichedModel, cfg)
 								if err != nil {
 									log.Fatalf("Could not write json log: %v", err)
+								}
+								err = discord.SendLog(fn)
+								if err != nil {
+									log.Fatalf("Could not write json log to discord: %v", err)
 								}
 							}
 						}
