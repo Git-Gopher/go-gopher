@@ -30,6 +30,8 @@ import (
 	"golang.org/x/oauth2"
 )
 
+var TeamDevs = []string{"wqsz7xn", "scorpionknifes"}
+
 //nolint
 func main() {
 	app := cli.NewApp()
@@ -234,10 +236,77 @@ func main() {
 		},
 		{
 			Name:  "team",
-			Usage: "Add wqsz7xn and scorpionknives as team members to each repository within the organisation",
+			Usage: "Add wqsz7xn and scorpionknives as team members to each repository within the organization",
 			Action: func(ctx *cli.Context) error {
 				utils.Environment(".env")
-				// org := ctx.Args().Get(0)
+				orgName := ctx.Args().Get(0)
+
+				githubToken := os.Getenv("GITHUB_TOKEN")
+				if githubToken == "" {
+					log.Fatalf("GITHUB_TOKEN environment variable is not set")
+				}
+
+				ts := oauth2.StaticTokenSource(
+					&oauth2.Token{AccessToken: os.Getenv("GITHUB_TOKEN")},
+				)
+				tc := oauth2.NewClient(ctx.Context, ts)
+				client := github.NewClient(tc)
+
+				log.Printf("Fetching organization %s...\n", orgName)
+
+				org, _, err := client.Organizations.Get(ctx.Context, orgName)
+				if err != nil {
+					log.Fatalf("Could not fetch orginization: %v", err)
+				}
+
+				slug := "git-gopher"
+
+				team, res, err := client.Teams.GetTeamBySlug(ctx.Context, orgName, slug)
+				if res.StatusCode == 200 || team != nil {
+					log.Fatalf("Team %s for organization %s already exists", slug, orgName)
+				}
+				if err != nil {
+					log.Fatalf("Failed to fetch team by slug: %s, %v", res.Status, err)
+				}
+
+				if team != nil {
+					log.Fatalf("Team %s already exists, exiting...", slug)
+				}
+
+				var repoNames []string
+				repos, _, err := client.Repositories.ListByOrg(ctx.Context, orgName, nil)
+				if err != nil {
+					log.Fatalf("Failed to fetch repositories for organization: %v", err)
+				}
+				for _, r := range repos {
+					repoNames = append(repoNames, *r.FullName)
+				}
+
+				perms := "push"
+				description := "Read access for Git-Gopher to download logs from private repos"
+				privacy := "secret"
+
+				log.Printf("Creating team %s for organization %s...", slug, orgName)
+				team, r, err := client.Teams.CreateTeam(ctx.Context, orgName, github.NewTeam{
+					Name:        slug,
+					Description: &description,
+					Permission:  &perms,
+					Privacy:     &privacy,
+					RepoNames:   repoNames,
+				})
+
+				if r.StatusCode != 201 || err != nil {
+					log.Fatalf("Could not create team for organization : %s, %v", r.Status, err)
+				}
+
+				for _, u := range TeamDevs {
+					log.Printf("Adding user %s to team %s...", u, slug)
+					client.Teams.AddTeamMembershipByID(ctx.Context, *org.ID, *team.ID, u,
+						&github.TeamAddTeamMembershipOptions{
+							Role: "maintainer",
+						})
+				}
+
 				return nil
 			},
 		},
