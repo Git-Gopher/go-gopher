@@ -17,7 +17,7 @@ func NewEmptyCommitViolation(
 			name:     "EmptyCommitViolation",
 			email:    email,
 			time:     time,
-			severity: Suggestion,
+			severity: Violated,
 		},
 		commit: commit,
 	}

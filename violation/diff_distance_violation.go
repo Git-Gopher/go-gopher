@@ -13,7 +13,7 @@ func NewExtremeDiffDistanceViolation(commit markup.Commit, email string, time ti
 			name:     "ExtremeDiffDistanceViolation",
 			email:    email,
 			time:     time,
-			severity: Violated,
+			severity: Suggestion,
 		},
 		commit: commit,
 	}
@@ -28,7 +28,7 @@ func NewMildDiffDistanceViolation(commit markup.Commit, email string, time time.
 			name:     "MildDiffDistanceViolation",
 			email:    email,
 			time:     time,
-			severity: Violated,
+			severity: Suggestion,
 		},
 		commit: commit,
 	}

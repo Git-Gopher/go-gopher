@@ -58,45 +58,44 @@ func (prd *PullRequestDetector) Name() string {
 
 // Github Workflow: Pull requests must have at least one associated issue.
 func PullRequestIssueDetector() (string, PullRequestDetect) {
-	return "PullRequestIssueDetector", func(pullRequest *remote.PullRequest) (bool, violation.Violation, error) {
-		if len(pullRequest.ClosingIssues) == 0 {
-			return false, nil, nil
+	return "PullRequestIssueDetector", func(pr *remote.PullRequest) (bool, violation.Violation, error) {
+		if len(pr.ClosingIssues) == 0 {
+			return true, violation.NewLinkedIssueViolation(pr.Url), nil
 		}
 
-		return true, nil, nil
+		return false, nil, nil
 	}
 }
 
 func PullRequestApprovalDetector() (string, PullRequestDetect) {
-	return "PullRequestApprovalDetector", func(pullRequest *remote.PullRequest) (bool, violation.Violation, error) {
+	return "PullRequestApprovalDetector", func(pr *remote.PullRequest) (bool, violation.Violation, error) {
 		// Ignore unmerged pull requests.
-		if pullRequest.Merged {
-			return true, nil, nil
-		}
-
-		// XXX: Create enum
-		if pullRequest.ReviewDecision != "APPROVED" {
+		if !pr.Merged {
 			return false, nil, nil
 		}
 
-		return true, nil, nil
+		if pr.ReviewDecision != "APPROVED" {
+			return true, violation.NewApprovalViolation(pr.Url), nil
+		}
+
+		return false, nil, nil
 	}
 }
 
 // All reviews threads should be marked as resolved before merging.
 func PullRequestReviewThreadDetector() (string, PullRequestDetect) {
-	return "PullRequestReviewThreadDetector", func(pullRequest *remote.PullRequest) (bool, violation.Violation, error) {
+	return "PullRequestReviewThreadDetector", func(pr *remote.PullRequest) (bool, violation.Violation, error) {
 		// Ignore unmerged pull requests.
-		if pullRequest.Merged {
-			return true, nil, nil
+		if pr.Merged {
+			return false, nil, nil
 		}
 
-		for _, thread := range pullRequest.ReviewThreads {
+		for _, thread := range pr.ReviewThreads {
 			if !thread.IsResolved {
-				return false, nil, nil
+				return true, violation.NewUnresolvedConversationViolation(pr.Url), nil
 			}
 		}
 
-		return true, nil, nil
+		return false, nil, nil
 	}
 }

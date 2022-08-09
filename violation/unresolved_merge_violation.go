@@ -17,7 +17,7 @@ func NewUnresolvedMergeViolation(
 			name:     "UnresolvedMergeViolation",
 			email:    email,
 			time:     time,
-			severity: Suggestion,
+			severity: Violated,
 		},
 		line: line,
 	}
