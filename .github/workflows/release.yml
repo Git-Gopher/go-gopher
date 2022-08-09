@@ -33,7 +33,7 @@ jobs:
           version: latest
           files: |
             bin/*
-          args: -9v --ultra-brute
+          args: -9v
       - name: Release
         env:
           GITHUB_TOKEN: "${{ secrets.RELEASE_REPO_SECRET }}"
