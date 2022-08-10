@@ -2,17 +2,19 @@ package violation
 
 import (
 	"fmt"
+
+	"github.com/Git-Gopher/go-gopher/markup"
 )
 
 func NewApprovalViolation(
-	url string,
+	pr markup.PR,
 ) *ApprovalViolation {
 	violation := &ApprovalViolation{
 		violation: violation{
 			name:     "PullRequestApprovalViolation",
 			severity: Violated,
 		},
-		url: url,
+		pr: pr,
 	}
 	violation.display = &display{violation}
 
@@ -23,12 +25,12 @@ func NewApprovalViolation(
 type ApprovalViolation struct {
 	violation
 	*display
-	url string
+	pr markup.PR
 }
 
 // Message implements Violation.
 func (pra *ApprovalViolation) Message() string {
-	return fmt.Sprintf("Pull request at %s was not reviewed before it was merged", pra.url)
+	return fmt.Sprintf("Pull request at %s was not reviewed before it was merged", pra.pr.Markdown())
 }
 
 // Suggestion implements Violation.

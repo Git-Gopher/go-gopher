@@ -2,17 +2,19 @@ package violation
 
 import (
 	"fmt"
+
+	"github.com/Git-Gopher/go-gopher/markup"
 )
 
 func NewLinkedIssueViolation(
-	url string,
+	pr markup.PR,
 ) *LinkedIssueViolation {
 	violation := &LinkedIssueViolation{
 		violation: violation{
 			name:     "LinkedIssueViolation",
 			severity: Violated,
 		},
-		url: url,
+		pr: pr,
 	}
 	violation.display = &display{violation}
 
@@ -22,12 +24,12 @@ func NewLinkedIssueViolation(
 type LinkedIssueViolation struct {
 	violation
 	*display
-	url string
+	pr markup.PR
 }
 
 // Message implements Violation.
 func (liv *LinkedIssueViolation) Message() string {
-	return fmt.Sprintf("Pull request at %s does not contain a linked issue", liv.url)
+	return fmt.Sprintf("Pull request at %s does not contain a linked issue", liv.pr.Markdown())
 }
 
 // Suggestion implements Violation.
