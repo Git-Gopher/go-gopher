@@ -40,5 +40,6 @@ func (um *UnresolvedMergeViolation) Message() string {
 
 // Suggestion implements Violation.
 func (um *UnresolvedMergeViolation) Suggestion() (string, error) {
-	return "Resolve conflicts before committing", nil
+	return "Resolve conflicts before committing. " +
+		"This ensures that the project is not left in a broken state for others", nil
 }

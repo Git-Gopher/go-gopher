@@ -105,6 +105,26 @@ func (p PR) Markdown() string {
 	return fmt.Sprintf("[%s](%s)", p.String(), p.Link())
 }
 
+// Issue - Issue link.
+type Issue struct {
+	GitHubLink
+	Number int
+}
+
+func (i Issue) String() string {
+	return fmt.Sprintf("#%d", i.Number)
+}
+
+func (i Issue) Link() string {
+	return fmt.Sprintf("https://github.com/%s/issues/%d",
+		i.GitHubLink.String(),
+		i.Number)
+}
+
+func (i Issue) Markdown() string {
+	return fmt.Sprintf("[%s](%s)", i.String(), i.Link())
+}
+
 // File - File link.
 type File struct {
 	Commit   Commit

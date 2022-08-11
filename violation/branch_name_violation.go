@@ -50,5 +50,7 @@ func (bn *BranchNameViolation) Suggestion() (string, error) {
 		return "", ErrViolationMethodNotExist
 	}
 
-	return fmt.Sprintf("All branch names should consistent with the substring \"%s\" ", bn.substring), nil
+	return fmt.Sprintf("Try to group together branch names by using a prefix that indicates "+
+		"the type of change that the branch contains. For example \"fix/\" or \"feature/\" are "+
+		"good prefixes to branch names. Current longest prefix your branches have is \"%s\"", bn.substring), nil
 }

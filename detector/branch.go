@@ -77,13 +77,17 @@ func (b *BranchDetector) Name() string {
 
 // GithubWorklow: Branches are considered stale after three months.
 func StaleBranchDetect() (string, BranchDetect) {
-	secondsInMonth := 2600640
-	staleBranchTime := time.Hour * 24 * 30
+	// NOTE: Course is currently using 2 weeks as stale branch time because of the short life of the project.
+	// We should make this configurable in the future!
+	secondsInWeek := 604800
+	staleBranchTime := time.Hour * 24 * 14 // 14 days
+
+	// secondsInMonth := 2600640
 
 	return "StaleBranchDetect", func(c *common, branch *local.Branch) (bool, violation.Violation, error) {
 		if time.Since(branch.Head.Committer.When) > staleBranchTime {
 			email := branch.Head.Committer.Email
-			monthsSince := utils.RoundTime(time.Since(branch.Head.Committer.When).Seconds() / float64(secondsInMonth))
+			monthsSince := utils.RoundTime(time.Since(branch.Head.Committer.When).Seconds() / float64(secondsInWeek))
 
 			return true, violation.NewStaleBranchViolation(
 				markup.Branch{

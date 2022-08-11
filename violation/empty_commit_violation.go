@@ -43,6 +43,6 @@ func (ecv *EmptyCommitViolation) Message() string {
 
 // Suggestion implements Violation.
 func (ecv *EmptyCommitViolation) Suggestion() (string, error) {
-	return `Try not make empty commits to the project 
-		as it makes it seem like you are forging or padding your version history`, nil
+	return "Try not make empty commits to the project" +
+		"as it makes it seem like you are forging or padding your version history", nil
 }

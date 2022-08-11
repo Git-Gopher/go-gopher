@@ -1,12 +1,13 @@
 package detector
 
 import (
+	"github.com/Git-Gopher/go-gopher/markup"
 	"github.com/Git-Gopher/go-gopher/model/enriched"
 	"github.com/Git-Gopher/go-gopher/model/remote"
 	"github.com/Git-Gopher/go-gopher/violation"
 )
 
-type PullRequestDetect func(pullRequest *remote.PullRequest) (bool, violation.Violation, error)
+type PullRequestDetect func(c *common, pullRequest *remote.PullRequest) (bool, violation.Violation, error)
 
 // XXX: violated, found, total should be contained within a struct and then added to this instead as a composite struct.
 type PullRequestDetector struct {
@@ -30,9 +31,10 @@ func NewPullRequestDetector(name string, detect PullRequestDetect) *PullRequestD
 }
 
 func (pd *PullRequestDetector) Run(model *enriched.EnrichedModel) error {
+	c := common{owner: model.Owner, repo: model.Name}
 	for _, pr := range model.PullRequests {
 		pr := pr
-		detected, violation, err := pd.detect(pr)
+		detected, violation, err := pd.detect(&c, pr)
 		pd.total++
 		if err != nil {
 			return err
@@ -58,9 +60,16 @@ func (prd *PullRequestDetector) Name() string {
 
 // Github Workflow: Pull requests must have at least one associated issue.
 func PullRequestIssueDetector() (string, PullRequestDetect) {
-	return "PullRequestIssueDetector", func(pr *remote.PullRequest) (bool, violation.Violation, error) {
+	return "PullRequestIssueDetector", func(c *common, pr *remote.PullRequest) (bool, violation.Violation, error) {
 		if len(pr.ClosingIssues) == 0 {
-			return true, violation.NewLinkedIssueViolation(pr.Url), nil
+			return true, violation.NewLinkedIssueViolation(
+				markup.PR{
+					Number: pr.Number,
+					GitHubLink: markup.GitHubLink{
+						Owner: c.owner,
+						Repo:  c.repo,
+					},
+				}), nil
 		}
 
 		return false, nil, nil
@@ -68,14 +77,21 @@ func PullRequestIssueDetector() (string, PullRequestDetect) {
 }
 
 func PullRequestApprovalDetector() (string, PullRequestDetect) {
-	return "PullRequestApprovalDetector", func(pr *remote.PullRequest) (bool, violation.Violation, error) {
+	return "PullRequestApprovalDetector", func(c *common, pr *remote.PullRequest) (bool, violation.Violation, error) {
 		// Ignore unmerged pull requests.
 		if !pr.Merged {
 			return false, nil, nil
 		}
 
 		if pr.ReviewDecision != "APPROVED" {
-			return true, violation.NewApprovalViolation(pr.Url), nil
+			return true, violation.NewApprovalViolation(
+				markup.PR{
+					Number: pr.Number,
+					GitHubLink: markup.GitHubLink{
+						Owner: c.owner,
+						Repo:  c.repo,
+					},
+				}), nil
 		}
 
 		return false, nil, nil
@@ -84,7 +100,7 @@ func PullRequestApprovalDetector() (string, PullRequestDetect) {
 
 // All reviews threads should be marked as resolved before merging.
 func PullRequestReviewThreadDetector() (string, PullRequestDetect) {
-	return "PullRequestReviewThreadDetector", func(pr *remote.PullRequest) (bool, violation.Violation, error) {
+	return "PullRequestReviewThreadDetector", func(c *common, pr *remote.PullRequest) (bool, violation.Violation, error) {
 		// Ignore unmerged pull requests.
 		if pr.Merged {
 			return false, nil, nil
@@ -92,7 +108,14 @@ func PullRequestReviewThreadDetector() (string, PullRequestDetect) {
 
 		for _, thread := range pr.ReviewThreads {
 			if !thread.IsResolved {
-				return true, violation.NewUnresolvedConversationViolation(pr.Url), nil
+				return true, violation.NewUnresolvedConversationViolation(
+					markup.PR{
+						Number: pr.Number,
+						GitHubLink: markup.GitHubLink{
+							Owner: c.owner,
+							Repo:  c.repo,
+						},
+					}), nil
 			}
 		}
 

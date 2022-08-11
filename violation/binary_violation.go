@@ -42,7 +42,7 @@ func (bv *BinaryViolation) Message() string {
 
 // Suggestion implements Violation.
 func (bv *BinaryViolation) Suggestion() (string, error) {
-	return `Git projects should aim to not include binary files.
-	  Binary files should be added to the project .gitignore file and the 
-	  file removed from the working tree using \"git rm --cached <file>\"`, nil
+	return "Git projects should aim to not include binary files. " +
+		"Binary files should be added to the project .gitignore file and the " +
+		"file removed from the working tree using \"git rm --cached <file>\"", nil
 }
