@@ -6,7 +6,7 @@ go-gopher is a git workflow analysis tool to check cohesion to popular git workf
 
 1. Ensure that the project [environment](#environment) file is filled out
 2. Run `make` in the root of the project directory to create the project binaries that will output to `bin/`
-4. Run the binary `./bin/go-gopher help` to display help.
+3. Run the binary `./bin/go-gopher help` to display help.
 
 A good starting point is to navigate to a git project and run the go-gopher tool: `go-gopher analyze local ./ --csv`
 
@@ -14,9 +14,9 @@ A good starting point is to navigate to a git project and run the go-gopher tool
 
 Environment variables are defined in the `.env` which should be created from the [`.env.example`](.env.example) template.
 
-| Environment variables | Description                                                                           |
-| --------------------- | ------------------------------------------------------------------------------------- |
-| GITHUB_TOKEN          | Used in accessing GitHub's GraphQL API, requires read access to repositories          |
+| Environment variables | Description                                                                  |
+| --------------------- | ---------------------------------------------------------------------------- |
+| GITHUB_TOKEN          | Used in accessing GitHub's GraphQL API, requires read access to repositories |
 
 ## Configuration
 

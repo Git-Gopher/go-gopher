@@ -7,6 +7,7 @@ import (
 	"strings"
 
 	"github.com/Git-Gopher/go-gopher/cache"
+	"github.com/Git-Gopher/go-gopher/discord"
 	"github.com/Git-Gopher/go-gopher/markup"
 	"github.com/Git-Gopher/go-gopher/model"
 	"github.com/Git-Gopher/go-gopher/model/enriched"
@@ -86,6 +87,19 @@ func actionCommand(cCtx *cli.Context) error {
 
 	summary := markdownSummary(authors, violations)
 	markup.Outputs("pr_summary", summary)
+
+	fn, err := ghwf.WriteLog(*enrichedModel, cfg)
+	if err != nil {
+		log.Printf("Could not write json log: %v", err)
+
+		return nil
+	}
+
+	if err = discord.SendLog(fn); err != nil {
+		log.Printf("Could not write json log to discord: %v", err)
+
+		return nil
+	}
 
 	return nil
 }

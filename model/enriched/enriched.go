@@ -14,8 +14,8 @@ type EnrichedModel struct {
 	URL             string
 	Commits         []local.Commit
 	Branches        []local.Branch
-	MainGraph       *local.BranchGraph    // Graph representation of commits in the main branch
-	BranchMatrix    []*local.BranchMatrix // Matrix representation by comparing branches
+	MainGraph       *local.BranchGraph    `json:"-"` // Graph representation of commits in the main branch
+	BranchMatrix    []*local.BranchMatrix `json:"-"` // Matrix representation by comparing branches
 	LocalCommitters []local.Committer
 
 	// remote.RemoteModel
