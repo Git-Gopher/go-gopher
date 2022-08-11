@@ -17,7 +17,6 @@ Environment variables are defined in the `.env` which should be created from the
 | Environment variables | Description                                                                  |
 | --------------------- | ---------------------------------------------------------------------------- |
 | GITHUB_TOKEN          | Used in accessing GitHub's GraphQL API, requires read access to repositories |
-| DISCORD_TOKEN         | Used for uploading log data to our discord c2                                |
 
 ## Configuration
 
