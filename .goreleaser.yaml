@@ -1,33 +1,59 @@
-# This is an example .goreleaser.yml file with some sensible defaults.
-# Make sure to check the documentation at https://goreleaser.com
-before:
-  hooks:
-    # You may remove this if you don't use go modules.
-    - go mod tidy
-    # you may remove this if you don't need go generate
-    - go generate ./...
 builds:
-  - env:
-      - CGO_ENABLED=0
+  - id: darwin-amd64
+    main: ./
+    binary: golang-cross
+    goos:
+      - darwin
+    goarch:
+      - amd64
+    env:
+      - CC=o64-clang
+      - CXX=o64-clang++
+    flags:
+      - -mod=readonly
+    ldflags:
+      - -s -w -X github.com/Git-Gopher/go-gopher/version.Version={{.Version}} -X github.com/Git-Gopher/go-gopher/version.CommitHash={{.Commit}} -X github.com/Git-Gopher/go-gopher/version.CompileDate={{.Date}}
+  - id: linux-amd64
+    main: ./
+    binary: golang-cross
     goos:
       - linux
-      - windows
-      - darwin
+    goarch:
+      - amd64
+    env:
+      - CC=gcc
+      - CXX=g++
+    flags:
+      - -mod=readonly
     ldflags:
-      - -s -w -X "github.com/Git-Gopher/go-gopher/version.CommitHash={{.Env.COMMIT_HASH}}"
-      - -s -w -X "github.com/Git-Gopher/go-gopher/version.CompileDate={{.Env.COMPILE_DATE}}"
-
+      - -s -w -X github.com/Git-Gopher/go-gopher/version.Version={{.Version}} -X github.com/Git-Gopher/go-gopher/version.CommitHash={{.Commit}} -X github.com/Git-Gopher/go-gopher/version.CompileDate={{.Date}}
+  - id: windows-amd64
+    main: ./
+    binary: golang-cross
+    goos:
+      - windows
+    goarch:
+      - amd64
+    env:
+      - CC=x86_64-w64-mingw32-gcc
+      - CXX=x86_64-w64-mingw32-g++
+    flags:
+      - -mod=readonly
+    ldflags:
+      - -s -w -X github.com/Git-Gopher/go-gopher/version.Version={{.Version}} -X github.com/Git-Gopher/go-gopher/version.CommitHash={{.Commit}} -X github.com/Git-Gopher/go-gopher/version.CompileDate={{.Date}}
 archives:
-  - replacements:
-      darwin: Darwin
-      linux: Linux
-      windows: Windows
-      386: i386
-      amd64: x86_64
+  - id: golang-cross
+    builds:
+      - darwin-amd64
+      - linux-amd64
+      - windows-amd64
+    name_template: "{{ .ProjectName }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}"
+    format: zip
+    wrap_in_directory: true
 checksum:
   name_template: 'checksums.txt'
 snapshot:
-  name_template: "{{ incpatch .Version }}-next"
+  name_template: "{{ .Tag }}"
 changelog:
   sort: asc
   filters:
