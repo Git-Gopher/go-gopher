@@ -35,6 +35,6 @@ func (pra *ApprovalViolation) Message() string {
 
 // Suggestion implements Violation.
 func (pra *ApprovalViolation) Suggestion() (string, error) {
-	return `Try to approve pull requests before they are merged. 
-		This gives your peers opportunity to look over your code and suggest improvements.`, nil
+	return "Try to approve pull requests before they are merged. " +
+		"This gives your peers opportunity to look over your code and suggest improvements", nil
 }

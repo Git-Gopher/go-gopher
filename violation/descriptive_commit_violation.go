@@ -50,7 +50,7 @@ func (dvc *DescriptiveCommitViolation) Message() string {
 
 // Suggestion implements Violation.
 func (dvc *DescriptiveCommitViolation) Suggestion() (string, error) {
-	return `Try to add more detail to commit messages that relate to the contents of a commit. 
-		Ideally you should be able to look at the message and know the nature of the changes 
-		that have occurred within the project`, nil
+	return "Try to add more detail to commit messages that relate to the contents of a commit. " +
+		"Ideally you should be able to look at the message and know the nature of the changes " +
+		"that have occurred within the project", nil
 }

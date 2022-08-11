@@ -50,7 +50,7 @@ func (sc *DiffDistanceViolation) Message() string {
 }
 
 func (sc *DiffDistanceViolation) Suggestion() (string, error) {
-	return `Commits should aim to tackle one problem at a time. Try to break down your tasks into achievable 
-		subtasks and create a commit when you feel that the subtask has been completed. This way you may revert 
-		to any stage of your task at any point without loosing the progress of multiple changes`, nil
+	return "Commits should aim to tackle one problem at a time. Try to break down your tasks into achievable " +
+		"subtasks and create a commit when you feel that the subtask has been completed. This way you may revert " +
+		"to any stage of your task at any point without loosing the progress of multiple changes", nil
 }

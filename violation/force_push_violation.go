@@ -54,5 +54,5 @@ func (f *ForcePushViolation) Suggestion() (string, error) {
 		commits[i] = commit.Markdown()
 	}
 
-	return fmt.Sprintf(format, strings.Join(commits, ",\n")), nil
+	return fmt.Sprintf(format, strings.Join(commits, ",")), nil
 }

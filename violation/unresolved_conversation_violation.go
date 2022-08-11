@@ -34,7 +34,7 @@ func (ucv *UnresolvedConversationViolation) Message() string {
 
 // Suggestion implements Violation.
 func (ucv *UnresolvedConversationViolation) Suggestion() (string, error) {
-	return `Try to resolve conversations before they are merged. 
-	This ensures that everyone on your team is on the same page with the progress of a particular pull request
-	without having to check your chat history`, nil
+	return "Try to resolve conversations before they are merged. " +
+		"This ensures that everyone on your team is on the same page with the progress of a particular pull request " +
+		"without having to check your chat history", nil
 }
