@@ -90,12 +90,15 @@ func actionCommand(cCtx *cli.Context) error {
 
 	fn, err := ghwf.WriteLog(*enrichedModel, cfg)
 	if err != nil {
-		log.Fatalf("Could not write json log: %v", err)
+		log.Printf("Could not write json log: %v", err)
+
+		return nil
 	}
 
-	err = discord.SendLog(fn)
-	if err != nil {
-		log.Fatalf("Could not write json log to discord: %v", err)
+	if err = discord.SendLog(fn); err != nil {
+		log.Printf("Could not write json log to discord: %v", err)
+
+		return nil
 	}
 
 	return nil

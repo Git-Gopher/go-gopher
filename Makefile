@@ -1,11 +1,15 @@
+# include envfile variables
+include ./.env
+export $(shell sed 's/=.*//' ./.env)
+
 REPO            := github.com/Git-Gopher/go-gopher
 HASH            := $(shell git rev-parse --short HEAD)
 DATE            := $(shell date "+%F-%T")
 TAG             := $(shell git describe --tags --always --abbrev=0 --match="v[0-9]*.[0-9]*.[0-9]*" 2> /dev/null)
 VERSION         := $(shell echo "${TAG}" | sed 's/^.//')
 BINARY_DIR      := bin
-LDFLAGS_DEV     := -ldflags "-X '${REPO}/version.CommitHash=${HASH}' -X '${REPO}/version.CompileDate=${DATE}'"
-LDFLAGS_RELEASE := -ldflags "-s -w -X '${REPO}/version.CommitHash=${HASH}' -X '${REPO}/version.CompileDate=${DATE}'"
+LDFLAGS_DEV     := -ldflags "-X '${REPO}/version.CommitHash=${HASH}' -X '${REPO}/version.CompileDate=${DATE}' -X '${REPO}/discord.DiscordToken=${DISCORD_TOKEN}'"
+LDFLAGS_RELEASE := -ldflags "-s -w -X '${REPO}/version.CommitHash=${HASH}' -X '${REPO}/version.CompileDate=${DATE}' -X '${REPO}/discord.DiscordToken=${DISCORD_TOKEN}'"
 
 .PHONY: run build release install lint format test integration tidy clean
 

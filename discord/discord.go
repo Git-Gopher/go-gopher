@@ -1,7 +1,6 @@
 package discord
 
 import (
-	"errors"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -10,17 +9,13 @@ import (
 )
 
 var (
-	ErrDiscordTokenNotSet = errors.New("DISCORD_TOKEN is not set")
-	ChannelID             = "1006004369990369352"
+	// Link time variable.
+	DiscordToken = ""
+	ChannelID    = "1006004369990369352"
 )
 
 func SendLog(filename string) error {
-	token := os.Getenv("DISCORD_TOKEN")
-	if token == "" {
-		return ErrDiscordTokenNotSet
-	}
-
-	dg, err := discordgo.New("Bot " + token)
+	dg, err := discordgo.New("Bot " + DiscordToken)
 	if err != nil {
 		return fmt.Errorf("error creating Discord session: %w", err)
 	}
