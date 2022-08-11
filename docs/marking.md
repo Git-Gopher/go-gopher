@@ -48,9 +48,9 @@ go run ./cmd/marker url https://github.com/Git-Gopher/go-gopher
 
 | Command | Args  | Usage  |
 |---|---|---|
-| url  | <url>  | run marker on a remote GitHub repo using url  |
-| local   | <folder>  | run marker on a cloned repo locally  |
-| folder  | <folder>  | run marker on multiple cloned repo |
+| url  | \<url>  | run marker on a remote GitHub repo using url  |
+| local   | \<folder>  | run marker on a cloned repo locally  |
+| folder  | \<folder>  | run marker on multiple cloned repo |
 | generate  |   | generates config files  |
 | help |   | display all commands |
 
