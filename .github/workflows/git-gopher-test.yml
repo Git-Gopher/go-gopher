@@ -41,7 +41,6 @@ jobs:
           ./bin/go-gopher-github-action
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          DISCORD_TOKEN: ${{ secrets.DISCORD_TOKEN }}
       - name: Artifact outputs
         uses: actions/upload-artifact@v3
         with:
