@@ -39,7 +39,7 @@ func main() {
 			Category:  "Marker",
 			Usage:     "grade a single local repository",
 			UsageText: "go-gopher-marker local <path> - grade local repository",
-			ArgsUsage: "[folder]",
+			ArgsUsage: "<folder>",
 			Action:    LoadFlags(cmd.SingleLocalCommand),
 		},
 		{
@@ -48,7 +48,7 @@ func main() {
 			Category:  "Marker",
 			Usage:     "grade a folder of repositories",
 			UsageText: "go-gopher-marker folder <path> - grade folder of repositories",
-			ArgsUsage: "[folder]",
+			ArgsUsage: "<folder>",
 			Action:    LoadFlags(cmd.FolderLocalCommand),
 		},
 		{

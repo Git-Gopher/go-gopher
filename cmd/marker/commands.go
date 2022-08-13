@@ -120,12 +120,15 @@ func (c *Cmds) FolderLocalCommand(cCtx *cli.Context, flags *Flags) error {
 	ctx, cancel := context.WithCancel(context.Background())
 	repoChan := make(chan string, runtime.NumCPU())
 
+	wg.Add(1)
+
 	// Load repos into channel.
 	go func() {
 		for _, repo := range repos {
 			wg.Add(1)
 			repoChan <- repo
 		}
+		wg.Done()
 	}()
 
 	for i := 0; i < runtime.NumCPU()-1; i++ {
