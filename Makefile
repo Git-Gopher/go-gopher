@@ -7,7 +7,7 @@ BINARY_DIR      := bin
 LDFLAGS_DEV     := -ldflags "-X '${REPO}/version.CommitHash=${HASH}' -X '${REPO}/version.CompileDate=${DATE}'"
 LDFLAGS_RELEASE := -ldflags "-s -w -X '${REPO}/version.CommitHash=${HASH}' -X '${REPO}/version.CompileDate=${DATE}'"
 
-.PHONY: run build release install lint format test integration tidy clean
+.PHONY: run build release install lint format test integration tidy clean release-windows release-macos release-linux
 
 run: build
 	go run .
@@ -21,10 +21,40 @@ build:
 
 release:
 	mkdir -p ${BINARY_DIR}
-	go build ${LDFLAGS_RELEASE} -v -o ${BINARY_DIR}/go-gopher 
-	go build ${LDFLAGS_RELEASE} -v -o ${BINARY_DIR}/go-gopher-cli ./cmd/cli/ 
-	go build ${LDFLAGS_RELEASE} -v -o ${BINARY_DIR}/go-gopher-marker ./cmd/marker/  
-	go build ${LDFLAGS_RELEASE} -v -o ${BINARY_DIR}/go-gopher-github-action ./cmd/github-action/  
+	$(MAKE) release-linux
+	$(MAKE) release-macos
+	$(MAKE) release-windows
+
+release-windows:
+	@GOOS=windows
+	@GOARCH=amd64
+
+	echo "Building $GOOS-$GOARCH"
+
+	@GOOS=${GOOS} GOARCH=${GOARCH} go build ${LDFLAGS_RELEASE} -o ${BINARY_DIR}/go-gopher-cli-${GOOS}-${GOARCH}.exe ./cmd/cli
+	@go build ${LDFLAGS_RELEASE} -o ${BINARY_DIR}/go-gopher-marker-${GOOS}-${GOARCH}.exe ./cmd/marker
+	@go build ${LDFLAGS_RELEASE} -o ${BINARY_DIR}/go-gopher-github-action-${GOOS}-${GOARCH}.exe ./cmd/github-action
+
+release-macos:
+	export GOOS=darwin
+	export GOARCH=amd64
+
+	@echo Building $$GOOS-$$GOARCH
+
+	@go build ${LDFLAGS_RELEASE} -o ${BINARY_DIR}/go-gopher-cli-${GOOS}-${GOARCH} ./cmd/cli
+	@go build ${LDFLAGS_RELEASE} -o ${BINARY_DIR}/go-gopher-marker-${GOOS}-${GOARCH} ./cmd/marker
+	@go build ${LDFLAGS_RELEASE} -o ${BINARY_DIR}/go-gopher-github-action-${GOOS}-${GOARCH} ./cmd/github-action
+
+release-linux:
+	export GOOS=linux
+	export GOARCH=amd64
+
+	@echo Building $$GOOS-$$GOARCH
+
+	@go build ${LDFLAGS_RELEASE} -o ${BINARY_DIR}/go-gopher-cli-${GOOS}-${GOARCH} ./cmd/cli
+	@go build ${LDFLAGS_RELEASE} -o ${BINARY_DIR}/go-gopher-marker-${GOOS}-${GOARCH} ./cmd/marker
+	@go build ${LDFLAGS_RELEASE} -o ${BINARY_DIR}/go-gopher-github-action-${GOOS}-${GOARCH} ./cmd/github-action
+
 
 install: build
 	cp bin/go-gopher /usr/local/bin

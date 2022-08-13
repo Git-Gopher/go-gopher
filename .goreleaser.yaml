@@ -13,6 +13,10 @@ builds:
       - linux
       - windows
       - darwin
+    ldflags:
+      - -s -w -X "github.com/Git-Gopher/go-gopher/version.CommitHash={{.Env.COMMIT_HASH}}"
+      - -s -w -X "github.com/Git-Gopher/go-gopher/version.CompileDate={{.Env.COMPILE_DATE}}"
+
 archives:
   - replacements:
       darwin: Darwin
