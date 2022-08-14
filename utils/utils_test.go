@@ -35,7 +35,6 @@ func TestContains(t *testing.T) {
 		{"TestContainsJar", args{"thing.jar", []string{".jar", ".exe"}}, true},
 		{"TestContainsExe", args{"thing.jar", []string{".jar", ".exe"}}, true},
 		{"TestContainsNone", args{"thing", []string{".jar", ".exe"}}, false},
-		// TODO: Add test cases.
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
