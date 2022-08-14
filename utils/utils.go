@@ -253,3 +253,14 @@ func EnvGithubWorkspace() string {
 
 	return workspace
 }
+
+// Contains for array of substrs.
+func Contains(s string, xs []string) bool {
+	for _, x := range xs {
+		if strings.Contains(s, x) {
+			return true
+		}
+	}
+
+	return false
+}

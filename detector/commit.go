@@ -7,6 +7,7 @@ import (
 	"github.com/Git-Gopher/go-gopher/markup"
 	"github.com/Git-Gopher/go-gopher/model/enriched"
 	"github.com/Git-Gopher/go-gopher/model/local"
+	"github.com/Git-Gopher/go-gopher/utils"
 	"github.com/Git-Gopher/go-gopher/violation"
 )
 
@@ -183,10 +184,13 @@ func ShortCommitMessageDetect() (string, CommitDetect) {
 }
 
 func BinaryDetect() (string, CommitDetect) {
+	// Extensions that should not be committed to the repository.
+	disallowedExtensions := []string{".exe", ".jar"}
+
 	return "BinaryDetect", func(common *common, commit *local.Commit) (bool, []violation.Violation, error) {
 		vs := []violation.Violation{}
 		for _, d := range commit.DiffToParents {
-			if d.IsBinary {
+			if d.IsBinary && utils.Contains(d.Name, disallowedExtensions) {
 				vs = append(vs, violation.NewBinaryViolation(
 					markup.File{
 						Commit: markup.Commit{
