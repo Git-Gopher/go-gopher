@@ -196,8 +196,12 @@ func (c *Cmds) runMarker(repo *git.Repository, githubURL string) error {
 		log.Printf("#### @%s ####\n", candidate.Username)
 	}
 
-	if err := IndividualReports(candidates); err != nil {
+	if err = IndividualReports(candidates); err != nil {
 		return fmt.Errorf("failed to generate individual reports: %w", err)
+	}
+
+	if err = MarkerReport(candidates); err != nil {
+		return fmt.Errorf("failed to generate marker report: %w", err)
 	}
 
 	return nil

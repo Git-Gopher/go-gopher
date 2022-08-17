@@ -47,6 +47,8 @@ tidy:
 
 clean:
 	go clean
+	find . -name 'cache.json' -delete
 	find . -name 'log-*.json' -delete
 	find . -name '*.csv' -delete
-	rm -rf output
+	find . -name '*-reports.html' -delete
+	rm -rf output || true

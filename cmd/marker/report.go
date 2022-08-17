@@ -1,6 +1,8 @@
 package main
 
 import (
+	"encoding/csv"
+	"errors"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -10,9 +12,19 @@ import (
 	"github.com/gomarkdown/markdown"
 )
 
+var (
+	ErrNoCandidates = errors.New("no candidates")
+	ErrCSVWrite     = errors.New("failed to write to csv")
+)
+
+const (
+	course = "SOFTENG206"
+	path   = "marker-report.csv"
+)
+
 func IndividualReports(candidates []assess.Candidate) error {
 	if len(candidates) == 0 {
-		return fmt.Errorf("no candidates") // nolint: goerr113
+		return ErrNoCandidates
 	}
 
 	markers := make([]string, len(candidates[0].Grades))
@@ -21,8 +33,6 @@ func IndividualReports(candidates []assess.Candidate) error {
 	}
 
 	for _, candidate := range candidates {
-		course := "TEST"
-
 		rows := make([][]string, len(candidate.Grades))
 		for i, grade := range candidate.Grades {
 			rows[i] = []string{
@@ -52,6 +62,111 @@ func IndividualReports(candidates []assess.Candidate) error {
 			return fmt.Errorf("failed to write file for %s: %w", filename, err)
 		}
 	}
+
+	return nil
+}
+
+// Report for the marker so that they can glean an overview of grading for the course.
+// Can then adjust marker as needed.
+func MarkerReport(candidates []assess.Candidate) error {
+	// Average grade per grade category and overall average grade across categories.
+	averageGrade := make(map[string]float64)
+	noGrades := make(map[string]int)
+	for _, c := range candidates {
+		for _, g := range c.Grades {
+			averageGrade[g.Name] += float64(g.Grade)
+			noGrades[g.Name]++
+		}
+	}
+
+	overallAverageGrade := 0.0
+	for k, v := range averageGrade {
+		averageGrade[k] = v / float64(noGrades[k])
+		overallAverageGrade += averageGrade[k]
+	}
+
+	// Write a report for the marker to CSV.
+	var fh *os.File
+	// nolint: gosec
+	fh, err := os.OpenFile(filepath.Clean(path), os.O_WRONLY|os.O_CREATE|os.O_APPEND, 0o644)
+	if err != nil {
+		return fmt.Errorf("failed to create marker summary csv: %w", err)
+	}
+	// nolint: errcheck, gosec
+	defer fh.Close()
+
+	// Average Grade table per grade category.
+	w := csv.NewWriter(fh)
+	var gradeTable [][]string // nolint: prealloc
+	gradeTable = append(gradeTable, []string{
+		"Grade Category",
+		"Average Grade (/3)",
+		"Average Grade (%)",
+	})
+	for k, v := range averageGrade {
+		gradeTable = append(gradeTable,
+			[]string{
+				k,
+				fmt.Sprintf("%2.2f", v),
+				fmt.Sprintf("%2.2f", (v/3.0)*100),
+			})
+	}
+
+	if err = w.WriteAll(gradeTable); err != nil {
+		return ErrCSVWrite
+	}
+
+	// Whitespace.
+	if err = w.Write([]string{}); err != nil {
+		return ErrCSVWrite
+	}
+
+	// Overall average grade table
+	if err = w.Write([]string{
+		fmt.Sprintf("Overall Average Grade (/%d)", len(averageGrade)*3),
+		"Overall Average Grade (%)",
+	}); err != nil {
+		return ErrCSVWrite
+	}
+	if err = w.Write([]string{
+		fmt.Sprintf("%2.2f", overallAverageGrade),
+		fmt.Sprintf("%2.2f", (overallAverageGrade/(float64(len(averageGrade)*3)))*100),
+	}); err != nil {
+		return ErrCSVWrite
+	}
+
+	// Whitespace.
+	if err = w.Write([]string{}); err != nil {
+		return ErrCSVWrite
+	}
+
+	// Candidate table.
+	var candidateTable [][]string //nolint: prealloc
+	candidateTable = append(candidateTable,
+		[]string{
+			"Username",
+			fmt.Sprintf("OverallGrade (/%d)", len(averageGrade)*3),
+			"OverallGrade (%)",
+		})
+
+	for _, c := range candidates {
+		var row []string
+		row = append(row, c.Username)
+
+		var overallGrade float64
+		for _, g := range c.Grades {
+			overallGrade += float64(g.Grade)
+		}
+
+		row = append(row, fmt.Sprintf("%2.2f", overallGrade))
+		row = append(row, fmt.Sprintf("%2.2f", (overallGrade/(float64(len(averageGrade)*3)))*100))
+		candidateTable = append(candidateTable, row)
+	}
+
+	if err = w.WriteAll(candidateTable); err != nil {
+		return ErrCSVWrite
+	}
+	w.Flush()
 
 	return nil
 }
