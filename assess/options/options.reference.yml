@@ -2,6 +2,12 @@
 
 default-algorithm: basic-algorithm # basic-algorithm or threshold-algorithm
 
+output-dir: ./reports             # output directory
+output-repo-folder: false         # false = output into same folder, true = output to a folder the same name as repo
+
+filename-template: "{{.Username}}_individual_report"  # filename template e.g. "{{.Repository}}_{{.Username}}_individual_report"
+header-template: "{{.Username}} Test Report"          # header template e.g. "{{.Repository}} {{.Username}} Test Report"
+
 markers-settings:
   commit:
     grading-algorithm: basic-algorithm

@@ -5,15 +5,13 @@ import (
 	"strings"
 )
 
-// nolint: forbidigo
 // Helper functions for GitHub actions commands.
 func Group(title, content string) {
-	fmt.Printf("::group::%s\n", title)
-	fmt.Println(content)
-	fmt.Println("::endgroup::")
+	fmt.Printf("::group::%s\n", title) //nolint: forbidigo
+	fmt.Println(content)               //nolint: forbidigo
+	fmt.Println("::endgroup::")        //nolint: forbidigo
 }
 
-// nolint: forbidigo
 func Outputs(name, value string) {
 	// Sanitize input with literals
 	name = strings.ReplaceAll(name, "%", `%25`)
@@ -23,5 +21,5 @@ func Outputs(name, value string) {
 	name = strings.ReplaceAll(name, "\r", `%0D`)
 	value = strings.ReplaceAll(value, "\r", `%0D`)
 
-	fmt.Printf("::set-output name=%s::%s\n", name, value)
+	fmt.Printf("::set-output name=%s::%s\n", name, value) //nolint: forbidigo
 }

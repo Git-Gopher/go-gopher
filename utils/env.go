@@ -2,9 +2,10 @@ package utils
 
 import (
 	_ "embed"
+	"errors"
 	"fmt"
-	"io/ioutil"
 	"os"
+	"path/filepath"
 
 	"github.com/joho/godotenv"
 	log "github.com/sirupsen/logrus"
@@ -35,11 +36,25 @@ func Env(location string) error {
 
 // Generate a default .env file.
 func GenerateEnv(location string) error {
+	if _, err := os.Stat(location); errors.Is(err, os.ErrNotExist) {
+		dir := filepath.Dir(location)
+		parent := filepath.Base(dir)
+
+		if err2 := os.MkdirAll(parent, os.ModePerm); err2 != nil {
+			return fmt.Errorf("can't create options dir: %w", err2)
+		}
+	} else if err != nil {
+		overwrite := Confirm(fmt.Sprintf("Env: %s already exists. Overwrite?", location), 2)
+		if !overwrite {
+			return ErrSkipped
+		}
+	}
+
 	if location == "" {
 		location = ".env"
 	}
 
-	err := ioutil.WriteFile(location, envByte, 0o600)
+	err := os.WriteFile(location, envByte, 0o600)
 	if err != nil {
 		return fmt.Errorf("can't write default options: %w", err)
 	}
