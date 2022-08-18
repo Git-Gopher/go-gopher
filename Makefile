@@ -94,7 +94,7 @@ clean:
 
 
 .PHONY: go-releaser-release-dry-run
-release-dry-run:
+go-releaser-release-dry-run:
 	@docker run \
 		--rm \
 		--privileged \
@@ -106,7 +106,7 @@ release-dry-run:
 		--rm-dist --skip-validate --skip-publish
 
 .PHONY: go-releaser-release
-release:
+go-releaser-release:
 	@if [ ! -f ".release-env" ]; then \
 		echo "\033[91m.release-env is required for release\033[0m";\
 		exit 1;\
