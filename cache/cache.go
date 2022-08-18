@@ -3,7 +3,7 @@ package cache
 import (
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"os"
 	"path"
 	"path/filepath"
@@ -47,7 +47,7 @@ func Read() ([]*Cache, error) {
 	//nolint
 	defer file.Close()
 
-	b, err := ioutil.ReadAll(file)
+	b, err := io.ReadAll(file)
 	if err != nil {
 		return nil, fmt.Errorf("error reading cache file: %w", err)
 	}
@@ -69,7 +69,7 @@ func Write(caches []*Cache) error {
 		return fmt.Errorf("error marshaling caches: %w", err)
 	}
 
-	if err := ioutil.WriteFile(path, bytes, 0o600); err != nil {
+	if err := os.WriteFile(path, bytes, 0o600); err != nil {
 		return fmt.Errorf("error writing cache: %w", err)
 	}
 

@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"io/fs"
 	"path/filepath"
@@ -156,11 +157,15 @@ func (c *Cmds) FolderLocalCommand(cCtx *cli.Context, flags *Flags) error {
 func (c *Cmds) GenerateConfigCommand(cCtx *cli.Context, flags *Flags) error {
 	r := options.NewFileReader(log.StandardLogger(), nil)
 	if err := r.GenerateDefault(flags.OptionsDir); err != nil {
-		return fmt.Errorf("failed to generate default options: %w", err)
+		if !errors.Is(err, utils.ErrSkipped) {
+			return fmt.Errorf("failed to generate default options: %w", err)
+		}
 	}
 
 	if err := utils.GenerateEnv(flags.EnvDir); err != nil {
-		return fmt.Errorf("failed to generate env: %w", err)
+		if !errors.Is(err, utils.ErrSkipped) {
+			return fmt.Errorf("failed to generate env: %w", err)
+		}
 	}
 
 	return nil
@@ -199,7 +204,7 @@ func (c *Cmds) runMarker(repo *git.Repository, githubURL string) error {
 		log.Printf("#### @%s ####\n", candidate.Username)
 	}
 
-	if err := IndividualReports(candidates); err != nil {
+	if err := IndividualReports(o, repoName, candidates); err != nil {
 		return fmt.Errorf("failed to generate individual reports: %w", err)
 	}
 

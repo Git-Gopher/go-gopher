@@ -127,7 +127,7 @@ func NewCommit(r *git.Repository, c *object.Commit) *Commit {
 	}
 
 	var diffs []Diff
-	if len(parentHashes) == 0 { // nolint: nestif
+	if len(parentHashes) == 0 { //nolint: nestif
 		iter, err := r.TreeObjects()
 		if err != nil {
 			return nil
@@ -188,13 +188,14 @@ func NewCommit(r *git.Repository, c *object.Commit) *Commit {
 }
 
 // TODO: Might be useful to add some of these to the Branch struct.
-// type MockBranchModel struct {
-// 	Ref           string
-// 	Remote        string
-// 	Hash          string
-// 	CommitsBehind int       // Number of commits behind the primary branch
-// 	LastChange    time.Time // Time of the head commit of the current branch
-// }.
+//
+//	type MockBranchModel struct {
+//		Ref           string
+//		Remote        string
+//		Hash          string
+//		CommitsBehind int       // Number of commits behind the primary branch
+//		LastChange    time.Time // Time of the head commit of the current branch
+//	}.
 type Branch struct {
 	// Hash of head commit
 	Head Commit

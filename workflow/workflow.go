@@ -4,7 +4,6 @@ import (
 	"encoding/csv"
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"time"
@@ -209,14 +208,14 @@ func (wk *Workflow) Csv(path, name, url string) error {
 	}
 
 	var fh *os.File
-	// nolint: gosec
+	//nolint: gosec
 	fh, err = os.OpenFile(filepath.Clean(path), os.O_WRONLY|os.O_CREATE|os.O_APPEND, 0o644)
 	if err != nil {
 		return fmt.Errorf("Failed to create csv file: %w", err)
 	}
 
 	w := csv.NewWriter(fh)
-	// nolint: errcheck, gosec
+	//nolint: errcheck, gosec
 	defer fh.Close()
 
 	// Create file and header
@@ -240,7 +239,7 @@ func (wk *Workflow) Csv(path, name, url string) error {
 	}
 
 	// XXX: Body will likely change later with beyond length of headers, so don't alloc.
-	// nolint: prealloc
+	//nolint: prealloc
 	var body []string
 	body = append(body, name, url)
 
@@ -361,7 +360,7 @@ func (w *Workflow) WriteLog(em enriched.EnrichedModel, cfg *config.Config) (stri
 	}
 
 	fn := fmt.Sprintf("log-%s-%d.json", em.Name, time.Now().Unix())
-	if err := ioutil.WriteFile(filepath.Clean(fn), bytes, 0o600); err != nil {
+	if err := os.WriteFile(filepath.Clean(fn), bytes, 0o600); err != nil {
 		return "", fmt.Errorf("failed writing log to file: %w", err)
 	}
 

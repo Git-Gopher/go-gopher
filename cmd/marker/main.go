@@ -55,7 +55,7 @@ func main() {
 			Name:     "generate",
 			Category: "Utils",
 			Usage:    "generate and reset configuration files. options.yml and .env files",
-			Action:   LoadFlags(cmd.GenerateConfigCommand),
+			Action:   SkipFlags(cmd.GenerateConfigCommand),
 		},
 	}
 	app.Flags = []cli.Flag{

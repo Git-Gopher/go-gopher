@@ -6,19 +6,30 @@ This document is intended to be used as a reference for marking tool `cmd/marker
 
 ### Download latest build
 
-https://github.com/Git-Gopher/go-gopher/actions/workflows/git-gopher.yml
+Releases can be accessed here https://github.com/Git-Gopher/go-gopher/releases
+
+Latest builds can be found here https://github.com/Git-Gopher/go-gopher-action/releases/tag/latest
 
 Click into latest successful build and download artifects.
-
-TODO: install go-releaser
 
 ### Compile locally
 
 The tool can be compiled by using the build command
 ```bash
-make build
+make build # Auto detect windows or linux or macos
 ```
-This command will compile the tool and generate the binary `bin/marker`
+
+This command will compile the tool and generate the binary 
+- `bin/go-gopher-cli`
+- `bin/go-gopher-marker`
+- `bin/go-gopher-github`
+
+Build for other platforms can be done by using the build command
+```bash
+make release-windows
+make release-linux
+make release-macos
+```
 
 ### Run locally
 

@@ -59,3 +59,15 @@ func LoadFlags(command ActionWithFlagFunc) cli.ActionFunc {
 		return command(cCtx, flags)
 	}
 }
+
+func SkipFlags(command ActionWithFlagFunc) cli.ActionFunc {
+	return func(cCtx *cli.Context) error {
+		flags := NewFlags()
+
+		if cCtx.String("env") != "" {
+			flags.EnvDir = cCtx.String("env")
+		}
+
+		return command(cCtx, flags)
+	}
+}
