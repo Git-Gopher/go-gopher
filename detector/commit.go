@@ -185,7 +185,7 @@ func ShortCommitMessageDetect() (string, CommitDetect) {
 
 func BinaryDetect() (string, CommitDetect) {
 	// Extensions that should not be committed to the repository.
-	disallowedExtensions := []string{".exe", ".jar"}
+	disallowedExtensions := []string{".exe", ".jar", ".class"}
 
 	return "BinaryDetect", func(common *common, commit *local.Commit) (bool, []violation.Violation, error) {
 		vs := []violation.Violation{}
