@@ -33,6 +33,9 @@ jobs:
           ./go-gopher-github-action
         env:
           GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
+          GITHUB_URL: ${{ github.server_url }}/${{ github.repository }}/
+          PR_NUMBER: ${{ github.event.number }}
+          WORKFLOW_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
       - name: Add PR Comment
         uses: marocchino/sticky-pull-request-comment@v2
         with:
