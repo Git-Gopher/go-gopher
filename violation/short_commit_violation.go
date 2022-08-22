@@ -46,6 +46,6 @@ func (sc *ShortCommitViolation) Message() string {
 
 // Suggestion implements Violation.
 func (sc *ShortCommitViolation) Suggestion() (string, error) {
-	return "Commit message is too short, " +
-		"try make it larger than 3 words so your peers can accurately know what changes you have made", nil
+	return "Try to make your commit messages longer than 5 words " +
+		"so that your peers can accurately know the changes a commit contains without manually examining it", nil
 }

@@ -50,6 +50,7 @@ func (p *PrimaryBranchDirectCommitViolation) Message() string {
 // Suggestion implements Violation.
 func (p *PrimaryBranchDirectCommitViolation) Suggestion() (string, error) {
 	return fmt.Sprintf("All commits should be merged in to the branch %s via a pull request, "+
-		"instead of directly committing to the primary branch. This method helps keep track of your development",
+		"instead of directly committing to the primary branch. This method helps keep track of your development history "+
+		"and is a fundamental technique of using Github Flow",
 		p.primaryBranch.Markdown()), nil
 }

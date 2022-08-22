@@ -164,7 +164,7 @@ func ShortCommitMessageDetect() (string, CommitDetect) {
 		}
 
 		words := strings.Split(commit.Message, " ")
-		if len(words) < 3 {
+		if len(words) < 5 {
 			return false, []violation.Violation{violation.NewShortCommitViolation(
 				markup.Commit{
 					Hash: hex.EncodeToString(commit.Hash.ToByte()),

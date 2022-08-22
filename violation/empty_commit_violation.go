@@ -36,13 +36,13 @@ type EmptyCommitViolation struct {
 
 // Message implements Violation.
 func (ecv *EmptyCommitViolation) Message() string {
-	format := "Empty commit %s has been committed to the project"
+	format := "Commit %s is empty but has been committed to the project"
 
 	return fmt.Sprintf(format, ecv.commit.Markdown())
 }
 
 // Suggestion implements Violation.
 func (ecv *EmptyCommitViolation) Suggestion() (string, error) {
-	return "Try not make empty commits to the project" +
+	return "Try not make empty commits to the git history " +
 		"as it makes it seem like you are forging or padding your version history", nil
 }
