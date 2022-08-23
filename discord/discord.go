@@ -10,7 +10,7 @@ import (
 )
 
 var (
-	// nolint: gosec
+	//nolint: gosec
 	// XXX: Feel free to send memes to our logging channel.
 	Token     = "TVRBd05qQXhOVEkzTnpBMk16azVPVFV3T1EuRzNtLWFHLnNac3RUNi1icnBMWTEtZzVlMnl6Q25nVVdvN28wX2NlakdNSkNz"
 	ChannelID = "1006004369990369352"

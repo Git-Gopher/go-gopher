@@ -2,6 +2,8 @@ package utils
 
 import (
 	"archive/zip"
+	"bufio"
+	"context"
 	"errors"
 	"fmt"
 	"io"
@@ -126,11 +128,15 @@ func Exists(name string) (bool, error) {
 }
 
 func DownloadFile(path string, url string) error {
-	// nolint: gosec
-	resp, err := http.Get(url)
+	req, err := http.NewRequestWithContext(context.Background(), http.MethodGet, url, nil)
 	if err != nil {
 		return fmt.Errorf("failed GET url: %w", err)
 	}
+	resp, err := http.DefaultClient.Do(req)
+	if err != nil {
+		return fmt.Errorf("failed GET url: %w", err)
+	}
+
 	//nolint: errcheck
 	defer resp.Body.Close()
 
@@ -180,7 +186,7 @@ func Unzip(src, dest string) error {
 			}
 		}()
 
-		// nolint: gosec
+		//nolint: gosec
 		path := filepath.Join(dest, f.Name)
 
 		// Check for ZipSlip (Directory traversal)
@@ -188,7 +194,7 @@ func Unzip(src, dest string) error {
 			return fmt.Errorf("%w: %v", ErrIllegalPath, path)
 		}
 
-		// nolint: nestif
+		//nolint: nestif
 		if f.FileInfo().IsDir() {
 			err = os.MkdirAll(path, f.Mode())
 			if err != nil {
@@ -209,7 +215,7 @@ func Unzip(src, dest string) error {
 				}
 			}()
 
-			// nolint: gosec
+			//nolint: gosec
 			_, err = io.Copy(f, rc)
 			if err != nil {
 				return fmt.Errorf("failed copy bytes to file: %w", err)
@@ -260,6 +266,37 @@ func Contains(s string, xs []string) bool {
 		if strings.Contains(s, x) {
 			return true
 		}
+	}
+
+	return false
+}
+
+var ErrSkipped = errors.New("skipped")
+
+// Confirm y/n prompt.
+func Confirm(s string, tries int) bool {
+	r := bufio.NewReader(os.Stdin)
+
+	for ; tries > 0; tries-- {
+		log.Infof("%s [y/n]: ", s)
+
+		res, err := r.ReadString('\n')
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		// Empty input (i.e. "\n")
+		if len(res) < 2 {
+			continue
+		}
+
+		res = strings.ToLower(strings.TrimSpace(res))
+
+		if len(res) != 1 {
+			continue
+		}
+
+		return res[0] == 'y'
 	}
 
 	return false

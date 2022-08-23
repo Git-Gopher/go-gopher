@@ -117,7 +117,8 @@ func (cd *CommitDistanceDetector) Name() string {
 }
 
 // 6th methods: use distance between diff to find an average.
-// nolint:gocognit // this function is complex
+//
+//nolint:gocognit // this function is complex
 func DiffDistanceCalculation() (string, CommitDistanceCalculator) {
 	return "DiffDistanceCalculation", func(commit *local.Commit) (distance float64, err error) {
 		if commit.DiffToParents == nil {

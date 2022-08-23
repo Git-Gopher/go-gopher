@@ -33,8 +33,11 @@ type PageInfo struct {
 	EndCursor   githubv4.String
 }
 
-// nolint
-func (s *Scraper) FetchIssueComments(ctx context.Context, owner, name string, number int, cursor string) ([]*Comment, error) {
+func (s *Scraper) FetchIssueComments(ctx context.Context,
+	owner, name string,
+	number int,
+	cursor string,
+) ([]*Comment, error) {
 	var q struct {
 		Repository struct {
 			Issue struct {
@@ -162,8 +165,11 @@ func (s *Scraper) FetchPullRequestClosingIssues(
 	return all, nil
 }
 
-// nolint
-func (s *Scraper) FetchPullRequestComments(ctx context.Context, owner, name string, number int, cursor string) ([]*Comment, error) {
+func (s *Scraper) FetchPullRequestComments(ctx context.Context,
+	owner, name string,
+	number int,
+	cursor string,
+) ([]*Comment, error) {
 	var q struct {
 		Repository struct {
 			PullRequest struct {
@@ -196,7 +202,7 @@ func (s *Scraper) FetchPullRequestComments(ctx context.Context, owner, name stri
 
 	for {
 		if err := s.Client.Query(ctx, q, variables); err != nil {
-			return nil, fmt.Errorf("Failed to fetch additional pull request closing issues references: %v", err)
+			return nil, fmt.Errorf("Failed to fetch additional pull request closing issues references: %w", err)
 		}
 
 		for _, i := range q.Repository.PullRequest.Comments.Nodes {

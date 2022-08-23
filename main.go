@@ -5,7 +5,6 @@ import (
 	"errors"
 	"fmt"
 	"io/fs"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"strings"
@@ -32,7 +31,7 @@ import (
 
 var TeamDevs = []string{"wqsz7xn", "scorpionknifes"}
 
-//nolint
+//nolint:all
 func main() {
 	app := cli.NewApp()
 	app.EnableBashCompletion = true
@@ -87,8 +86,6 @@ func main() {
 				// Cache
 				current := cache.NewCache(enrichedModel)
 				caches, err := cache.Read()
-
-				//nolint
 				if errors.Is(err, os.ErrNotExist) {
 					log.Printf("Cache file does not exist: %v", err)
 					// Write a cache for current so that next run can use it
@@ -191,12 +188,12 @@ func main() {
 						}
 
 						log.Printf("Unzipping %s...\n", pathZip)
-						utils.Unzip(pathZip, pathJson)
+						utils.Unzip(pathZip, pathJson) //nolint: errcheck
 					}
 				}
 
 				logCount := 0
-				filepath.Walk(out, func(path string, info fs.FileInfo, err error) error {
+				filepath.Walk(out, func(path string, info fs.FileInfo, err error) error { //nolint: errcheck
 					if err != nil {
 						return err
 					}
@@ -210,7 +207,7 @@ func main() {
 						logCount++
 
 						log.Printf("Appending %s to merged log...", path)
-						file, err := ioutil.ReadFile(path)
+						file, err := os.ReadFile(path)
 						if err != nil {
 							log.Fatalf("Could not read log file: %v", err)
 						}
@@ -228,7 +225,7 @@ func main() {
 				}
 
 				logPath := fmt.Sprintf("%s/merged-log-%s.json", out, org)
-				if err := ioutil.WriteFile(logPath, bytes, 0o600); err != nil {
+				if err := os.WriteFile(logPath, bytes, 0o600); err != nil {
 					return fmt.Errorf("error writing merged log: %w", err)
 				}
 

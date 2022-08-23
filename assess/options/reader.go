@@ -4,10 +4,10 @@ import (
 	_ "embed"
 	"errors"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 
+	"github.com/Git-Gopher/go-gopher/utils"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
 )
@@ -52,7 +52,20 @@ func (r *FileReader) Read(file string) error {
 }
 
 func (r *FileReader) GenerateDefault(file string) error {
-	err := ioutil.WriteFile(file, optionsByte, 0o600)
+	if _, err := os.Stat(file); errors.Is(err, os.ErrNotExist) {
+		dir := filepath.Dir(file)
+		parent := filepath.Base(dir)
+		if err2 := os.MkdirAll(parent, os.ModePerm); err2 != nil {
+			return fmt.Errorf("can't create options dir: %w", err2)
+		}
+	} else if err == nil {
+		overwrite := utils.Confirm(fmt.Sprintf("Options: %s already exists. Overwrite?", file), 2)
+		if !overwrite {
+			return utils.ErrSkipped
+		}
+	}
+
+	err := os.WriteFile(file, optionsByte, 0o600)
 	if err != nil {
 		return fmt.Errorf("can't write default options: %w", err)
 	}

@@ -6,8 +6,10 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"strings"
 
 	"github.com/Git-Gopher/go-gopher/assess"
+	"github.com/Git-Gopher/go-gopher/assess/options"
 	"github.com/Git-Gopher/go-gopher/markup"
 	"github.com/gomarkdown/markdown"
 )
@@ -22,9 +24,9 @@ const (
 	path   = "marker-report.csv"
 )
 
-func IndividualReports(candidates []assess.Candidate) error {
+func IndividualReports(options *options.Options, repoName string, candidates []assess.Candidate) error {
 	if len(candidates) == 0 {
-		return ErrNoCandidates
+		return fmt.Errorf("no candidates") //nolint: goerr113
 	}
 
 	markers := make([]string, len(candidates[0].Grades))
@@ -45,7 +47,7 @@ func IndividualReports(candidates []assess.Candidate) error {
 
 		header := []string{"Marker", "Violation", "Contribution", "Grade"}
 
-		md := markup.CreateMarkdown(fmt.Sprintf("%s %s Report", course, candidate.Username)).
+		md := markup.CreateMarkdown(fillTemplate(options.HeaderTemplate, candidate.Username, repoName)).
 			Header("Marked by git-gopher", 2).
 			Table(header, rows)
 
@@ -56,7 +58,15 @@ func IndividualReports(candidates []assess.Candidate) error {
 
 		output := markdown.ToHTML([]byte(md.Render()), nil, nil)
 
-		filename := fmt.Sprintf("%s-individual-reports.html", candidate.Username)
+		filename := fillTemplate(options.HeaderTemplate, candidate.Username, repoName) + ".html"
+		if len(options.OutputDir) != 0 {
+			if _, err := os.Stat(options.OutputDir); errors.Is(err, os.ErrNotExist) {
+				if err2 := os.MkdirAll(options.OutputDir, os.ModePerm); err2 != nil {
+					return fmt.Errorf("can't create options dir: %w", err)
+				}
+			}
+			filename = filepath.Join(options.OutputDir, filename)
+		}
 
 		if err := writeFile(filename, output); err != nil {
 			return fmt.Errorf("failed to write file for %s: %w", filename, err)
@@ -171,10 +181,10 @@ func MarkerReport(candidates []assess.Candidate) error {
 	return nil
 }
 
-func writeFile(filename string, data []byte) (err error) {
-	f, err := os.Create(filepath.Clean(filename))
+func writeFile(path string, data []byte) (err error) {
+	f, err := os.Create(filepath.Clean(path))
 	if err != nil {
-		return fmt.Errorf("failed to create file %s: %w", filename, err)
+		return fmt.Errorf("failed to create file %s: %w", path, err)
 	}
 	defer func() {
 		err = f.Close()
@@ -182,8 +192,19 @@ func writeFile(filename string, data []byte) (err error) {
 
 	_, err = f.Write(data)
 	if err != nil {
-		return fmt.Errorf("failed to write to file %s: %w", filename, err)
+		return fmt.Errorf("failed to write to file %s: %w", path, err)
 	}
 
 	return nil
 }
+
+func fillTemplate(template string, username string, repository string) string {
+	template = strings.ReplaceAll(template, "{{.Username}}", username)
+	template = strings.ReplaceAll(template, "{{ .Username }}", username)
+
+	template = strings.ReplaceAll(template, "{{.Repository}}", repository)
+	template = strings.ReplaceAll(template, "{{ .Repository }}", repository)
+
+	return template
+}
+

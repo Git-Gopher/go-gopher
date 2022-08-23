@@ -1,3 +1,9 @@
+# GitHub-Action
+
+## How to install
+Add a new GitHub-Action by adding a new file into `.github/git-gopher.yml`
+
+```yaml
 name: git-gopher
 on:
   pull_request:
@@ -26,17 +32,19 @@ jobs:
           chmod +x ./go-gopher-github-action
           ./go-gopher-github-action
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          GITHUB_URL: ${{ github.server_url }}/${{ github.repository }}/
+          GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
           PR_NUMBER: ${{ github.event.number }}
           WORKFLOW_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
       - name: Add PR Comment
         uses: marocchino/sticky-pull-request-comment@v2
         with:
-          message: "${{ steps.go-gopher.outputs.pr_summary }}"
+          message: "${{steps.go-gopher.outputs.pr_summary}}"
       - name: Artifact outputs
         uses: actions/upload-artifact@v3
         with:
           path: |
             log-**.json
             cache.json
+```
+
+The action is setup to only run on PRs.

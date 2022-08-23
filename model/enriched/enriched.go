@@ -44,8 +44,10 @@ func NewEnrichedModel(local local.GitModel, github remote.RemoteModel) *Enriched
 	}
 }
 
-// nolint:ireturn
-func PopulateAuthors(enriched *EnrichedModel, manualUsers ...struct{ email, login string }) utils.Authors {
+func PopulateAuthors( //nolint: ireturn
+	enriched *EnrichedModel,
+	manualUsers ...struct{ email, login string },
+) utils.Authors {
 	authors := utils.NewAuthors()
 
 	// Add manual committers.

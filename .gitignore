@@ -19,3 +19,7 @@ output/
 **/*.zip 
 /log-*.json
 *.upx
+
+# goreleaser
+dist
+.release-env
