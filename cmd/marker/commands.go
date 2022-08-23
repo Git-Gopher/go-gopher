@@ -38,6 +38,8 @@ type Commands interface {
 
 type Cmds struct{}
 
+var candidateChan = make(chan []assess.Candidate)
+
 func (c *Cmds) SingleUrlCommand(cCtx *cli.Context, flags *Flags) error {
 	githubURL := cCtx.Args().Get(0)
 	if githubURL == "" {
@@ -149,6 +151,23 @@ func (c *Cmds) FolderLocalCommand(cCtx *cli.Context, flags *Flags) error {
 	wg.Wait()
 	cancel()
 
+	thing := make([]assess.Candidate, 0)
+
+	select {
+	case c, ok := <-candidateChan:
+		if ok {
+			thing = append(thing, c...)
+		} else {
+			fmt.Print("failed to fetch candidate list from channel")
+		}
+	default:
+		fmt.Print("no candidates in channel")
+	}
+
+	if err = MarkerReport(thing); err != nil {
+		return fmt.Errorf("failed to generate marker report: %w", err)
+	}
+
 	log.Printf("# Done %s #\n", directory)
 
 	return nil
@@ -200,16 +219,12 @@ func (c *Cmds) runMarker(repo *git.Repository, githubURL string) error {
 		analyzers,
 	)
 
-	for _, candidate := range candidates {
-		log.Printf("#### @%s ####\n", candidate.Username)
-	}
+	candidateChan <- candidates
+	log.Printf("Sent candidates through channel", repoName)
 
+	log.Printf("Generating user reports for repository %s", repoName)
 	if err := IndividualReports(o, repoName, candidates); err != nil {
 		return fmt.Errorf("failed to generate individual reports: %w", err)
-	}
-
-	if err = MarkerReport(candidates); err != nil {
-		return fmt.Errorf("failed to generate marker report: %w", err)
 	}
 
 	return nil
