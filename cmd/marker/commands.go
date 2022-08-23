@@ -81,6 +81,7 @@ func (c *Cmds) SingleLocalCommand(cCtx *cli.Context, flags *Flags) error {
 
 func (c *Cmds) runLocalRepository(directory string) error {
 	// Open repository locally.
+	log.Printf("Running local repo at %s", directory)
 	repo, err := git.PlainOpen(directory)
 	if err != nil {
 		return fmt.Errorf("failed to open repository: %w", err)

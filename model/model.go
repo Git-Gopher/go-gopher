@@ -12,6 +12,7 @@ import (
 )
 
 func FetchEnrichedModel(repo *git.Repository, repoOwner, repoName string) (*enriched.EnrichedModel, error) {
+	log.Infof("Beginning to scrape repository %s", repoName)
 	// scraping remote GitHub repository.
 	start := time.Now()
 
@@ -24,6 +25,7 @@ func FetchEnrichedModel(repo *git.Repository, repoOwner, repoName string) (*enri
 	log.Infof("Scraped remote GitHub repository in %s", elapsed)
 
 	// loading local Git repository.
+	log.Infof("Begining to create new Git model")
 	start = time.Now()
 
 	gitModel, err := local.NewGitModel(repo)
