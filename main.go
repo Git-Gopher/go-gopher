@@ -32,7 +32,7 @@ import (
 
 var TeamDevs = []string{"wqsz7xn", "scorpionknifes"}
 
-//nolint: gocognit, gocyclo, maintidx
+//nolint: all
 func main() {
 	app := cli.NewApp()
 	app.EnableBashCompletion = true
