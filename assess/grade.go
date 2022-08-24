@@ -124,3 +124,25 @@ func RunMarker(m analysis.MarkerCtx, markers []*analysis.Analyzer) []Candidate {
 
 	return candiates
 }
+
+// Remove bot usernames.
+func RemoveBots(cs []Candidate) []Candidate {
+	blacklist := []string{"github-classroom[bot]"}
+
+	rs := make([]Candidate, 0)
+	for _, c := range cs {
+		bad := false
+		for _, b := range blacklist {
+			if c.Username == b {
+				bad = true
+
+				break
+			}
+		}
+		if !bad {
+			rs = append(rs, c)
+		}
+	}
+
+	return rs
+}

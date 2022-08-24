@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"io/fs"
+	"os"
 	"path/filepath"
 	"runtime"
 	"sync"
@@ -140,7 +141,7 @@ func (c *Cmds) FolderLocalCommand(cCtx *cli.Context, flags *Flags) error {
 		go func() {
 			select {
 			case repo := <-repoChan:
-				if err := c.runLocalRepository(repo); err != nil {
+				if err = c.runLocalRepository(repo); err != nil {
 					log.Errorf("failed to run local repository: %v", err)
 				}
 				wg.Done()
@@ -153,29 +154,24 @@ func (c *Cmds) FolderLocalCommand(cCtx *cli.Context, flags *Flags) error {
 	wg.Wait()
 	cancel()
 
-	fmt.Println("=======================================")
-	fmt.Printf("ran against all local repos!")
-	fmt.Println("=======================================")
-
-	thing := make([]assess.Candidate, 0)
-
-	for len(candidateChan) > 0 {
+	cs := make([]assess.Candidate, 0)
+	for len(candidateChan) > 0 { // All routines will have existed at this point. Buffer won't change
 		select {
 		case c, ok := <-candidateChan:
 			if ok {
-				thing = append(thing, c...)
+				cs = append(cs, c...)
 			} else {
-				fmt.Print("failed to fetch candidate list from channel")
+				log.Print("failed to fetch candidate list from channel")
+				os.Exit(1)
 			}
 		default:
-			fmt.Print("no candidates in channel")
+			log.Print("no candidates in channel")
 		}
 	}
 
-	fmt.Println("=======================================")
-	fmt.Printf("now making report!")
-	fmt.Println("=======================================")
-	if err = MarkerReport(thing); err != nil {
+	cs = assess.RemoveBots(cs)
+	log.Print("Generating marker report")
+	if err = MarkerReport(cs); err != nil {
 		return fmt.Errorf("failed to generate marker report: %w", err)
 	}
 
@@ -231,12 +227,11 @@ func (c *Cmds) runMarker(repo *git.Repository, githubURL string) error {
 	)
 
 	candidateChan <- candidates
-	log.Printf("Sent candidates through channel %v", repoName)
 
-	// log.Printf("Generating user reports for repository %s", repoName)
-	// if err := IndividualReports(o, repoName, candidates); err != nil {
-	// 	return fmt.Errorf("failed to generate individual reports: %w", err)
-	// }
+	log.Printf("Generating user reports for repository %s", repoName)
+	if err := IndividualReports(o, repoName, candidates); err != nil {
+		return fmt.Errorf("failed to generate individual reports: %w", err)
+	}
 
 	return nil
 }

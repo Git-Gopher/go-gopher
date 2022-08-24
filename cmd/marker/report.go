@@ -20,13 +20,12 @@ var (
 )
 
 const (
-	course = "SOFTENG206"
-	path   = "marker-report.csv"
+	path = "marker-report.csv"
 )
 
 func IndividualReports(options *options.Options, repoName string, candidates []assess.Candidate) error {
 	if len(candidates) == 0 {
-		return fmt.Errorf("no candidates") //nolint: goerr113
+		return ErrNoCandidates
 	}
 
 	markers := make([]string, len(candidates[0].Grades))
@@ -97,17 +96,17 @@ func MarkerReport(candidates []assess.Candidate) error {
 
 	// Write a report for the marker to CSV.
 	var fh *os.File
-	// nolint: gosec
+	//nolint: gosec
 	fh, err := os.OpenFile(filepath.Clean(path), os.O_WRONLY|os.O_CREATE|os.O_APPEND, 0o644)
 	if err != nil {
 		return fmt.Errorf("failed to create marker summary csv: %w", err)
 	}
-	// nolint: errcheck, gosec
+	//nolint: errcheck, gosec
 	defer fh.Close()
 
 	// Average Grade table per grade category.
 	w := csv.NewWriter(fh)
-	var gradeTable [][]string // nolint: prealloc
+	var gradeTable [][]string //nolint: prealloc
 	gradeTable = append(gradeTable, []string{
 		"Grade Category",
 		"Average Grade (/3)",
@@ -207,4 +206,3 @@ func fillTemplate(template string, username string, repository string) string {
 
 	return template
 }
-
