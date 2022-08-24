@@ -35,11 +35,11 @@ type UnresolvedMergeViolation struct {
 
 // Message implements Violation.
 func (um *UnresolvedMergeViolation) Message() string {
-	return fmt.Sprintf("Unresolved merge conflicts on %s", um.line.Markdown())
+	return fmt.Sprintf("Unresolved merge conflicts at line %s", um.line.Markdown())
 }
 
 // Suggestion implements Violation.
 func (um *UnresolvedMergeViolation) Suggestion() (string, error) {
-	return "Resolve conflicts before committing. " +
-		"This ensures that the project is not left in a broken state for others", nil
+	return "Resolve merge conflicts before committing to a branch " +
+		"as unresolved conflicts cause the project to enter a broken state", nil
 }

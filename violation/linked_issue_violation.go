@@ -12,7 +12,7 @@ func NewLinkedIssueViolation(
 	violation := &LinkedIssueViolation{
 		violation: violation{
 			name:     "LinkedIssueViolation",
-			severity: Violated,
+			severity: Suggestion,
 		},
 		pr: pr,
 	}

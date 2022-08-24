@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"io/fs"
+	"net/url"
 	"os"
 	"path/filepath"
 	"strings"
@@ -31,7 +32,7 @@ import (
 
 var TeamDevs = []string{"wqsz7xn", "scorpionknifes"}
 
-//nolint:all
+//nolint: all
 func main() {
 	app := cli.NewApp()
 	app.EnableBashCompletion = true
@@ -154,26 +155,28 @@ func main() {
 				client := github.NewClient(tc)
 
 				var logs []interface{}
-				err := os.MkdirAll(out, 0o755)
+				err := os.MkdirAll(out, 0o750)
 				if err != nil {
 					log.Fatalf("Failed to create output directory: %v", err)
 				}
 
-				log.Printf("Fetching repositories for organisation %s...\n", org)
+				log.Printf("Fetching repositories for organization %s...\n", org)
 				repos, _, err := client.Repositories.ListByOrg(ctx.Context, org, nil)
 				if err != nil {
 					log.Fatalf("Could not fetch orginisation repositories: %v", err)
 				}
 
 				for _, r := range repos {
-					arts, _, err := client.Actions.ListArtifacts(ctx.Context, org, *r.Name, nil)
+					var arts *github.ArtifactList
+					arts, _, err = client.Actions.ListArtifacts(ctx.Context, org, *r.Name, nil)
 					if err != nil {
 						log.Fatalf("Could not fetch artifact list: %v", err)
 					}
 
 					for _, a := range arts.Artifacts {
 						log.Printf("Downloading artifacts for %s/%s...\n", org, *r.Name)
-						url, _, err := client.Actions.DownloadArtifact(ctx.Context, org, *r.Name, *a.ID, true)
+						var url *url.URL
+						url, _, err = client.Actions.DownloadArtifact(ctx.Context, org, *r.Name, *a.ID, true)
 						if err != nil {
 							log.Fatalf("could not fetch artifact url: %v", err)
 						}
@@ -188,12 +191,14 @@ func main() {
 						}
 
 						log.Printf("Unzipping %s...\n", pathZip)
-						utils.Unzip(pathZip, pathJson) //nolint: errcheck
+						if err = utils.Unzip(pathZip, pathJson); err != nil {
+							log.Fatalf("failed to unzip log contents: %v", err)
+						}
 					}
 				}
 
 				logCount := 0
-				filepath.Walk(out, func(path string, info fs.FileInfo, err error) error { //nolint: errcheck
+				if err = filepath.Walk(out, func(path string, info fs.FileInfo, err error) error {
 					if err != nil {
 						return err
 					}
@@ -202,22 +207,28 @@ func main() {
 					}
 
 					if matched, err := filepath.Match("log-go-gopher*.json", filepath.Base(path)); err != nil {
-						return err
+						return fmt.Errorf("could not match log file: %w", err)
 					} else if matched {
 						logCount++
 
 						log.Printf("Appending %s to merged log...", path)
-						file, err := os.ReadFile(path)
+						file, err := os.ReadFile(filepath.Clean(path))
 						if err != nil {
-							log.Fatalf("Could not read log file: %v", err)
+							log.Fatalf("could not read log file: %v", err)
 						}
 
 						var data interface{}
-						json.Unmarshal(file, &data)
+						if err = json.Unmarshal(file, &data); err != nil {
+							log.Fatalf("failed to unmarshal log: %v", err)
+						}
+
 						logs = append(logs, data)
 					}
+
 					return nil
-				})
+				}); err != nil {
+					log.Fatalf("failed to walk log directory: %v", err)
+				}
 
 				bytes, err := json.MarshalIndent(logs, "", " ")
 				if err != nil {
@@ -264,17 +275,19 @@ func main() {
 
 				team, res, err := client.Teams.GetTeamBySlug(ctx.Context, orgName, slug)
 				if res.StatusCode == 200 || team != nil {
-					log.Printf("Team %s for organization %s already exists. Adding team to all new repositories (duplicates don't matter)...", slug, orgName)
-					repos, _, err := client.Repositories.ListByOrg(ctx.Context, orgName, nil)
+					log.Printf(`Team %s for organization %s already exists.
+						Adding team to all new repositories (duplicates don't matter)...`, slug, orgName)
+					var repos []*github.Repository
+					repos, _, err = client.Repositories.ListByOrg(ctx.Context, orgName, nil)
 					if err != nil {
 						log.Fatalf("Failed to fetch repositories for organization: %v", err)
 					}
 					count := 0
 					for _, r := range repos {
-
-						res, err := client.Teams.AddTeamRepoByID(ctx.Context, *org.ID, *team.ID, orgName, *r.Name, &github.TeamAddTeamRepoOptions{
-							Permission: perm,
-						})
+						res, err = client.Teams.AddTeamRepoByID(ctx.Context, *org.ID, *team.ID, orgName, *r.Name,
+							&github.TeamAddTeamRepoOptions{
+								Permission: perm,
+							})
 						if res.StatusCode != 204 || err != nil {
 							log.Fatalf("Failed to add team to repository: %v", err)
 						}
@@ -322,10 +335,13 @@ func main() {
 
 				for _, u := range TeamDevs {
 					log.Printf("Adding user %s to team %s...", u, slug)
-					client.Teams.AddTeamMembershipByID(ctx.Context, *org.ID, *team.ID, u,
+					_, res, err := client.Teams.AddTeamMembershipByID(ctx.Context, *org.ID, *team.ID, u,
 						&github.TeamAddTeamMembershipOptions{
 							Role: "maintainer",
 						})
+					if res.StatusCode != 200 || err != nil {
+						log.Fatalf("failed to add user to team: %v, %v", res.Status, err)
+					}
 				}
 
 				return nil
@@ -461,18 +477,20 @@ func main() {
 						if path == "" {
 							path = "./"
 							log.Printf("No path provided, using current directory (\"%s\") as target path", path)
-
 						}
 
 						var ps []string
-						filepath.Walk(path, func(path string, info fs.FileInfo, err error) error {
+						if err := filepath.Walk(path, func(path string, info fs.FileInfo, err error) error {
 							if info.IsDir() && info.Name() == ".git" {
 								ps = append(ps, filepath.Dir(path))
+
 								return filepath.SkipDir
 							}
 
 							return nil
-						})
+						}); err != nil {
+							log.Fatalf("failed to walk batch directory: %v", err)
+						}
 						if len(ps) == 0 {
 							log.Fatalf("Could not detect any git repositories within the directiory: \"%s\"", path)
 						}
@@ -536,6 +554,7 @@ func main() {
 								}
 							}
 						}
+
 						return nil
 					},
 				},
