@@ -93,7 +93,7 @@ clean:
 	find . -name '*.csv' -delete
 	find . -name '*-reports.html' -delete
 	rm -rf output || true
-	rm -rf output
+	rm -rf bin || true
 
 
 .PHONY: go-releaser-release-dry-run
