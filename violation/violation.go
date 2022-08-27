@@ -26,6 +26,7 @@ type Violation interface {
 	Email() string                // required: Email address of the violator.
 	Time() time.Time              // required: Time of the violation.
 	Severity() Severity           // required: Severity of the violation.
+	Current() bool                // required: Is the violation related to the current reporting
 
 	Author() (*remote.Author, error) // optional: GitHub author which caused the violation.
 	FileLocation() (string, error)   // optional: File location of the violation.

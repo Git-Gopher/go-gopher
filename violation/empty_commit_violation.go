@@ -46,3 +46,8 @@ func (ecv *EmptyCommitViolation) Suggestion() (string, error) {
 	return "Try not make empty commits to the git history " +
 		"as it makes it seem like you are forging or padding your version history", nil
 }
+
+// Current implements Violation.
+func (ecv *EmptyCommitViolation) Current() bool {
+	return true
+}

@@ -45,3 +45,8 @@ func (sbv *StaleBranchViolation) Suggestion() (string, error) {
 	return fmt.Sprintf("Consider deleting the branch, \"%s\" if it is unused delete it,"+
 		" or continue to work use it by merging the main branch into it and continuing development", sbv.branch), nil
 }
+
+// Current implements Violation.
+func (sbv *StaleBranchViolation) Current() bool {
+	return true
+}

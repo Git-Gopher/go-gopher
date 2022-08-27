@@ -36,10 +36,10 @@ type ForcePushViolation struct {
 }
 
 // Message implements Violation.
-func (f *ForcePushViolation) Message() string {
+func (fpv *ForcePushViolation) Message() string {
 	format := "The following commits have been lost as result of a force push: %s"
-	commits := make([]string, len(f.lostCommits))
-	for i, commit := range f.lostCommits {
+	commits := make([]string, len(fpv.lostCommits))
+	for i, commit := range fpv.lostCommits {
 		commits[i] = commit.Markdown()
 	}
 
@@ -47,12 +47,17 @@ func (f *ForcePushViolation) Message() string {
 }
 
 // Suggestion implements Violation.
-func (f *ForcePushViolation) Suggestion() (string, error) {
+func (fpv *ForcePushViolation) Suggestion() (string, error) {
 	format := "Restore the following commits to restore the work lost on the branch:\n%s"
-	commits := make([]string, len(f.lostCommits))
-	for i, commit := range f.lostCommits {
+	commits := make([]string, len(fpv.lostCommits))
+	for i, commit := range fpv.lostCommits {
 		commits[i] = commit.Markdown()
 	}
 
 	return fmt.Sprintf(format, strings.Join(commits, ",")), nil
+}
+
+// Current implements Violation.
+func (fpv *ForcePushViolation) Current() bool {
+	return true
 }

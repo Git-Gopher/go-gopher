@@ -16,6 +16,7 @@ prof/
 # artifacts
 output/
 **/*.zip 
+**/*.html
 /log-*.json
 *.upx
 

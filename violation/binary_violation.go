@@ -46,3 +46,8 @@ func (bv *BinaryViolation) Suggestion() (string, error) {
 		"Binary files should be added to the project .gitignore file and the " +
 		"file removed from the working tree using \"git rm --cached <file>\"", nil
 }
+
+// Current implements Violation.
+func (bv *BinaryViolation) Current() bool {
+	return true
+}

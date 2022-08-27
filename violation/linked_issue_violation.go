@@ -37,3 +37,8 @@ func (liv *LinkedIssueViolation) Suggestion() (string, error) {
 	return "When appropriate (features, bug fixes), create and link an issue to the pull request. " +
 		"This helps keep track of future developments and provides a development context for the pull request", nil
 }
+
+// Current implements Violation.
+func (liv *LinkedIssueViolation) Current() bool {
+	return true
+}

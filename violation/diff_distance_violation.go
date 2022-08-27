@@ -45,12 +45,17 @@ type DiffDistanceViolation struct {
 }
 
 // Message implements Violation.
-func (sc *DiffDistanceViolation) Message() string {
-	return fmt.Sprintf("Fragmented commit found at %s. This commit might contain multiple changes", sc.commit.Markdown())
+func (ddv *DiffDistanceViolation) Message() string {
+	return fmt.Sprintf("Fragmented commit found at %s. This commit might contain multiple changes", ddv.commit.Markdown())
 }
 
-func (sc *DiffDistanceViolation) Suggestion() (string, error) {
+func (ddv *DiffDistanceViolation) Suggestion() (string, error) {
 	return "Commits should aim to tackle one problem at a time. Try to break down your tasks into achievable " +
 		"subtasks and create a commit when you feel that the subtask has been completed. This way you may revert " +
 		"to any stage of your task at any point without losing the progress of multiple changes", nil
+}
+
+// Current implements Violation.
+func (ddv *DiffDistanceViolation) Current() bool {
+	return true
 }

@@ -31,6 +31,11 @@ type StaleCommitViolation struct {
 }
 
 // Message implements Violation.
-func (sc *StaleCommitViolation) Message() string {
-	return sc.message
+func (scv *StaleCommitViolation) Message() string {
+	return scv.message
+}
+
+// Current implements Violation.
+func (scv *StaleCommitViolation) Current() bool {
+	return true
 }

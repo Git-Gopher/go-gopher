@@ -45,7 +45,12 @@ func (sc *ShortCommitViolation) Message() string {
 }
 
 // Suggestion implements Violation.
-func (sc *ShortCommitViolation) Suggestion() (string, error) {
+func (scv *ShortCommitViolation) Suggestion() (string, error) {
 	return "Try to make your commit messages longer than 5 words " +
 		"so that your peers can accurately know the changes a commit contains without manually examining it", nil
+}
+
+// Current implements Violation.
+func (scv *ShortCommitViolation) Current() bool {
+	return true
 }

@@ -39,3 +39,8 @@ func (ucv *UnresolvedConversationViolation) Suggestion() (string, error) {
 		"puts the entire team is on the same page with the progress of your project " +
 		"without having to double check with your peers", nil
 }
+
+// Current implements Violation.
+func (ucv *UnresolvedConversationViolation) Current() bool {
+	return true
+}

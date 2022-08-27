@@ -34,12 +34,17 @@ type UnresolvedMergeViolation struct {
 }
 
 // Message implements Violation.
-func (um *UnresolvedMergeViolation) Message() string {
-	return fmt.Sprintf("Unresolved merge conflicts at line %s", um.line.Markdown())
+func (umv *UnresolvedMergeViolation) Message() string {
+	return fmt.Sprintf("Unresolved merge conflicts at line %s", umv.line.Markdown())
 }
 
 // Suggestion implements Violation.
-func (um *UnresolvedMergeViolation) Suggestion() (string, error) {
+func (umv *UnresolvedMergeViolation) Suggestion() (string, error) {
 	return "Resolve merge conflicts before committing to a branch " +
 		"as unresolved conflicts cause the project to enter a broken state", nil
+}
+
+// Current implements Violation.
+func (umv *UnresolvedMergeViolation) Current() bool {
+	return true
 }

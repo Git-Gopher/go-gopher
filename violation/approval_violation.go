@@ -29,14 +29,19 @@ type ApprovalViolation struct {
 }
 
 // Message implements Violation.
-func (pra *ApprovalViolation) Message() string {
-	return fmt.Sprintf("Pull request at %s did not receive review approval before it was merged", pra.pr.Markdown())
+func (av *ApprovalViolation) Message() string {
+	return fmt.Sprintf("Pull request at %s did not receive review approval before it was merged", av.pr.Markdown())
 }
 
 // Suggestion implements Violation.
-func (pra *ApprovalViolation) Suggestion() (string, error) {
+func (av *ApprovalViolation) Suggestion() (string, error) {
 	return "Ensure that you are reviewing pull requests before they get merged. Reviews can be added to a pull request " +
 			"by checking (Files changed > Review changes) on the pull request. Pull requests should receive at least one " +
 			"approval before they are merged, this gives your peers opportunity to look over your code and suggest improvements",
 		nil
+}
+
+// Current implements Violation.
+func (av *ApprovalViolation) Current() bool {
+	return true
 }
