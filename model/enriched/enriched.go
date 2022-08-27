@@ -1,10 +1,20 @@
 package enriched
 
 import (
+	"errors"
+	"fmt"
+	"os"
+	"strconv"
+
 	"github.com/Git-Gopher/go-gopher/model/local"
 	"github.com/Git-Gopher/go-gopher/model/remote"
 	"github.com/Git-Gopher/go-gopher/utils"
 	log "github.com/sirupsen/logrus"
+)
+
+var (
+	ErrPullRequestNumber = errors.New("could not fetch pull request number from env (PR_NUMBER)")
+	ErrFindPullRequest   = errors.New("could not find pull request from scraped repo given pull request number")
 )
 
 type EnrichedModel struct {
@@ -113,4 +123,33 @@ func PopulateAuthors( //nolint: ireturn
 	log.Println("Unavailable authors:", unavailable)
 
 	return authors
+}
+
+// Find the current PR that the action is running on. Requires PR_NUMBER is set in env by action.
+// See .github/workflows/git-gopher.yml for more info.
+func (em *EnrichedModel) FindCurrentPR() (*remote.PullRequest, error) {
+	// Pull request number from github action
+	prNumberEnv := os.Getenv("PR_NUMBER")
+	if prNumberEnv == "" {
+		return nil, ErrPullRequestNumber
+	}
+	prNumber, err := strconv.Atoi(prNumberEnv)
+	if err != nil {
+		return nil, fmt.Errorf("could not atoi pr number: %w", err)
+	}
+
+	var targetPr *remote.PullRequest
+	for _, pr := range em.PullRequests {
+		if pr.Number == prNumber {
+			targetPr = pr
+
+			break
+		}
+	}
+
+	if targetPr == nil {
+		return nil, ErrFindPullRequest
+	}
+
+	return targetPr, nil
 }
