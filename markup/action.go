@@ -3,6 +3,8 @@ package markup
 import (
 	"fmt"
 	"strings"
+
+	log "github.com/sirupsen/logrus"
 )
 
 // Helper functions for GitHub actions commands.
@@ -21,5 +23,11 @@ func Outputs(name, value string) {
 	name = strings.ReplaceAll(name, "\r", `%0D`)
 	value = strings.ReplaceAll(value, "\r", `%0D`)
 
-	fmt.Printf("::set-output name=%s::%s\n", name, value) //nolint: forbidigo
+	// Comment max length
+	maxLength := 65536
+	if len(value) > maxLength {
+		log.Warnf("Github Action output string length is greater than %d", maxLength)
+	}
+
+	fmt.Printf("::set-output name=%s::%s\n", name, value[:maxLength]) //nolint: forbidigo
 }

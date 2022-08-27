@@ -347,6 +347,8 @@ func (s *Scraper) FetchPullRequests(ctx context.Context, owner, name string) ([]
 					// PullRequest
 					Id             string
 					Number         int
+					HeadRefName    string
+					BaseRefName    string
 					Title          string
 					Body           string
 					ReviewDecision string
@@ -430,6 +432,8 @@ func (s *Scraper) FetchPullRequests(ctx context.Context, owner, name string) ([]
 			pr := PullRequest{
 				Id:             mpr.Id,
 				Number:         mpr.Number,
+				HeadRefName:    mpr.HeadRefName,
+				BaseRefName:    mpr.BaseRefName,
 				Title:          mpr.Title,
 				Body:           mpr.Body,
 				ReviewDecision: mpr.ReviewDecision,

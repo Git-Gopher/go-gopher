@@ -39,6 +39,8 @@ type ReviewThread struct {
 type PullRequest struct {
 	Id             string
 	Number         int
+	HeadRefName    string // from
+	BaseRefName    string // to
 	Title          string
 	Body           string
 	ReviewDecision string
