@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/google/go-github/v47/github"
 	"github.com/shurcooL/githubv4"
 	"golang.org/x/oauth2"
 )
@@ -13,6 +14,7 @@ var githubQuerySize = 100
 
 type Scraper struct {
 	Client *githubv4.Client
+	API    *github.Client
 }
 
 func NewScraper() Scraper {
@@ -23,8 +25,11 @@ func NewScraper() Scraper {
 
 	client := githubv4.NewClient(httpClient)
 
+	api := github.NewClient(httpClient)
+
 	return Scraper{
 		client,
+		api,
 	}
 }
 
@@ -554,71 +559,45 @@ func (s *Scraper) FetchURL(ctx context.Context, owner, name string) (string, err
 
 // FetchCommitters, get all committers from a repo.
 func (s *Scraper) FetchCommitters(ctx context.Context, owner, name string) ([]Committer, error) {
-	var q struct {
-		Repository struct {
-			DefaultBranchRef struct {
-				Target struct {
-					Commit struct {
-						History struct {
-							Nodes []struct {
-								Id     string
-								Author struct {
-									Email string
-									User  struct {
-										Login string
-									}
-								}
-								Committer struct {
-									Email string
-									User  struct {
-										Login string
-									}
-								}
-							}
-							PageInfo PageInfo
-						} `graphql:"history(first: $first, after: $cursor)"`
-					} `graphql:"... on Commit"`
-				} `graphq:"target"`
-			} `graphql:"defaultBranchRef"`
-		} `graphql:"repository(owner: $owner, name: $name)"`
+	opt := &github.CommitsListOptions{
+		ListOptions: github.ListOptions{PerPage: 100},
 	}
 
-	var all []Committer
-	variables := map[string]interface{}{
-		"first":  githubv4.Int(githubQuerySize),
-		"cursor": (*githubv4.String)(nil),
-		"owner":  githubv4.String(owner),
-		"name":   githubv4.String(name),
-	}
+	var allCommits []*github.RepositoryCommit
 
 	for {
-		if err := s.Client.Query(ctx, &q, variables); err != nil {
-			return nil, fmt.Errorf("Failed to fetch committers: %w", err)
+		commits, resp, err := s.API.Repositories.ListCommits(ctx, owner, name, opt)
+		if err != nil {
+			return nil, fmt.Errorf("Failed to fetch repository: %w", err)
 		}
 
-		for _, i := range q.Repository.DefaultBranchRef.Target.Commit.History.Nodes {
-			committer := Committer{
-				CommitId: i.Id,
-				Email:    i.Author.Email,
-				Login:    i.Author.User.Login,
-			}
-			all = append(all, committer)
-
-			if i.Author.Email != i.Committer.Email {
-				committer := Committer{
-					CommitId: i.Id,
-					Email:    i.Committer.Email,
-					Login:    i.Committer.User.Login,
-				}
-				all = append(all, committer)
-			}
-		}
-
-		if !q.Repository.DefaultBranchRef.Target.Commit.History.PageInfo.HasNextPage {
+		allCommits = append(allCommits, commits...)
+		if resp.NextPage == 0 {
 			break
 		}
+		opt.Page = resp.NextPage
+	}
 
-		variables["cursor"] = githubv4.NewString(q.Repository.DefaultBranchRef.Target.Commit.History.PageInfo.EndCursor)
+	// Get all unique committers
+	var all []Committer
+	for _, commit := range allCommits {
+		if commit.GetCommitter() != nil && commit.GetCommitter().GetLogin() != "" {
+			committer := Committer{
+				CommitId: *commit.Commit.Tree.SHA,
+				Email:    *commit.GetCommit().GetCommitter().Email,
+				Login:    commit.GetCommitter().GetLogin(),
+			}
+			all = append(all, committer)
+		}
+
+		if commit.GetAuthor() != nil && commit.GetAuthor().GetLogin() != "" {
+			committer := Committer{
+				CommitId: *commit.Commit.Tree.SHA,
+				Email:    *commit.GetCommit().GetAuthor().Email,
+				Login:    commit.GetAuthor().GetLogin(),
+			}
+			all = append(all, committer)
+		}
 	}
 
 	return all, nil

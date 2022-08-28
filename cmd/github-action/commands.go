@@ -187,7 +187,7 @@ func markdownSummary(authors utils.Authors, vs []violation.Violation) string {
 
 		usernamePtr, err := authors.Find(v.Email())
 		if err != nil || usernamePtr == nil {
-			row[3] = "@unknown"
+			row[3] = "unknown"
 		} else {
 			row[3] = markup.Author(*usernamePtr).Markdown()
 		}
@@ -217,7 +217,7 @@ func markdownSummary(authors utils.Authors, vs []violation.Violation) string {
 
 		usernamePtr, err := authors.Find(v.Email())
 		if err != nil || usernamePtr == nil {
-			row[3] = "@unknown"
+			row[3] = "unknown"
 		} else {
 			row[3] = markup.Author(*usernamePtr).Markdown()
 		}
