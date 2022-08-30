@@ -10,6 +10,7 @@ import (
 	"github.com/Git-Gopher/go-gopher/model/remote"
 	"github.com/Git-Gopher/go-gopher/utils"
 	"github.com/go-git/go-git/v5"
+	"github.com/go-git/go-git/v5/plumbing"
 	"github.com/go-git/go-git/v5/plumbing/object"
 	log "github.com/sirupsen/logrus"
 )
@@ -48,6 +49,7 @@ func NewEnrichedModel(local local.GitModel, github remote.RemoteModel) *Enriched
 		MainGraph:       local.MainGraph,
 		BranchMatrix:    local.BranchMatrix,
 		LocalCommitters: local.Committer,
+		Repository:      local.Repository,
 
 		// remote.RemoteModel
 		Name:             github.Name,
@@ -162,16 +164,14 @@ func (em *EnrichedModel) FindCurrentPR() (*remote.PullRequest, error) {
 // Find merging commits by querying GitHub's graphql api with oids of two branches.
 func (em *EnrichedModel) FindMergingCommits(pr *remote.PullRequest) ([]local.Hash, error) {
 	// Collect commits belonging to the source and target branches.
-	var sourceCommitHashes []local.Hash
-	var targetCommitHashes []local.Hash
+	sourceCommitHashes := make(map[local.Hash]struct{})
+	targetCommitHashes := make(map[local.Hash]struct{})
+	mergingCommitHashes := make([]local.Hash, 0)
+	branchHeadRefName := fmt.Sprintf("refs/remotes/origin/%s", pr.HeadRefName)
+	branchBaseRefName := fmt.Sprintf("refs/remotes/origin/%s", pr.BaseRefName)
 
 	// Source branch.
-	headBranch, err := em.Repository.Branch(pr.HeadRefName)
-	if err != nil {
-		return nil, fmt.Errorf("could not fetch branch from baseref: %w", err)
-	}
-
-	headRef, err := em.Repository.Reference(headBranch.Merge, false)
+	headRef, err := em.Repository.Reference(plumbing.ReferenceName(branchHeadRefName), false)
 	if err != nil {
 		return nil, fmt.Errorf("could not fetch branch reference from baseref: %w", err)
 	}
@@ -185,20 +185,14 @@ func (em *EnrichedModel) FindMergingCommits(pr *remote.PullRequest) ([]local.Has
 	}
 
 	if err = headIter.ForEach(func(c *object.Commit) error {
-		sourceCommitHashes = append(sourceCommitHashes, local.Hash(c.Hash))
-
+		sourceCommitHashes[local.Hash(c.Hash)] = struct{}{}
 		return nil
 	}); err != nil {
 		return nil, fmt.Errorf("error folding commits: %w", err)
 	}
 
 	// Target branch.
-	baseBranch, err := em.Repository.Branch(pr.BaseRefName)
-	if err != nil {
-		return nil, fmt.Errorf("could not fetch branch from baseref: %w", err)
-	}
-
-	baseRef, err := em.Repository.Reference(baseBranch.Merge, false)
+	baseRef, err := em.Repository.Reference(plumbing.ReferenceName(branchBaseRefName), false)
 	if err != nil {
 		return nil, fmt.Errorf("could not fetch branch reference from baseref: %w", err)
 	}
@@ -212,15 +206,22 @@ func (em *EnrichedModel) FindMergingCommits(pr *remote.PullRequest) ([]local.Has
 	}
 
 	if err = baseIter.ForEach(func(c *object.Commit) error {
-		targetCommitHashes = append(targetCommitHashes, local.Hash(c.Hash))
+		targetCommitHashes[local.Hash(c.Hash)] = struct{}{}
 
 		return nil
 	}); err != nil {
 		return nil, fmt.Errorf("error folding commits: %w", err)
 	}
 
-	log.Printf("sourceCommitHashes: %v\n", sourceCommitHashes)
-	log.Printf("targetCommitHashes: %v\n", targetCommitHashes)
+	log.Infof("sourceCommitHashes: %v\n", sourceCommitHashes)
+	log.Infof("targetCommitHashes: %v\n", targetCommitHashes)
 
-	return nil, nil
+	// Find commits that are in the source but not the target.
+	for k, _ := range sourceCommitHashes {
+		if _, ok := targetCommitHashes[k]; !ok {
+			mergingCommitHashes = append(mergingCommitHashes, k)
+		}
+	}
+
+	return mergingCommitHashes, nil
 }
