@@ -161,7 +161,6 @@ func (em *EnrichedModel) FindCurrentPR() (*remote.PullRequest, error) {
 
 // Find merging commits by querying GitHub's graphql api with oids of two branches
 func (em *EnrichedModel) FindMergingCommits(pr *remote.PullRequest) ([]local.Hash, error) {
-
 	// Collect commits belonging to the source and target branches.
 	var sourceCommitHashes []local.Hash
 	var targetCommitHashes []local.Hash
@@ -174,20 +173,20 @@ func (em *EnrichedModel) FindMergingCommits(pr *remote.PullRequest) ([]local.Has
 
 	headRef, err := em.Repository.Reference(headBranch.Merge, false)
 	if err != nil {
-		return nil, fmt.Errorf("could not fetch branch refrence from baseref: %w", err)
+		return nil, fmt.Errorf("could not fetch branch reference from baseref: %w", err)
 	}
 
 	headIter, err := em.Repository.Log(&git.LogOptions{
 		From:  headRef.Hash(),
 		Order: git.LogOrderCommitterTime,
 	})
-
 	if err != nil {
 		return nil, fmt.Errorf("error creating commit iter for branch: %w", err)
 	}
 
 	if err = headIter.ForEach(func(c *object.Commit) error {
 		sourceCommitHashes = append(sourceCommitHashes, local.Hash(c.Hash))
+
 		return nil
 	}); err != nil {
 		return nil, fmt.Errorf("error folding commits: %w", err)
@@ -201,26 +200,27 @@ func (em *EnrichedModel) FindMergingCommits(pr *remote.PullRequest) ([]local.Has
 
 	baseRef, err := em.Repository.Reference(baseBranch.Merge, false)
 	if err != nil {
-		return nil, fmt.Errorf("could not fetch branch refrence from baseref: %w", err)
+		return nil, fmt.Errorf("could not fetch branch reference from baseref: %w", err)
 	}
 
 	baseIter, err := em.Repository.Log(&git.LogOptions{
 		From:  baseRef.Hash(),
 		Order: git.LogOrderCommitterTime,
 	})
-
 	if err != nil {
 		return nil, fmt.Errorf("error creating commit iter for branch: %w", err)
 	}
 
 	if err = baseIter.ForEach(func(c *object.Commit) error {
 		targetCommitHashes = append(targetCommitHashes, local.Hash(c.Hash))
+
 		return nil
 	}); err != nil {
 		return nil, fmt.Errorf("error folding commits: %w", err)
 	}
 
-	fmt.Printf("sourceCommitHashes: %v\n", sourceCommitHashes)
-	fmt.Printf("targetCommitHashes: %v\n", targetCommitHashes)
+	log.Printf("sourceCommitHashes: %v\n", sourceCommitHashes)
+	log.Printf("targetCommitHashes: %v\n", targetCommitHashes)
+
 	return nil, nil
 }
