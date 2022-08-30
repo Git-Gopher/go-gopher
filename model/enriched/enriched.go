@@ -159,7 +159,7 @@ func (em *EnrichedModel) FindCurrentPR() (*remote.PullRequest, error) {
 	return targetPr, nil
 }
 
-// Find merging commits by querying GitHub's graphql api with oids of two branches
+// Find merging commits by querying GitHub's graphql api with oids of two branches.
 func (em *EnrichedModel) FindMergingCommits(pr *remote.PullRequest) ([]local.Hash, error) {
 	// Collect commits belonging to the source and target branches.
 	var sourceCommitHashes []local.Hash
