@@ -76,6 +76,7 @@ type violation struct {
 	email    string
 	time     time.Time
 	severity Severity
+	current  bool
 }
 
 func (v *violation) Name() string {
@@ -108,4 +109,8 @@ func (v *violation) LineLocation() (int, error) {
 
 func (v *violation) Suggestion() (string, error) {
 	return "", ErrViolationMethodNotExist
+}
+
+func (v *violation) Current() bool {
+	return v.current
 }

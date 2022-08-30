@@ -73,7 +73,9 @@ func PullRequestIssueDetector() (string, PullRequestDetect) {
 						Owner: c.owner,
 						Repo:  c.repo,
 					},
-				}), nil
+				},
+				c.IsCurrentPR(pr),
+			), nil
 		}
 
 		return false, nil, nil
@@ -95,7 +97,9 @@ func PullRequestApprovalDetector() (string, PullRequestDetect) {
 						Owner: c.owner,
 						Repo:  c.repo,
 					},
-				}), nil
+				},
+				c.IsCurrentPR(pr),
+			), nil
 		}
 
 		return false, nil, nil
@@ -119,7 +123,9 @@ func PullRequestReviewThreadDetector() (string, PullRequestDetect) {
 							Owner: c.owner,
 							Repo:  c.repo,
 						},
-					}), nil
+					},
+					c.IsCurrentPR(pr),
+				), nil
 			}
 		}
 

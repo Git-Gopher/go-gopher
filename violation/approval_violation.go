@@ -8,11 +8,13 @@ import (
 
 func NewApprovalViolation(
 	pr markup.PR,
+	current bool,
 ) *ApprovalViolation {
 	violation := &ApprovalViolation{
 		violation: violation{
 			name:     "PullRequestApprovalViolation",
 			severity: Violated,
+			current:  current,
 		},
 		pr: pr,
 	}
@@ -39,9 +41,4 @@ func (av *ApprovalViolation) Suggestion() (string, error) {
 			"by checking (Files changed > Review changes) on the pull request. Pull requests should receive at least one " +
 			"approval before they are merged, this gives your peers opportunity to look over your code and suggest improvements",
 		nil
-}
-
-// Current implements Violation.
-func (av *ApprovalViolation) Current() bool {
-	return true
 }

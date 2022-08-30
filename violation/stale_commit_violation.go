@@ -6,13 +6,20 @@ import (
 	"github.com/Git-Gopher/go-gopher/markup"
 )
 
-func NewStaleCommitViolation(commit markup.Commit, message string, email string, time time.Time) *StaleCommitViolation {
+func NewStaleCommitViolation(
+	commit markup.Commit,
+	message string,
+	email string,
+	time time.Time,
+	current bool,
+) *StaleCommitViolation {
 	common := &StaleCommitViolation{
 		violation: violation{
 			name:     "StaleCommitViolation",
 			email:    email,
 			time:     time,
 			severity: Violated,
+			current:  current,
 		},
 		commit:  commit,
 		message: message,
@@ -33,9 +40,4 @@ type StaleCommitViolation struct {
 // Message implements Violation.
 func (scv *StaleCommitViolation) Message() string {
 	return scv.message
-}
-
-// Current implements Violation.
-func (scv *StaleCommitViolation) Current() bool {
-	return true
 }

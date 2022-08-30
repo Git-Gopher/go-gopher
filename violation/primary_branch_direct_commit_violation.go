@@ -13,6 +13,7 @@ func NewPrimaryBranchDirectCommitViolation(
 	parentHashes []markup.Commit,
 	email string,
 	time time.Time,
+	current bool,
 ) *PrimaryBranchDirectCommitViolation {
 	violation := &PrimaryBranchDirectCommitViolation{
 		violation: violation{
@@ -20,6 +21,7 @@ func NewPrimaryBranchDirectCommitViolation(
 			email:    email,
 			time:     time,
 			severity: Violated,
+			current:  current,
 		},
 		parentHashes:  parentHashes,
 		primaryBranch: primaryBranch,
@@ -53,9 +55,4 @@ func (pbdcv *PrimaryBranchDirectCommitViolation) Suggestion() (string, error) {
 		"instead of directly committing to the primary branch. This method helps keep track of your development history "+
 		"and is a fundamental technique of using Github Flow",
 		pbdcv.primaryBranch.Markdown()), nil
-}
-
-// Current implements Violation.
-func (pbdcv *PrimaryBranchDirectCommitViolation) Current() bool {
-	return true
 }

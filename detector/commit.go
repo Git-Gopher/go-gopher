@@ -112,13 +112,14 @@ func DiffMatchesMessageDetect() (string, CommitDetect) {
 			commit.Message,
 			commit.Committer.Email,
 			commit.Committer.When,
+			c.IsCurrentCommit(commit.Hash),
 		)}, nil
 	}
 }
 
 // UnresolvedDetect checks if a commit is unresolved.
 func UnresolvedDetect() (string, CommitDetect) {
-	return "UnresolvedDetect", func(common *common, commit *local.Commit) (bool, []violation.Violation, error) {
+	return "UnresolvedDetect", func(c *common, commit *local.Commit) (bool, []violation.Violation, error) {
 		for _, diff := range commit.DiffToParents {
 			lines := strings.Split(strings.ReplaceAll(diff.Addition, "\r\n", "\n"), "\n")
 			for _, line := range lines {
@@ -129,8 +130,8 @@ func UnresolvedDetect() (string, CommitDetect) {
 							File: markup.File{
 								Commit: markup.Commit{
 									GitHubLink: markup.GitHubLink{
-										Owner: common.owner,
-										Repo:  common.repo,
+										Owner: c.owner,
+										Repo:  c.repo,
 									},
 									Hash: hex.EncodeToString(commit.Hash.ToByte()),
 								},
@@ -141,6 +142,7 @@ func UnresolvedDetect() (string, CommitDetect) {
 						},
 						commit.Committer.Email,
 						commit.Committer.When,
+						c.IsCurrentCommit(commit.Hash),
 					)}, nil
 				}
 			}
@@ -180,6 +182,7 @@ func ShortCommitMessageDetect() (string, CommitDetect) {
 				commit.Message,
 				commit.Committer.Email,
 				commit.Committer.When,
+				c.IsCurrentCommit(commit.Hash),
 			)}, nil
 		}
 
@@ -191,7 +194,7 @@ func BinaryDetect() (string, CommitDetect) {
 	// Extensions that should not be committed to the repository.
 	disallowedExtensions := []string{".exe", ".jar", ".class"}
 
-	return "BinaryDetect", func(common *common, commit *local.Commit) (bool, []violation.Violation, error) {
+	return "BinaryDetect", func(c *common, commit *local.Commit) (bool, []violation.Violation, error) {
 		vs := []violation.Violation{}
 		for _, d := range commit.DiffToParents {
 			if d.IsBinary && utils.Contains(d.Name, disallowedExtensions) {
@@ -199,8 +202,8 @@ func BinaryDetect() (string, CommitDetect) {
 					markup.File{
 						Commit: markup.Commit{
 							GitHubLink: markup.GitHubLink{
-								Owner: common.owner,
-								Repo:  common.repo,
+								Owner: c.owner,
+								Repo:  c.repo,
 							},
 							Hash: hex.EncodeToString(commit.Hash.ToByte()),
 						},
@@ -208,6 +211,7 @@ func BinaryDetect() (string, CommitDetect) {
 					},
 					commit.Committer.Email,
 					commit.Committer.When,
+					c.IsCurrentCommit(commit.Hash),
 				))
 			}
 		}
@@ -238,7 +242,9 @@ func EmptyCommitDetect() (string, CommitDetect) {
 					},
 				},
 				commit.Committer.Email,
-				commit.Committer.When))
+				commit.Committer.When,
+				c.IsCurrentCommit(commit.Hash),
+			))
 		}
 
 		return isEmpty, vs, nil

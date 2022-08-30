@@ -12,6 +12,7 @@ func NewForcePushViolation(
 	lostCommits []markup.Commit,
 	email string,
 	time time.Time,
+	current bool,
 ) *ForcePushViolation {
 	violation := &ForcePushViolation{
 		violation: violation{
@@ -19,6 +20,7 @@ func NewForcePushViolation(
 			email:    email,
 			time:     time,
 			severity: Violated,
+			current:  current,
 		},
 		lostCommits: lostCommits,
 	}
@@ -55,9 +57,4 @@ func (fpv *ForcePushViolation) Suggestion() (string, error) {
 	}
 
 	return fmt.Sprintf(format, strings.Join(commits, ",")), nil
-}
-
-// Current implements Violation.
-func (fpv *ForcePushViolation) Current() bool {
-	return true
 }

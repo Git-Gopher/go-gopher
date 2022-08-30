@@ -8,11 +8,13 @@ import (
 
 func NewUnresolvedConversationViolation(
 	pr markup.PR,
+	current bool,
 ) *UnresolvedConversationViolation {
 	violation := &UnresolvedConversationViolation{
 		violation: violation{
 			name:     "UnresolvedConversationViolation",
 			severity: Violated,
+			current:  current,
 		},
 		pr: pr,
 	}
@@ -38,9 +40,4 @@ func (ucv *UnresolvedConversationViolation) Suggestion() (string, error) {
 		"This indicates that all discussions for the pull request have been resolved and " +
 		"puts the entire team is on the same page with the progress of your project " +
 		"without having to double check with your peers", nil
-}
-
-// Current implements Violation.
-func (ucv *UnresolvedConversationViolation) Current() bool {
-	return true
 }

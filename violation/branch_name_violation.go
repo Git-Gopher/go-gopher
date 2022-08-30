@@ -12,6 +12,7 @@ func NewBranchNameViolation(
 	substring string,
 	email string,
 	time time.Time,
+	current bool,
 ) *BranchNameViolation {
 	violation := &BranchNameViolation{
 		violation: violation{
@@ -19,6 +20,7 @@ func NewBranchNameViolation(
 			email:    email,
 			time:     time,
 			severity: Suggestion,
+			current:  current,
 		},
 		branchRef: branchRef,
 		substring: substring,
@@ -54,9 +56,4 @@ func (bnv *BranchNameViolation) Suggestion() (string, error) {
 		"the type of change that the branch contains. For example \"fix/\" or \"feature/\" are "+
 		"good group tokens for branches containing fixes and features respectively."+
 		"The current longest prefix your branches have is \"%s\"", bnv.substring), nil
-}
-
-// Current implements Violation.
-func (bnv *BranchNameViolation) Current() bool {
-	return true
 }

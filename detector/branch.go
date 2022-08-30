@@ -101,7 +101,10 @@ func StaleBranchDetect() (string, BranchDetect) {
 						Repo:  c.repo,
 					},
 				},
-				time.Duration(monthsSince), email), nil
+				time.Duration(monthsSince),
+				email,
+				c.IsCurrentBranch(branch.Name),
+			), nil
 		}
 
 		return false, nil, nil

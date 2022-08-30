@@ -186,6 +186,7 @@ func (em *EnrichedModel) FindMergingCommits(pr *remote.PullRequest) ([]local.Has
 
 	if err = headIter.ForEach(func(c *object.Commit) error {
 		sourceCommitHashes[local.Hash(c.Hash)] = struct{}{}
+
 		return nil
 	}); err != nil {
 		return nil, fmt.Errorf("error folding commits: %w", err)
@@ -217,7 +218,7 @@ func (em *EnrichedModel) FindMergingCommits(pr *remote.PullRequest) ([]local.Has
 	log.Infof("targetCommitHashes: %v\n", targetCommitHashes)
 
 	// Find commits that are in the source but not the target.
-	for k, _ := range sourceCommitHashes {
+	for k := range sourceCommitHashes {
 		if _, ok := targetCommitHashes[k]; !ok {
 			mergingCommitHashes = append(mergingCommitHashes, k)
 		}

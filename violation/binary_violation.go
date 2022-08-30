@@ -11,6 +11,7 @@ func NewBinaryViolation(
 	file markup.File,
 	email string,
 	time time.Time,
+	current bool,
 ) *BinaryViolation {
 	violation := &BinaryViolation{
 		violation: violation{
@@ -18,6 +19,7 @@ func NewBinaryViolation(
 			email:    email,
 			time:     time,
 			severity: Violated,
+			current:  current,
 		},
 		file: file,
 	}
@@ -45,9 +47,4 @@ func (bv *BinaryViolation) Suggestion() (string, error) {
 	return "Git projects should aim not include binary files. " +
 		"Binary files should be added to the project .gitignore file and the " +
 		"file removed from the working tree using \"git rm --cached <file>\"", nil
-}
-
-// Current implements Violation.
-func (bv *BinaryViolation) Current() bool {
-	return true
 }

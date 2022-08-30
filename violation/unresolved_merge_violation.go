@@ -11,6 +11,7 @@ func NewUnresolvedMergeViolation(
 	line markup.Line,
 	email string,
 	time time.Time,
+	current bool,
 ) *UnresolvedMergeViolation {
 	violation := &UnresolvedMergeViolation{
 		violation: violation{
@@ -18,6 +19,7 @@ func NewUnresolvedMergeViolation(
 			email:    email,
 			time:     time,
 			severity: Violated,
+			current:  current,
 		},
 		line: line,
 	}
@@ -42,9 +44,4 @@ func (umv *UnresolvedMergeViolation) Message() string {
 func (umv *UnresolvedMergeViolation) Suggestion() (string, error) {
 	return "Resolve merge conflicts before committing to a branch " +
 		"as unresolved conflicts cause the project to enter a broken state", nil
-}
-
-// Current implements Violation.
-func (umv *UnresolvedMergeViolation) Current() bool {
-	return true
 }

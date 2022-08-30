@@ -12,7 +12,7 @@ import (
 )
 
 var (
-	ErrNotImplemented = fmt.Errorf("Not implemented")
+	ErrNotImplemented = fmt.Errorf("not implemented")
 
 	commonMemo *common
 )
@@ -29,7 +29,7 @@ type common struct {
 	PR *remote.PullRequest
 }
 
-// Checks if a commit relates to the current feedback comment
+// Checks if a commit relates to the current feedback comment.
 func (c *common) IsCurrentCommit(h local.Hash) bool {
 	// In the case where there is no current branch/pr, default to report all.
 	if c.mergingCommits == nil {
@@ -52,6 +52,19 @@ func (c *common) IsCurrentPR(pr *remote.PullRequest) bool {
 	}
 
 	if pr.Number == c.PR.Number {
+		return true
+	}
+
+	return false
+}
+
+func (c *common) IsCurrentBranch(branchName string) bool {
+	// In the case where there is no current branch/pr, default to report all.
+	if c.PR == nil {
+		return true
+	}
+
+	if c.PR.HeadRefName == branchName {
 		return true
 	}
 

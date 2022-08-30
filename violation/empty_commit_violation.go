@@ -11,6 +11,7 @@ func NewEmptyCommitViolation(
 	commit markup.Commit,
 	email string,
 	time time.Time,
+	current bool,
 ) *EmptyCommitViolation {
 	violation := &EmptyCommitViolation{
 		violation: violation{
@@ -18,6 +19,7 @@ func NewEmptyCommitViolation(
 			email:    email,
 			time:     time,
 			severity: Violated,
+			current:  current,
 		},
 		commit: commit,
 	}
@@ -45,9 +47,4 @@ func (ecv *EmptyCommitViolation) Message() string {
 func (ecv *EmptyCommitViolation) Suggestion() (string, error) {
 	return "Try not make empty commits to the git history " +
 		"as it makes it seem like you are forging or padding your version history", nil
-}
-
-// Current implements Violation.
-func (ecv *EmptyCommitViolation) Current() bool {
-	return true
 }

@@ -13,6 +13,7 @@ func NewDescriptiveCommitViolation(
 	message string,
 	email string,
 	time time.Time,
+	current bool,
 ) *DescriptiveCommitViolation {
 	violation := &DescriptiveCommitViolation{
 		violation: violation{
@@ -20,6 +21,7 @@ func NewDescriptiveCommitViolation(
 			email:    email,
 			time:     time,
 			severity: Suggestion,
+			current:  current,
 		},
 		commit:  commit,
 		message: message,
@@ -53,9 +55,4 @@ func (dcv *DescriptiveCommitViolation) Suggestion() (string, error) {
 	return "Try to add more detail to commit messages that relate to the contents of a commit. " +
 		"Ideally you should be able to look at the message and know the nature of the changes " +
 		"that have occurred within the project", nil
-}
-
-// Current implements Violation.
-func (dcv *DescriptiveCommitViolation) Current() bool {
-	return true
 }
