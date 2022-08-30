@@ -570,7 +570,7 @@ func (s *Scraper) FetchCommitters(ctx context.Context, owner, name string) ([]Co
 		return nil, fmt.Errorf("Failed to fetch branch heads: %w", err)
 	}
 
-	var errCh = make(chan error)
+	errCh := make(chan error)
 	var mutex sync.Mutex
 	var wg sync.WaitGroup
 	for branchName, commitSHA := range branchMap {
@@ -681,7 +681,11 @@ func (s *Scraper) FetchCommittersDefaultBranch(ctx context.Context, owner, name 
 }
 
 // FetchCommittersDefaultBranch, get all committers from default branch of a repo.
-func (s *Scraper) FetchCommittersBranch(ctx context.Context, owner, name, branch string, limit int) ([]Committer, error) {
+func (s *Scraper) FetchCommittersBranch(
+	ctx context.Context,
+	owner, name, branch string,
+	limit int,
+) ([]Committer, error) {
 	var q struct {
 		Repository struct {
 			Ref struct {
