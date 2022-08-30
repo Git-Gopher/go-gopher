@@ -32,7 +32,7 @@ import (
 
 var TeamDevs = []string{"wqsz7xn", "scorpionknifes"}
 
-//nolint: all
+// nolint: all
 func main() {
 	app := cli.NewApp()
 	app.EnableBashCompletion = true
@@ -394,6 +394,7 @@ func main() {
 						if err != nil {
 							log.Fatalf("Failed to clone repository: %v", err)
 						}
+
 						gitModel, err := local.NewGitModel(repo)
 						if err != nil {
 							log.Fatalf("Could not create GitModel: %v\n", err)

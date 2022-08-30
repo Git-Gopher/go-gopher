@@ -220,7 +220,7 @@ type GitModel struct {
 	MainGraph    *BranchGraph
 	BranchMatrix []*BranchMatrix
 
-	// Not all functionality has been ported from go-git
+	// Not all functionality has been ported from go-git.
 	Repository *git.Repository
 }
 

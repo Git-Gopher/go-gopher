@@ -31,7 +31,7 @@ type EnrichedModel struct {
 	BranchMatrix    []*local.BranchMatrix `json:"-"` // Matrix representation by comparing branches
 	LocalCommitters []local.Committer
 
-	// Not all functionality has been ported from go-git
+	// Not all functionality has been ported from go-git.
 	Repository *git.Repository
 
 	// remote.RemoteModel
