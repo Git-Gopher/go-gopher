@@ -9,6 +9,8 @@ import (
 	"github.com/Git-Gopher/go-gopher/model/local"
 	"github.com/Git-Gopher/go-gopher/model/remote"
 	"github.com/Git-Gopher/go-gopher/utils"
+	"github.com/go-git/go-git/v5"
+	"github.com/go-git/go-git/v5/plumbing/object"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -27,6 +29,9 @@ type EnrichedModel struct {
 	MainGraph       *local.BranchGraph    `json:"-"` // Graph representation of commits in the main branch
 	BranchMatrix    []*local.BranchMatrix `json:"-"` // Matrix representation by comparing branches
 	LocalCommitters []local.Committer
+
+	// Not all functionality has been ported from go-git
+	Repository *git.Repository
 
 	// remote.RemoteModel
 	PullRequests     []*remote.PullRequest
@@ -152,4 +157,70 @@ func (em *EnrichedModel) FindCurrentPR() (*remote.PullRequest, error) {
 	}
 
 	return targetPr, nil
+}
+
+// Find merging commits by querying GitHub's graphql api with oids of two branches
+func (em *EnrichedModel) FindMergingCommits(pr *remote.PullRequest) ([]local.Hash, error) {
+
+	// Collect commits belonging to the source and target branches.
+	var sourceCommitHashes []local.Hash
+	var targetCommitHashes []local.Hash
+
+	// Source branch.
+	headBranch, err := em.Repository.Branch(pr.HeadRefName)
+	if err != nil {
+		return nil, fmt.Errorf("could not fetch branch from baseref: %w", err)
+	}
+
+	headRef, err := em.Repository.Reference(headBranch.Merge, false)
+	if err != nil {
+		return nil, fmt.Errorf("could not fetch branch refrence from baseref: %w", err)
+	}
+
+	headIter, err := em.Repository.Log(&git.LogOptions{
+		From:  headRef.Hash(),
+		Order: git.LogOrderCommitterTime,
+	})
+
+	if err != nil {
+		return nil, fmt.Errorf("error creating commit iter for branch: %w", err)
+	}
+
+	if err = headIter.ForEach(func(c *object.Commit) error {
+		sourceCommitHashes = append(sourceCommitHashes, local.Hash(c.Hash))
+		return nil
+	}); err != nil {
+		return nil, fmt.Errorf("error folding commits: %w", err)
+	}
+
+	// Target branch.
+	baseBranch, err := em.Repository.Branch(pr.BaseRefName)
+	if err != nil {
+		return nil, fmt.Errorf("could not fetch branch from baseref: %w", err)
+	}
+
+	baseRef, err := em.Repository.Reference(baseBranch.Merge, false)
+	if err != nil {
+		return nil, fmt.Errorf("could not fetch branch refrence from baseref: %w", err)
+	}
+
+	baseIter, err := em.Repository.Log(&git.LogOptions{
+		From:  baseRef.Hash(),
+		Order: git.LogOrderCommitterTime,
+	})
+
+	if err != nil {
+		return nil, fmt.Errorf("error creating commit iter for branch: %w", err)
+	}
+
+	if err = baseIter.ForEach(func(c *object.Commit) error {
+		targetCommitHashes = append(targetCommitHashes, local.Hash(c.Hash))
+		return nil
+	}); err != nil {
+		return nil, fmt.Errorf("error folding commits: %w", err)
+	}
+
+	fmt.Printf("sourceCommitHashes: %v\n", sourceCommitHashes)
+	fmt.Printf("targetCommitHashes: %v\n", targetCommitHashes)
+	return nil, nil
 }

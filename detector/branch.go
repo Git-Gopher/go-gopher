@@ -9,6 +9,7 @@ import (
 	"github.com/Git-Gopher/go-gopher/model/local"
 	"github.com/Git-Gopher/go-gopher/utils"
 	"github.com/Git-Gopher/go-gopher/violation"
+	log "github.com/sirupsen/logrus"
 )
 
 type BranchDetect func(c *common, branch *local.Branch) (bool, violation.Violation, error)
@@ -35,8 +36,8 @@ func NewBranchDetector(name string, detect BranchDetect) *BranchDetector {
 	}
 }
 
-func (bd *BranchDetector) Run(model *enriched.EnrichedModel) error {
-	if model == nil {
+func (bd *BranchDetector) Run(em *enriched.EnrichedModel) error {
+	if em == nil {
 		return nil
 	}
 
@@ -44,11 +45,14 @@ func (bd *BranchDetector) Run(model *enriched.EnrichedModel) error {
 	bd.found = 0
 	bd.total = 0
 	bd.violations = make([]violation.Violation, 0)
-	c := common{owner: model.Owner, repo: model.Name}
+	c, err := NewCommon(em)
+	if err != nil {
+		log.Fatalf("could not create common: %v", err)
+	}
 
-	for _, b := range model.Branches {
+	for _, b := range em.Branches {
 		b := b
-		detected, violation, err := bd.detect(&c, &b)
+		detected, violation, err := bd.detect(c, &b)
 		if err != nil {
 			return fmt.Errorf("failed to run branch detector: %w", err)
 		}

@@ -9,6 +9,7 @@ import (
 	"github.com/Git-Gopher/go-gopher/model/local"
 	"github.com/Git-Gopher/go-gopher/utils"
 	"github.com/Git-Gopher/go-gopher/violation"
+	log "github.com/sirupsen/logrus"
 )
 
 type CommitDetect func(c *common, commit *local.Commit) (bool, []violation.Violation, error)
@@ -34,8 +35,8 @@ func NewCommitDetector(name string, detect CommitDetect) *CommitDetector {
 	}
 }
 
-func (cd *CommitDetector) Run(model *enriched.EnrichedModel) error {
-	if model == nil {
+func (cd *CommitDetector) Run(em *enriched.EnrichedModel) error {
+	if em == nil {
 		return nil
 	}
 
@@ -45,11 +46,14 @@ func (cd *CommitDetector) Run(model *enriched.EnrichedModel) error {
 	cd.total = 0
 	cd.violations = make([]violation.Violation, 0)
 
-	c := common{owner: model.Owner, repo: model.Name}
+	c, err := NewCommon(em)
+	if err != nil {
+		log.Printf("could not create common: %v", err)
+	}
 
-	for _, co := range model.Commits {
+	for _, co := range em.Commits {
 		co := co
-		detected, violations, err := cd.detect(&c, &co)
+		detected, violations, err := cd.detect(c, &co)
 		cd.total++
 		if err != nil {
 			return err

@@ -24,7 +24,7 @@ Detectors can be toggled and weighted within [config/config.yml](./config/config
 
 ## GitHub Action
 
-This project is available as a GitHub action. An example usage can be found within this [project](.github/workflows/git-gopher.yml). The action has been published via the [go-gopher-action](https://github.com/Git-Gopher/go-gopher-action) repository.
+This project is available as a GitHub action. An example usage can be found within this [project](./examples/git-gopher.yml). The action has been published via the [go-gopher-action](https://github.com/Git-Gopher/go-gopher-action) repository.
 
 ## Documentation
 

@@ -12,7 +12,7 @@ GOLANG_CROSS_VERSION  ?= v1.19.0
 
 .PHONY: run build release install lint format test integration tidy clean release-windows release-macos release-linux
 
-run:
+run: build
 	go run .
 
 build:
@@ -23,6 +23,7 @@ ifeq ($(OS),Windows_NT)
 	go build ${LDFLAGS_RELEASE} -o ${BINARY_DIR}/go-gopher-github.exe ./cmd/github-action
 else
 	@go build ${LDFLAGS_RELEASE} -o ${BINARY_DIR}/go-gopher-cli ./cmd/cli && \
+	go build ${LDFLAGS_RELEASE} -o ${BINARY_DIR}/go-gopher ./ && \
 	go build ${LDFLAGS_RELEASE} -o ${BINARY_DIR}/go-gopher-marker ./cmd/marker && \
 	go build ${LDFLAGS_RELEASE} -o ${BINARY_DIR}/go-gopher-github-action ./cmd/github-action
 endif

@@ -8,6 +8,7 @@ import (
 	"github.com/Git-Gopher/go-gopher/model/enriched"
 	"github.com/Git-Gopher/go-gopher/model/local"
 	"github.com/Git-Gopher/go-gopher/violation"
+	log "github.com/sirupsen/logrus"
 )
 
 var (
@@ -40,8 +41,8 @@ func NewFeatureBranchDetector(name string) *FeatureBranchDetector {
 	}
 }
 
-func (bs *FeatureBranchDetector) Run(model *enriched.EnrichedModel) error {
-	if model == nil {
+func (bs *FeatureBranchDetector) Run(em *enriched.EnrichedModel) error {
+	if em == nil {
 		return ErrFeatureBranchModelNil
 	}
 
@@ -50,11 +51,14 @@ func (bs *FeatureBranchDetector) Run(model *enriched.EnrichedModel) error {
 	bs.total = 0
 	bs.violations = make([]violation.Violation, 0)
 
-	c := common{owner: model.Owner, repo: model.Name}
+	c, err := NewCommon(em)
+	if err != nil {
+		log.Printf("could not create common: %v", err)
+	}
 
-	bs.primaryBranch = model.MainGraph.BranchName
+	bs.primaryBranch = em.MainGraph.BranchName
 
-	bs.checkNext(&c, model.MainGraph.Head)
+	bs.checkNext(c, em.MainGraph.Head)
 
 	return nil
 }
