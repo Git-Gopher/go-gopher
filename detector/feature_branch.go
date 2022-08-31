@@ -8,6 +8,7 @@ import (
 	"github.com/Git-Gopher/go-gopher/model/enriched"
 	"github.com/Git-Gopher/go-gopher/model/local"
 	"github.com/Git-Gopher/go-gopher/violation"
+	log "github.com/sirupsen/logrus"
 )
 
 var (
@@ -40,8 +41,8 @@ func NewFeatureBranchDetector(name string) *FeatureBranchDetector {
 	}
 }
 
-func (bs *FeatureBranchDetector) Run(model *enriched.EnrichedModel) error {
-	if model == nil {
+func (bs *FeatureBranchDetector) Run(em *enriched.EnrichedModel) error {
+	if em == nil {
 		return ErrFeatureBranchModelNil
 	}
 
@@ -50,11 +51,14 @@ func (bs *FeatureBranchDetector) Run(model *enriched.EnrichedModel) error {
 	bs.total = 0
 	bs.violations = make([]violation.Violation, 0)
 
-	c := common{owner: model.Owner, repo: model.Name}
+	c, err := NewCommon(em)
+	if err != nil {
+		log.Printf("could not create common: %v", err)
+	}
 
-	bs.primaryBranch = model.MainGraph.BranchName
+	bs.primaryBranch = em.MainGraph.BranchName
 
-	bs.checkNext(&c, model.MainGraph.Head)
+	bs.checkNext(c, em.MainGraph.Head)
 
 	return nil
 }
@@ -133,31 +137,33 @@ func (bs *FeatureBranchDetector) checkNext(c *common, cg *local.CommitGraph) *lo
 	bs.violated += len(v)
 
 	// only one parent (violation)
-	bs.violations = append(bs.violations, violation.NewPrimaryBranchDirectCommitViolation(
-		markup.Branch{
-			Name: bs.primaryBranch,
-			GitHubLink: markup.GitHubLink{
-				Owner: c.owner,
-				Repo:  c.repo,
+	bs.violations = append(bs.violations,
+		violation.NewPrimaryBranchDirectCommitViolation(
+			markup.Branch{
+				Name: bs.primaryBranch,
+				GitHubLink: markup.GitHubLink{
+					Owner: c.owner,
+					Repo:  c.repo,
+				},
 			},
-		},
-		markup.Commit{
-			Hash: cg.Hash,
-			GitHubLink: markup.GitHubLink{
-				Owner: c.owner,
-				Repo:  c.repo,
+			markup.Commit{
+				Hash: cg.Hash,
+				GitHubLink: markup.GitHubLink{
+					Owner: c.owner,
+					Repo:  c.repo,
+				},
 			},
-		},
-		[]markup.Commit{{
-			Hash: cg.ParentCommits[0].Hash,
-			GitHubLink: markup.GitHubLink{
-				Owner: c.owner,
-				Repo:  c.repo,
-			},
-		}},
-		cg.Committer.Email,
-		cg.Committer.When,
-	))
+			[]markup.Commit{{
+				Hash: cg.ParentCommits[0].Hash,
+				GitHubLink: markup.GitHubLink{
+					Owner: c.owner,
+					Repo:  c.repo,
+				},
+			}},
+			cg.Committer.Email,
+			cg.Committer.When,
+			c.IsCurrentBranch(bs.primaryBranch),
+		))
 	bs.violated++
 
 	return bs.checkNext(c, cg.ParentCommits[0])
@@ -210,6 +216,7 @@ func (bs *FeatureBranchDetector) checkEnd(
 		}},
 		cg.Committer.Email,
 		cg.Committer.When,
+		c.IsCurrentBranch(bs.primaryBranch),
 	))
 
 	return bs.checkEnd(c, cg.ParentCommits[0], v)

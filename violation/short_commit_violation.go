@@ -13,6 +13,7 @@ func NewShortCommitViolation(
 	message string,
 	email string,
 	time time.Time,
+	current bool,
 ) *ShortCommitViolation {
 	violation := &ShortCommitViolation{
 		violation: violation{
@@ -20,6 +21,7 @@ func NewShortCommitViolation(
 			email:    email,
 			time:     time,
 			severity: Violated,
+			current:  current,
 		},
 		commit:  commit,
 		message: message,
@@ -45,7 +47,7 @@ func (sc *ShortCommitViolation) Message() string {
 }
 
 // Suggestion implements Violation.
-func (sc *ShortCommitViolation) Suggestion() (string, error) {
+func (scv *ShortCommitViolation) Suggestion() (string, error) {
 	return "Try to make your commit messages longer than 5 words " +
 		"so that your peers can accurately know the changes a commit contains without manually examining it", nil
 }

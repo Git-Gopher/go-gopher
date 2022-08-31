@@ -13,6 +13,7 @@ func NewPrimaryBranchDirectCommitViolation(
 	parentHashes []markup.Commit,
 	email string,
 	time time.Time,
+	current bool,
 ) *PrimaryBranchDirectCommitViolation {
 	violation := &PrimaryBranchDirectCommitViolation{
 		violation: violation{
@@ -20,6 +21,7 @@ func NewPrimaryBranchDirectCommitViolation(
 			email:    email,
 			time:     time,
 			severity: Violated,
+			current:  current,
 		},
 		parentHashes:  parentHashes,
 		primaryBranch: primaryBranch,
@@ -41,16 +43,16 @@ type PrimaryBranchDirectCommitViolation struct {
 }
 
 // Message implements Violation.
-func (p *PrimaryBranchDirectCommitViolation) Message() string {
+func (pbdvc *PrimaryBranchDirectCommitViolation) Message() string {
 	format := "Commit %s has been directly committed to the primary branch %s"
 
-	return fmt.Sprintf(format, p.commitHash.Markdown(), p.primaryBranch.Markdown())
+	return fmt.Sprintf(format, pbdvc.commitHash.Markdown(), pbdvc.primaryBranch.Markdown())
 }
 
 // Suggestion implements Violation.
-func (p *PrimaryBranchDirectCommitViolation) Suggestion() (string, error) {
+func (pbdcv *PrimaryBranchDirectCommitViolation) Suggestion() (string, error) {
 	return fmt.Sprintf("All commits should be merged in to the branch %s via a pull request, "+
 		"instead of directly committing to the primary branch. This method helps keep track of your development history "+
 		"and is a fundamental technique of using Github Flow",
-		p.primaryBranch.Markdown()), nil
+		pbdcv.primaryBranch.Markdown()), nil
 }

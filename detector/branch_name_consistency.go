@@ -59,6 +59,7 @@ func BranchNameConsistencyDetect() (string, BranchCompareDetect) {
 						substring,
 						branch.Head.Committer.Email,
 						branch.Head.Committer.When,
+						c.IsCurrentBranch(branch.Name),
 					),
 				)
 			}

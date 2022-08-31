@@ -8,11 +8,13 @@ import (
 
 func NewLinkedIssueViolation(
 	pr markup.PR,
+	current bool,
 ) *LinkedIssueViolation {
 	violation := &LinkedIssueViolation{
 		violation: violation{
 			name:     "LinkedIssueViolation",
 			severity: Suggestion,
+			current:  current,
 		},
 		pr: pr,
 	}

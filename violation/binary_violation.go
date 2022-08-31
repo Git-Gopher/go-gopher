@@ -11,6 +11,7 @@ func NewBinaryViolation(
 	file markup.File,
 	email string,
 	time time.Time,
+	current bool,
 ) *BinaryViolation {
 	violation := &BinaryViolation{
 		violation: violation{
@@ -18,6 +19,7 @@ func NewBinaryViolation(
 			email:    email,
 			time:     time,
 			severity: Violated,
+			current:  current,
 		},
 		file: file,
 	}

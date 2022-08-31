@@ -1,10 +1,23 @@
 package enriched
 
 import (
+	"errors"
+	"fmt"
+	"os"
+	"strconv"
+
 	"github.com/Git-Gopher/go-gopher/model/local"
 	"github.com/Git-Gopher/go-gopher/model/remote"
 	"github.com/Git-Gopher/go-gopher/utils"
+	"github.com/go-git/go-git/v5"
+	"github.com/go-git/go-git/v5/plumbing"
+	"github.com/go-git/go-git/v5/plumbing/object"
 	log "github.com/sirupsen/logrus"
+)
+
+var (
+	ErrPullRequestNumber = errors.New("could not fetch pull request number from env (PR_NUMBER)")
+	ErrFindPullRequest   = errors.New("could not find pull request from scraped repo given pull request number")
 )
 
 type EnrichedModel struct {
@@ -17,6 +30,9 @@ type EnrichedModel struct {
 	MainGraph       *local.BranchGraph    `json:"-"` // Graph representation of commits in the main branch
 	BranchMatrix    []*local.BranchMatrix `json:"-"` // Matrix representation by comparing branches
 	LocalCommitters []local.Committer
+
+	// Not all functionality has been ported from go-git.
+	Repository *git.Repository
 
 	// remote.RemoteModel
 	PullRequests     []*remote.PullRequest
@@ -33,6 +49,7 @@ func NewEnrichedModel(local local.GitModel, github remote.RemoteModel) *Enriched
 		MainGraph:       local.MainGraph,
 		BranchMatrix:    local.BranchMatrix,
 		LocalCommitters: local.Committer,
+		Repository:      local.Repository,
 
 		// remote.RemoteModel
 		Name:             github.Name,
@@ -113,4 +130,99 @@ func PopulateAuthors( //nolint: ireturn
 	log.Println("Unavailable authors:", unavailable)
 
 	return authors
+}
+
+// Find the current PR that the action is running on. Requires PR_NUMBER is set in env by action.
+// See .github/workflows/git-gopher.yml for more info.
+func (em *EnrichedModel) FindCurrentPR() (*remote.PullRequest, error) {
+	// Pull request number from github action
+	prNumberEnv := os.Getenv("PR_NUMBER")
+	if prNumberEnv == "" {
+		return nil, ErrPullRequestNumber
+	}
+	prNumber, err := strconv.Atoi(prNumberEnv)
+	if err != nil {
+		return nil, fmt.Errorf("could not atoi pr number: %w", err)
+	}
+
+	var targetPr *remote.PullRequest
+	for _, pr := range em.PullRequests {
+		if pr.Number == prNumber {
+			targetPr = pr
+
+			break
+		}
+	}
+
+	if targetPr == nil {
+		return nil, ErrFindPullRequest
+	}
+
+	return targetPr, nil
+}
+
+// Find merging commits by querying GitHub's graphql api with oids of two branches.
+func (em *EnrichedModel) FindMergingCommits(pr *remote.PullRequest) ([]local.Hash, error) {
+	// Collect commits belonging to the source and target branches.
+	sourceCommitHashes := make(map[local.Hash]struct{})
+	targetCommitHashes := make(map[local.Hash]struct{})
+	mergingCommitHashes := make([]local.Hash, 0)
+	branchHeadRefName := fmt.Sprintf("refs/remotes/origin/%s", pr.HeadRefName)
+	branchBaseRefName := fmt.Sprintf("refs/remotes/origin/%s", pr.BaseRefName)
+
+	// Source branch.
+	headRef, err := em.Repository.Reference(plumbing.ReferenceName(branchHeadRefName), false)
+	if err != nil {
+		return nil, fmt.Errorf("could not fetch branch reference from baseref: %w", err)
+	}
+
+	headIter, err := em.Repository.Log(&git.LogOptions{
+		From:  headRef.Hash(),
+		Order: git.LogOrderCommitterTime,
+	})
+	if err != nil {
+		return nil, fmt.Errorf("error creating commit iter for branch: %w", err)
+	}
+
+	if err = headIter.ForEach(func(c *object.Commit) error {
+		sourceCommitHashes[local.Hash(c.Hash)] = struct{}{}
+
+		return nil
+	}); err != nil {
+		return nil, fmt.Errorf("error folding commits: %w", err)
+	}
+
+	// Target branch.
+	baseRef, err := em.Repository.Reference(plumbing.ReferenceName(branchBaseRefName), false)
+	if err != nil {
+		return nil, fmt.Errorf("could not fetch branch reference from baseref: %w", err)
+	}
+
+	baseIter, err := em.Repository.Log(&git.LogOptions{
+		From:  baseRef.Hash(),
+		Order: git.LogOrderCommitterTime,
+	})
+	if err != nil {
+		return nil, fmt.Errorf("error creating commit iter for branch: %w", err)
+	}
+
+	if err = baseIter.ForEach(func(c *object.Commit) error {
+		targetCommitHashes[local.Hash(c.Hash)] = struct{}{}
+
+		return nil
+	}); err != nil {
+		return nil, fmt.Errorf("error folding commits: %w", err)
+	}
+
+	log.Infof("sourceCommitHashes: %v\n", sourceCommitHashes)
+	log.Infof("targetCommitHashes: %v\n", targetCommitHashes)
+
+	// Find commits that are in the source but not the target.
+	for k := range sourceCommitHashes {
+		if _, ok := targetCommitHashes[k]; !ok {
+			mergingCommitHashes = append(mergingCommitHashes, k)
+		}
+	}
+
+	return mergingCommitHashes, nil
 }

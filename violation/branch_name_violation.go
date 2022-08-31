@@ -12,6 +12,7 @@ func NewBranchNameViolation(
 	substring string,
 	email string,
 	time time.Time,
+	current bool,
 ) *BranchNameViolation {
 	violation := &BranchNameViolation{
 		violation: violation{
@@ -19,6 +20,7 @@ func NewBranchNameViolation(
 			email:    email,
 			time:     time,
 			severity: Suggestion,
+			current:  current,
 		},
 		branchRef: branchRef,
 		substring: substring,
@@ -38,20 +40,20 @@ type BranchNameViolation struct {
 }
 
 // Message implements Violation.
-func (bn *BranchNameViolation) Message() string {
+func (bnv *BranchNameViolation) Message() string {
 	format := "Branch %s name might inconsistent with other branch names"
 
-	return fmt.Sprintf(format, bn.branchRef.Markdown())
+	return fmt.Sprintf(format, bnv.branchRef.Markdown())
 }
 
 // Suggestion implements Violation.
-func (bn *BranchNameViolation) Suggestion() (string, error) {
-	if bn.substring == "" {
+func (bnv *BranchNameViolation) Suggestion() (string, error) {
+	if bnv.substring == "" {
 		return "", ErrViolationMethodNotExist
 	}
 
 	return fmt.Sprintf("Try to group together branch names by using a group token prefix that indicates "+
 		"the type of change that the branch contains. For example \"fix/\" or \"feature/\" are "+
 		"good group tokens for branches containing fixes and features respectively."+
-		"The current longest prefix your branches have is \"%s\"", bn.substring), nil
+		"The current longest prefix your branches have is \"%s\"", bnv.substring), nil
 }

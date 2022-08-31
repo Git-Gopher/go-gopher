@@ -12,7 +12,7 @@ GOLANG_CROSS_VERSION  ?= v1.19.0
 
 .PHONY: run build release install lint format test integration tidy clean release-windows release-macos release-linux
 
-run:
+run: build
 	go run .
 
 build:

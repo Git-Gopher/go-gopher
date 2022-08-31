@@ -13,9 +13,9 @@ import (
 )
 
 var (
-	ErrCommitEmpty   = errors.New("Commit empty")
-	ErrBranchEmpty   = errors.New("Branch empty")
-	ErrUnknownLineOp = errors.New("Unknown line op")
+	ErrCommitEmpty   = errors.New("commit empty")
+	ErrBranchEmpty   = errors.New("branch empty")
+	ErrUnknownLineOp = errors.New("unknown line op")
 	// Hash of an empty git tree.
 	// $(printf '' | git hash-object -t tree --stdin).
 	EmptyTreeHash = "4b825dc642cb6eb9a060e54bf8d69288fbee4904"
@@ -219,6 +219,9 @@ type GitModel struct {
 	Branches     []Branch
 	MainGraph    *BranchGraph
 	BranchMatrix []*BranchMatrix
+
+	// Not all functionality has been ported from go-git.
+	Repository *git.Repository
 }
 
 func NewGitModel(repo *git.Repository) (*GitModel, error) {
@@ -227,7 +230,7 @@ func NewGitModel(repo *git.Repository) (*GitModel, error) {
 	// Commits
 	cIter, err := repo.CommitObjects()
 	if err != nil {
-		return nil, fmt.Errorf("Failed to retrieve commits from repository: %w", err)
+		return nil, fmt.Errorf("failed to retrieve commits from repository: %w", err)
 	}
 	err = cIter.ForEach(func(c *object.Commit) error {
 		if c == nil {
@@ -243,14 +246,14 @@ func NewGitModel(repo *git.Repository) (*GitModel, error) {
 		return nil
 	})
 	if err != nil {
-		return nil, fmt.Errorf("Failed to graft commits to model: %w", err)
+		return nil, fmt.Errorf("failed to graft commits to model: %w", err)
 	}
 
 	// Branches
 	branches := []plumbing.Hash{}
 	bIter, err := repo.Branches()
 	if err != nil {
-		return nil, fmt.Errorf("Failed to retrieve branches from repository: %w", err)
+		return nil, fmt.Errorf("failed to retrieve branches from repository: %w", err)
 	}
 	err = bIter.ForEach(func(b *plumbing.Reference) error {
 		if b == nil {
@@ -261,7 +264,7 @@ func NewGitModel(repo *git.Repository) (*GitModel, error) {
 		var c *object.Commit
 		c, err = repo.CommitObject(b.Hash())
 		if err != nil {
-			return fmt.Errorf("Failed to find head commit from branch: %w", err)
+			return fmt.Errorf("failed to find head commit from branch: %w", err)
 		}
 
 		branch := NewBranch(repo, b, c)
@@ -270,17 +273,17 @@ func NewGitModel(repo *git.Repository) (*GitModel, error) {
 		return nil
 	})
 	if err != nil {
-		return nil, fmt.Errorf("Failed to graft branches to model: %w", err)
+		return nil, fmt.Errorf("failed to graft branches to model: %w", err)
 	}
 
 	// MainGraph
 	ref, err := repo.Head()
 	if err != nil {
-		return nil, fmt.Errorf("Failed to find head reference: %w", err)
+		return nil, fmt.Errorf("failed to find head reference: %w", err)
 	}
 	refCommit, err := repo.CommitObject(ref.Hash())
 	if err != nil {
-		return nil, fmt.Errorf("Failed to find head commit: %w", err)
+		return nil, fmt.Errorf("failed to find head commit: %w", err)
 	}
 	gitModel.MainGraph = FetchBranchGraph(refCommit)
 	gitModel.MainGraph.BranchName = ref.Hash().String()
@@ -288,8 +291,10 @@ func NewGitModel(repo *git.Repository) (*GitModel, error) {
 	// BranchMatrix
 	gitModel.BranchMatrix, err = CreateBranchMatrix(repo, branches)
 	if err != nil {
-		return nil, fmt.Errorf("Failed to create branch matrix: %w", err)
+		return nil, fmt.Errorf("failed to create branch matrix: %w", err)
 	}
+
+	gitModel.Repository = repo
 
 	return gitModel, nil
 }

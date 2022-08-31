@@ -11,6 +11,7 @@ func NewEmptyCommitViolation(
 	commit markup.Commit,
 	email string,
 	time time.Time,
+	current bool,
 ) *EmptyCommitViolation {
 	violation := &EmptyCommitViolation{
 		violation: violation{
@@ -18,6 +19,7 @@ func NewEmptyCommitViolation(
 			email:    email,
 			time:     time,
 			severity: Violated,
+			current:  current,
 		},
 		commit: commit,
 	}

@@ -35,8 +35,8 @@ func NewBranchCompareDetector(name string, detect BranchCompareDetect) *BranchCo
 	}
 }
 
-func (b *BranchCompareDetector) Run(model *enriched.EnrichedModel) error {
-	if model == nil {
+func (b *BranchCompareDetector) Run(em *enriched.EnrichedModel) error {
+	if em == nil {
 		return nil
 	}
 
@@ -44,10 +44,12 @@ func (b *BranchCompareDetector) Run(model *enriched.EnrichedModel) error {
 	b.found = 0
 	b.total = 0
 	b.violations = make([]violation.Violation, 0)
-	c := common{owner: model.Owner, repo: model.Name}
+	c, err := NewCommon(em)
+	if err != nil {
+		log.Printf("could not create common: %v", err)
+	}
 
-	var err error
-	b.found, b.violations, err = b.detect(&c, model.Branches)
+	b.found, b.violations, err = b.detect(c, em.Branches)
 	if err != nil {
 		return fmt.Errorf("Error BranchCompareDetector: %w", err)
 	}

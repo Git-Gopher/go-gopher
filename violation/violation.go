@@ -26,6 +26,7 @@ type Violation interface {
 	Email() string                // required: Email address of the violator.
 	Time() time.Time              // required: Time of the violation.
 	Severity() Severity           // required: Severity of the violation.
+	Current() bool                // required: Is the violation related to the current reporting
 
 	Author() (*remote.Author, error) // optional: GitHub author which caused the violation.
 	FileLocation() (string, error)   // optional: File location of the violation.
@@ -75,6 +76,7 @@ type violation struct {
 	email    string
 	time     time.Time
 	severity Severity
+	current  bool
 }
 
 func (v *violation) Name() string {
@@ -107,4 +109,8 @@ func (v *violation) LineLocation() (int, error) {
 
 func (v *violation) Suggestion() (string, error) {
 	return "", ErrViolationMethodNotExist
+}
+
+func (v *violation) Current() bool {
+	return v.current
 }

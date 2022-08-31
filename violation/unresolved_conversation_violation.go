@@ -8,11 +8,13 @@ import (
 
 func NewUnresolvedConversationViolation(
 	pr markup.PR,
+	current bool,
 ) *UnresolvedConversationViolation {
 	violation := &UnresolvedConversationViolation{
 		violation: violation{
 			name:     "UnresolvedConversationViolation",
 			severity: Violated,
+			current:  current,
 		},
 		pr: pr,
 	}

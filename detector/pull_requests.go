@@ -5,6 +5,7 @@ import (
 	"github.com/Git-Gopher/go-gopher/model/enriched"
 	"github.com/Git-Gopher/go-gopher/model/remote"
 	"github.com/Git-Gopher/go-gopher/violation"
+	log "github.com/sirupsen/logrus"
 )
 
 type PullRequestDetect func(c *common, pullRequest *remote.PullRequest) (bool, violation.Violation, error)
@@ -30,11 +31,14 @@ func NewPullRequestDetector(name string, detect PullRequestDetect) *PullRequestD
 	}
 }
 
-func (pd *PullRequestDetector) Run(model *enriched.EnrichedModel) error {
-	c := common{owner: model.Owner, repo: model.Name}
-	for _, pr := range model.PullRequests {
+func (pd *PullRequestDetector) Run(em *enriched.EnrichedModel) error {
+	c, err := NewCommon(em)
+	if err != nil {
+		log.Printf("could not create common: %v", err)
+	}
+	for _, pr := range em.PullRequests {
 		pr := pr
-		detected, violation, err := pd.detect(&c, pr)
+		detected, violation, err := pd.detect(c, pr)
 		pd.total++
 		if err != nil {
 			return err
@@ -69,7 +73,9 @@ func PullRequestIssueDetector() (string, PullRequestDetect) {
 						Owner: c.owner,
 						Repo:  c.repo,
 					},
-				}), nil
+				},
+				c.IsCurrentPR(pr),
+			), nil
 		}
 
 		return false, nil, nil
@@ -91,7 +97,9 @@ func PullRequestApprovalDetector() (string, PullRequestDetect) {
 						Owner: c.owner,
 						Repo:  c.repo,
 					},
-				}), nil
+				},
+				c.IsCurrentPR(pr),
+			), nil
 		}
 
 		return false, nil, nil
@@ -115,7 +123,9 @@ func PullRequestReviewThreadDetector() (string, PullRequestDetect) {
 							Owner: c.owner,
 							Repo:  c.repo,
 						},
-					}), nil
+					},
+					c.IsCurrentPR(pr),
+				), nil
 			}
 		}
 

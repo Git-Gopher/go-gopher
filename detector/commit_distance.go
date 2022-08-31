@@ -11,6 +11,7 @@ import (
 	"github.com/Git-Gopher/go-gopher/model/local"
 	"github.com/Git-Gopher/go-gopher/violation"
 	"github.com/montanaflynn/stats"
+	log "github.com/sirupsen/logrus"
 )
 
 type CommitDistanceCalculator func(commit *local.Commit) (distance float64, err error)
@@ -38,18 +39,22 @@ func NewCommitDistanceDetector(name string, detect CommitDistanceCalculator) *Co
 	}
 }
 
-func (cd *CommitDistanceDetector) Run(model *enriched.EnrichedModel) error {
+func (cd *CommitDistanceDetector) Run(em *enriched.EnrichedModel) error {
 	// Struct should be reset before each run, incase we are running it with a different model.
 	cd.violated = 0
 	cd.found = 0
 	cd.total = 0
 	cd.violations = make([]violation.Violation, 0)
 
-	cd.distance = make([]float64, len(model.Commits))
-
-	for i, c := range model.Commits {
-		c := c
-		distance, err := cd.detect(&c)
+	cd.distance = make([]float64, len(em.Commits))
+	c, err := NewCommon(em)
+	if err != nil {
+		log.Printf("could not create common: %v", err)
+	}
+	for i, commit := range em.Commits {
+		commit := commit
+		var distance float64
+		distance, err = cd.detect(&commit)
 		cd.total++
 		if err != nil {
 			return err
@@ -81,26 +86,28 @@ func (cd *CommitDistanceDetector) Run(model *enriched.EnrichedModel) error {
 			cd.violations = append(cd.violations, violation.NewExtremeDiffDistanceViolation(
 				markup.Commit{
 					GitHubLink: markup.GitHubLink{
-						Owner: model.Owner,
-						Repo:  model.Name,
+						Owner: em.Owner,
+						Repo:  em.Name,
 					},
-					Hash: hex.EncodeToString(model.Commits[i].Hash[:]),
+					Hash: hex.EncodeToString(em.Commits[i].Hash[:]),
 				},
-				model.Commits[i].Committer.Email,
-				model.Commits[i].Committer.When,
+				em.Commits[i].Committer.Email,
+				em.Commits[i].Committer.When,
+				c.IsCurrentCommit(em.Commits[i].Hash),
 			))
 		} else if v < lif || v > uif {
 			cd.violated++
 			cd.violations = append(cd.violations, violation.NewMildDiffDistanceViolation(
 				markup.Commit{
 					GitHubLink: markup.GitHubLink{
-						Owner: model.Owner,
-						Repo:  model.Name,
+						Owner: em.Owner,
+						Repo:  em.Name,
 					},
-					Hash: hex.EncodeToString(model.Commits[i].Hash[:]),
+					Hash: hex.EncodeToString(em.Commits[i].Hash[:]),
 				},
-				model.Commits[i].Committer.Email,
-				model.Commits[i].Committer.When,
+				em.Commits[i].Committer.Email,
+				em.Commits[i].Committer.When,
+				c.IsCurrentCommit(em.Commits[i].Hash),
 			))
 		}
 	}

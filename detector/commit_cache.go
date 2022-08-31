@@ -97,7 +97,10 @@ func ForcePushDetect() (string, CommitCacheDetect) {
 				return false, nil, nil
 			}
 
-			violations := [1]violation.Violation{violation.NewForcePushViolation(missing, email, current.Created)}
+			// XXX: Force pushes will always show
+			violations := [1]violation.Violation{
+				violation.NewForcePushViolation(missing, email, current.Created, true),
+			}
 
 			return true, violations[:], nil
 		}

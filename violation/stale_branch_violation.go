@@ -7,13 +7,19 @@ import (
 	"github.com/Git-Gopher/go-gopher/markup"
 )
 
-func NewStaleBranchViolation(branch markup.Branch, duration time.Duration, email string) *StaleBranchViolation {
+func NewStaleBranchViolation(
+	branch markup.Branch,
+	duration time.Duration,
+	email string,
+	current bool,
+) *StaleBranchViolation {
 	stale := &StaleBranchViolation{
 		violation: violation{
 			name:     "StaleBranchViolation",
 			email:    email,
 			time:     time.Now(),
 			severity: Violated,
+			current:  current,
 		},
 		branch:   branch,
 		duration: duration,
