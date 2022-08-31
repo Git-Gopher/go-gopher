@@ -32,7 +32,7 @@ import (
 
 var TeamDevs = []string{"wqsz7xn", "scorpionknifes"}
 
-//nolint: all
+//nolint:all
 func main() {
 	app := cli.NewApp()
 	app.EnableBashCompletion = true
@@ -673,7 +673,7 @@ func markdownSummary(authors utils.Authors, vs []violation.Violation) string {
 
 		usernamePtr, err := authors.Find(v.Email())
 		if err != nil || usernamePtr == nil {
-			row[3] = "@unknown"
+			row[3] = "unknown"
 		} else {
 			row[3] = markup.Author(*usernamePtr).Markdown()
 		}
@@ -703,7 +703,7 @@ func markdownSummary(authors utils.Authors, vs []violation.Violation) string {
 
 		usernamePtr, err := authors.Find(v.Email())
 		if err != nil || usernamePtr == nil {
-			row[3] = "@unknown"
+			row[3] = "unknown"
 		} else {
 			row[3] = markup.Author(*usernamePtr).Markdown()
 		}

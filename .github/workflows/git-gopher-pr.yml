@@ -1,4 +1,4 @@
-name: git-gopher-test
+name: git-gopher-pr
 on:
   pull_request:
     branches: main
@@ -7,7 +7,7 @@ env:
   GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
 
 jobs:
-  test:
+  git-gopher-pr:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -24,18 +24,13 @@ jobs:
         run: make build
       - name: Run go vet
         run: go vet ./...
-      - name: lint
-        uses: golangci/golangci-lint-action@v3
-        with:
-          version: v1.48.0
-      - name: Run tests
-        run: make test
       - name: Use Cache
         uses: actions/cache@v3
         with:
           path: cache.json
           key: ${{ github.ref }}
       - name: Analyze Workflow
+        id: go-gopher
         run: |
           chmod +x bin/go-gopher-github-action
           ./bin/go-gopher-github-action
@@ -43,6 +38,10 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           PR_NUMBER: ${{ github.event.number }}
           WORKFLOW_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+      - name: Add PR Comment
+        uses: marocchino/sticky-pull-request-comment@v2
+        with:
+          message: "${{ steps.go-gopher.outputs.pr_summary }}"
       - name: Artifact outputs
         uses: actions/upload-artifact@v3
         with:

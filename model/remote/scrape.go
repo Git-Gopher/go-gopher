@@ -4,15 +4,21 @@ import (
 	"context"
 	"fmt"
 	"os"
+	"sync"
+	"time"
 
+	"github.com/google/go-github/v47/github"
 	"github.com/shurcooL/githubv4"
 	"golang.org/x/oauth2"
 )
 
 var githubQuerySize = 100
 
+const GITHUB_NOREPLY_EMAIL = "noreply@github.com"
+
 type Scraper struct {
 	Client *githubv4.Client
+	API    *github.Client
 }
 
 func NewScraper() Scraper {
@@ -23,8 +29,11 @@ func NewScraper() Scraper {
 
 	client := githubv4.NewClient(httpClient)
 
+	api := github.NewClient(httpClient)
+
 	return Scraper{
 		client,
+		api,
 	}
 }
 
@@ -554,6 +563,57 @@ func (s *Scraper) FetchURL(ctx context.Context, owner, name string) (string, err
 
 // FetchCommitters, get all committers from a repo.
 func (s *Scraper) FetchCommitters(ctx context.Context, owner, name string) ([]Committer, error) {
+	committers, err := s.FetchCommittersDefaultBranch(ctx, owner, name)
+	if err != nil {
+		return nil, fmt.Errorf("Failed to fetch committers from default branch: %w", err)
+	}
+
+	headName, branchNames, err := s.FetchBranchHeads(ctx, owner, name)
+	if err != nil {
+		return nil, fmt.Errorf("Failed to fetch branch heads: %w", err)
+	}
+
+	errCh := make(chan error)
+	var mutex sync.Mutex
+	var wg sync.WaitGroup
+	for _, branchName := range branchNames {
+		wg.Add(2)
+		go func(branchName string) {
+			wg.Done()
+			compare, _, err := s.API.Repositories.CompareCommits(ctx, owner, name, headName, branchName, nil)
+			if err != nil {
+				errCh <- fmt.Errorf("Failed to compare commits: %w", err)
+
+				return
+			}
+
+			branchCommitters, err := s.FetchCommittersBranch(ctx, owner, name, branchName, *compare.AheadBy)
+			if err != nil {
+				errCh <- fmt.Errorf("Failed to fetch committers from branch: %w", err)
+
+				return
+			}
+
+			mutex.Lock()
+			committers = append(committers, branchCommitters...)
+			mutex.Unlock()
+
+			wg.Done()
+		}(branchName)
+	}
+
+	select {
+	case err := <-errCh:
+		return nil, err
+	default:
+		wg.Wait()
+	}
+
+	return committers, nil
+}
+
+// FetchCommittersDefaultBranch, get all committers from default branch of a repo.
+func (s *Scraper) FetchCommittersDefaultBranch(ctx context.Context, owner, name string) ([]Committer, error) {
 	var q struct {
 		Repository struct {
 			DefaultBranchRef struct {
@@ -561,7 +621,7 @@ func (s *Scraper) FetchCommitters(ctx context.Context, owner, name string) ([]Co
 					Commit struct {
 						History struct {
 							Nodes []struct {
-								Id     string
+								Oid    string
 								Author struct {
 									Email string
 									User  struct {
@@ -597,16 +657,18 @@ func (s *Scraper) FetchCommitters(ctx context.Context, owner, name string) ([]Co
 		}
 
 		for _, i := range q.Repository.DefaultBranchRef.Target.Commit.History.Nodes {
-			committer := Committer{
-				CommitId: i.Id,
-				Email:    i.Author.Email,
-				Login:    i.Author.User.Login,
-			}
-			all = append(all, committer)
-
-			if i.Author.Email != i.Committer.Email {
+			if i.Author.Email != GITHUB_NOREPLY_EMAIL {
 				committer := Committer{
-					CommitId: i.Id,
+					CommitId: i.Oid,
+					Email:    i.Author.Email,
+					Login:    i.Author.User.Login,
+				}
+				all = append(all, committer)
+			}
+
+			if i.Author.Email != i.Committer.Email && i.Committer.Email != GITHUB_NOREPLY_EMAIL {
+				committer := Committer{
+					CommitId: i.Oid,
 					Email:    i.Committer.Email,
 					Login:    i.Committer.User.Login,
 				}
@@ -622,4 +684,153 @@ func (s *Scraper) FetchCommitters(ctx context.Context, owner, name string) ([]Co
 	}
 
 	return all, nil
+}
+
+// FetchCommittersDefaultBranch, get all committers from default branch of a repo.
+func (s *Scraper) FetchCommittersBranch(
+	ctx context.Context,
+	owner, name, branch string,
+	limit int,
+) ([]Committer, error) {
+	if limit > 100 {
+		limit = 100
+	}
+	var q struct {
+		Repository struct {
+			Ref struct {
+				Target struct {
+					Commit struct {
+						History struct {
+							Nodes []struct {
+								Oid    string
+								Author struct {
+									Email string
+									User  struct {
+										Login string
+									}
+								}
+								Committer struct {
+									Email string
+									User  struct {
+										Login string
+									}
+								}
+							}
+							PageInfo PageInfo
+						} `graphql:"history(first: $first)"`
+					} `graphql:"... on Commit"`
+				} `graphq:"target"`
+			} `graphql:"ref(qualifiedName: $qualifiedName)"`
+		} `graphql:"repository(owner: $owner, name: $name)"`
+	}
+
+	var all []Committer
+	variables := map[string]interface{}{
+		"first":         githubv4.Int(limit),
+		"owner":         githubv4.String(owner),
+		"name":          githubv4.String(name),
+		"qualifiedName": githubv4.String(branch),
+	}
+
+	if err := s.Client.Query(ctx, &q, variables); err != nil {
+		return nil, fmt.Errorf("Failed to fetch committers: %w", err)
+	}
+
+	for _, i := range q.Repository.Ref.Target.Commit.History.Nodes {
+		if i.Author.Email != GITHUB_NOREPLY_EMAIL {
+			committer := Committer{
+				CommitId: i.Oid,
+				Email:    i.Author.Email,
+				Login:    i.Author.User.Login,
+			}
+			all = append(all, committer)
+		}
+
+		if i.Author.Email != i.Committer.Email && i.Committer.Email != GITHUB_NOREPLY_EMAIL {
+			committer := Committer{
+				CommitId: i.Oid,
+				Email:    i.Committer.Email,
+				Login:    i.Committer.User.Login,
+			}
+			all = append(all, committer)
+		}
+	}
+
+	return all, nil
+}
+
+// FetchBranchHeads, get all heads from a repo without main branch.
+func (s *Scraper) FetchBranchHeads(ctx context.Context, owner, name string) (string, []string, error) {
+	var q struct {
+		Repository struct {
+			DefaultBranchRef struct {
+				Name string
+			} `graphql:"defaultBranchRef"`
+			Refs struct {
+				Nodes []struct {
+					Name   string
+					Target struct {
+						Commit struct {
+							PushedDate             time.Time
+							AssociatedPullRequests struct {
+								Nodes []struct {
+									Merged bool
+								}
+							} `graphql:"associatedPullRequests(first: 100)"`
+						} `graphql:"... on Commit"`
+					} `graphq:"target"`
+				} `graphql:"nodes"`
+				PageInfo PageInfo
+			} `graphql:"refs(first: $first, after: $cursor, refPrefix: $refPrefix)"` // does not support cursor
+		} `graphql:"repository(owner: $owner, name: $name)"`
+	}
+
+	variables := map[string]interface{}{
+		"first":     githubv4.Int(githubQuerySize),
+		"cursor":    (*githubv4.String)(nil),
+		"owner":     githubv4.String(owner),
+		"name":      githubv4.String(name),
+		"refPrefix": githubv4.String("refs/heads/"),
+	}
+
+	m := []string{}
+
+	for {
+		if err := s.Client.Query(ctx, &q, variables); err != nil {
+			return "", nil, fmt.Errorf("Failed to fetch branch heads: %w", err)
+		}
+
+		for _, i := range q.Repository.Refs.Nodes {
+			// skip main branch
+			if i.Name == q.Repository.DefaultBranchRef.Name {
+				continue
+			}
+
+			// skip stale branches
+			if i.Target.Commit.PushedDate.Before(time.Now().Add(-time.Hour * 24 * 30)) {
+				continue
+			}
+
+			if len(i.Target.Commit.AssociatedPullRequests.Nodes) == 0 {
+				m = append(m, i.Name)
+
+				continue
+			}
+
+			for _, j := range i.Target.Commit.AssociatedPullRequests.Nodes {
+				if j.Merged {
+					break
+				}
+
+				m = append(m, i.Name)
+			}
+		}
+
+		if !q.Repository.Refs.PageInfo.HasNextPage {
+			break
+		}
+		variables["cursor"] = githubv4.NewString(q.Repository.Refs.PageInfo.EndCursor)
+	}
+
+	return q.Repository.DefaultBranchRef.Name, m, nil
 }

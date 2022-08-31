@@ -41,7 +41,7 @@ type display struct {
 // Display implements Violation.
 func (d *display) Display(authors utils.Authors) string {
 	// Get the author of the violation.
-	authorLink := "@unknown"
+	authorLink := "unknown"
 	author, _ := authors.Find(d.v.Email())
 	if author != nil {
 		authorLink = markup.Author(*author).Markdown()
