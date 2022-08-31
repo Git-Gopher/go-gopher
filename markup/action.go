@@ -7,6 +7,8 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
+const MAX_LENGTH = 65536
+
 // Helper functions for GitHub actions commands.
 func Group(title, content string) {
 	fmt.Printf("::group::%s\n", title) //nolint: forbidigo
@@ -24,10 +26,11 @@ func Outputs(name, value string) {
 	value = strings.ReplaceAll(value, "\r", `%0D`)
 
 	// Comment max length
-	maxLength := 65536
-	if len(value) > maxLength {
-		log.Warnf("Github Action output string length is greater than %d", maxLength)
+
+	if len(value) > MAX_LENGTH {
+		log.Warnf("Github Action output string length is greater than %d", MAX_LENGTH)
+		value = value[:MAX_LENGTH]
 	}
 
-	fmt.Printf("::set-output name=%s::%s\n", name, value[:maxLength]) //nolint: forbidigo
+	fmt.Printf("::set-output name=%s::%s\n", name, value) //nolint: forbidigo
 }
