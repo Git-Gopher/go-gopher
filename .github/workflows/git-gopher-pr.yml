@@ -1,4 +1,4 @@
-name: git-gopher-test
+name: git-gopher-pr
 on:
   pull_request:
     branches: main
@@ -24,12 +24,6 @@ jobs:
         run: make build
       - name: Run go vet
         run: go vet ./...
-      - name: lint
-        uses: golangci/golangci-lint-action@v3
-        with:
-          version: v1.48.0
-      - name: Run tests
-        run: make test
       - name: Use Cache
         uses: actions/cache@v3
         with:
