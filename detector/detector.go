@@ -49,11 +49,13 @@ func (c *common) IsCurrentPR(pr *remote.PullRequest) bool {
 	// In the case where there is no current branch/pr, default to report all.
 	if c.PR == nil {
 		log.Warn("no pr found")
+
 		return true
 	}
 
 	if pr.Number == c.PR.Number {
 		log.Warnf("current pr number %d", c.PR.Number)
+
 		return true
 	}
 
