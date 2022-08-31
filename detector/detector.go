@@ -2,13 +2,13 @@ package detector
 
 import (
 	"fmt"
-	"log"
 
 	"github.com/Git-Gopher/go-gopher/cache"
 	"github.com/Git-Gopher/go-gopher/model/enriched"
 	"github.com/Git-Gopher/go-gopher/model/local"
 	"github.com/Git-Gopher/go-gopher/model/remote"
 	"github.com/Git-Gopher/go-gopher/violation"
+	log "github.com/sirupsen/logrus"
 )
 
 var (
@@ -77,11 +77,11 @@ func NewCommon(em *enriched.EnrichedModel) (*common, error) {
 		var mergingCommits []local.Hash
 		currentPR, err := em.FindCurrentPR()
 		if err != nil {
-			log.Printf("could not find current PR: %v", err)
+			log.Warn("unable to find current PR")
 		} else {
 			mergingCommits, err = em.FindMergingCommits(currentPR)
 			if err != nil {
-				log.Printf("could not find merging commits: %v", err)
+				log.Warn("unable to find merging commits")
 			}
 		}
 
