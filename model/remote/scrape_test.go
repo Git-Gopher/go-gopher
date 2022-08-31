@@ -25,4 +25,5 @@ func TestScraper_FetchCommitters(t *testing.T) {
 		t.Error(err)
 	}
 	t.Logf("committers: %v\n", committers)
+	t.Fail()
 }
