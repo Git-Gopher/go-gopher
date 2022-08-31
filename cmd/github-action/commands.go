@@ -161,9 +161,13 @@ func markdownSummary(authors utils.Authors, vs []violation.Violation) string {
 	for _, v := range vs {
 		switch v.Severity() {
 		case violation.Violated:
-			violations = append(violations, v)
+			if v.Current() {
+				violations = append(violations, v)
+			}
 		case violation.Suggestion:
-			suggestions = append(suggestions, v)
+			if v.Current() {
+				suggestions = append(suggestions, v)
+			}
 		default:
 			log.Printf("Unknown violation severity: %v", v.Severity())
 		}
