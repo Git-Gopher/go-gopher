@@ -6,6 +6,7 @@ import (
 	"os"
 	"runtime"
 	"runtime/pprof"
+	"strings"
 	"time"
 
 	"github.com/Git-Gopher/go-gopher/assess"
@@ -115,9 +116,10 @@ func fetch(githubURL string) error {
 
 	candidates := assess.RunMarker(
 		analysis.MarkerCtx{
-			Model:        enrichedModel,
-			Contribution: analysis.NewContribution(*enrichedModel),
-			Author:       authors,
+			Model:          enrichedModel,
+			Contribution:   analysis.NewContribution(*enrichedModel),
+			Author:         authors,
+			LoginWhiteList: strings.Split(o.LoginWhiteList, ","),
 		},
 		analyzers,
 	)

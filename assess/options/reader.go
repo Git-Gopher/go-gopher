@@ -88,5 +88,10 @@ func (r *FileReader) parseOption() error {
 		return fmt.Errorf("can't unmarshal config by viper: %w", err)
 	}
 
+	// set default values
+	if r.options.LoginWhiteList == "" {
+		r.options.LoginWhiteList = NewDefault().LoginWhiteList
+	}
+
 	return nil
 }

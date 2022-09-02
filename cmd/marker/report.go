@@ -47,7 +47,7 @@ func IndividualReports(options *options.Options, repoName string, candidates []a
 
 		output := markdown.ToHTML([]byte(md.Render()), nil, nil)
 
-		filename := fillTemplate(options.HeaderTemplate, candidate.Username, repoName) + ".html"
+		filename := fillTemplate(options.FilenameTemplate, candidate.Username, repoName) + ".html"
 		if len(options.OutputDir) != 0 {
 			if _, err := os.Stat(options.OutputDir); errors.Is(err, os.ErrNotExist) {
 				if err2 := os.MkdirAll(options.OutputDir, os.ModePerm); err2 != nil {

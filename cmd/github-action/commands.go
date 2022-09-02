@@ -83,6 +83,11 @@ func actionCommand(cCtx *cli.Context) error {
 		log.Fatalf("Failed to analyze: %v\n", err)
 	}
 
+	if config.LoginWhiteList != "" {
+		whitelist := strings.Split(config.LoginWhiteList, ",")
+		violations = violation.FilterByLogin(violations, whitelist)
+	}
+
 	workflowSummary(authors, violated, count, total, violations)
 
 	summary := markdownSummary(authors, violations)
