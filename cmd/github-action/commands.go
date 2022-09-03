@@ -155,6 +155,7 @@ func workflowSummary(authors utils.Authors, v, c, t int, vs []violation.Violatio
 }
 
 // Helper function to create a markdown summary of the violations.
+// nolint: gocognit
 func markdownSummary(authors utils.Authors, vs []violation.Violation) string {
 	md := markup.CreateMarkdown("Workflow Summary")
 	md.AddLine(fmt.Sprintf("Created with git-gopher version `%s`", version.BuildVersion()))
@@ -178,65 +179,75 @@ func markdownSummary(authors utils.Authors, vs []violation.Violation) string {
 		}
 	}
 
-	headers := []string{"Violation", "Message", "Suggestion", "Author"}
-	rows := make([][]string, len(violations))
+	if len(violations) > 0 {
+		headers := []string{"Violation", "Message", "Advice", "Author"}
+		rows := make([][]string, len(violations))
 
-	for i, v := range violations {
-		row := make([]string, len(headers))
-		name := v.Name()
-		row[0] = name
-		message := v.Message()
-		row[1] = message
+		for i, v := range violations {
+			row := make([]string, len(headers))
+			name := v.Name()
+			row[0] = name
+			message := v.Message()
+			row[1] = message
 
-		suggestion, err := v.Suggestion()
-		if err != nil {
-			suggestion = ""
+			suggestion, err := v.Suggestion()
+			if err != nil {
+				suggestion = ""
+			}
+			row[2] = suggestion
+
+			usernamePtr, err := authors.Find(v.Email())
+			if err != nil || usernamePtr == nil {
+				row[3] = "unknown"
+			} else {
+				row[3] = markup.Author(*usernamePtr).Markdown()
+			}
+
+			rows[i] = row
 		}
-		row[2] = suggestion
 
-		usernamePtr, err := authors.Find(v.Email())
-		if err != nil || usernamePtr == nil {
-			row[3] = "unknown"
-		} else {
-			row[3] = markup.Author(*usernamePtr).Markdown()
-		}
-
-		rows[i] = row
+		md.BeginCollapsable("Violations")
+		md.Table(headers, rows)
+		md.EndCollapsable()
 	}
 
-	md.BeginCollapsable("Violations")
-	md.Table(headers, rows)
-	md.EndCollapsable()
+	if len(suggestions) > 0 {
+		headers := []string{"Suggestion", "Message", "Advice", "Author"}
+		rows := make([][]string, len(suggestions))
 
-	headers = []string{"Suggestion", "Message", "Suggestion", "Author"}
-	rows = make([][]string, len(suggestions))
+		for i, v := range suggestions {
+			row := make([]string, len(headers))
+			name := v.Name()
+			row[0] = name
+			message := v.Message()
+			row[1] = message
 
-	for i, v := range suggestions {
-		row := make([]string, len(headers))
-		name := v.Name()
-		row[0] = name
-		message := v.Message()
-		row[1] = message
+			suggestion, err := v.Suggestion()
+			if err != nil {
+				suggestion = ""
+			}
+			row[2] = suggestion
 
-		suggestion, err := v.Suggestion()
-		if err != nil {
-			suggestion = ""
+			usernamePtr, err := authors.Find(v.Email())
+			if err != nil || usernamePtr == nil {
+				row[3] = "unknown"
+			} else {
+				row[3] = markup.Author(*usernamePtr).Markdown()
+			}
+
+			rows[i] = row
 		}
-		row[2] = suggestion
 
-		usernamePtr, err := authors.Find(v.Email())
-		if err != nil || usernamePtr == nil {
-			row[3] = "unknown"
-		} else {
-			row[3] = markup.Author(*usernamePtr).Markdown()
-		}
-
-		rows[i] = row
+		md.BeginCollapsable("Suggestions")
+		md.Table(headers, rows)
+		md.EndCollapsable()
 	}
 
-	md.BeginCollapsable("Suggestions")
-	md.Table(headers, rows)
-	md.EndCollapsable()
+	workflowUrl := os.Getenv("WORKFLOW_URL")
+	if (len(violations)+len(suggestions)) < len(vs) && workflowUrl != "" {
+		md.AddLine(fmt.Sprintf(`There still exist some violations beyond the scope of this pull request, 
+			please view the full log [here](%s)`, workflowUrl))
+	}
 
 	// Google form
 	md.AddLine(fmt.Sprintf("Have any feedback? Feel free to submit it [here](%s)", utils.GoogleFormURL))
