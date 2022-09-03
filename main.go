@@ -263,7 +263,7 @@ func main() {
 				},
 			},
 			Action: func(ctx *cli.Context) error {
-				utils.Env(".env")
+				utils.Environment(".env")
 				organizationName := ctx.Args().Get(0)
 				prefix := ctx.String("prefix")
 
@@ -276,7 +276,7 @@ func main() {
 				token := ctx.String("token")
 				if token == "" {
 					log.Printf("No github token passed in via flag, using environment file instead...")
-					token := os.Getenv("GITHUB_TOKEN")
+					token = os.Getenv("GITHUB_TOKEN")
 					if token == "" {
 						log.Fatalf("Unable to find github token from flag or from environment file, exiting...")
 					}
@@ -296,7 +296,8 @@ func main() {
 				teamPermission := "pull"
 
 				team, res, err := client.Teams.GetTeamBySlug(ctx.Context, organizationName, teamSlug)
-				if err != nil || res.StatusCode != 200 {
+				if err != nil && res.StatusCode != 404 {
+					fmt.Printf("res.StatusCode: %v\n", res.StatusCode)
 					log.Fatalf("Failed to fetch team by slug: %s, %v", res.Status, err)
 				}
 
@@ -311,7 +312,7 @@ func main() {
 					}
 
 					// Add team to each repository, duplicate additions are ignored.
-					addTeamToRepositories(ctx, client, filteredRepos, organization, team, teamPermission, teamSlug)
+					addTeamToRepositories(ctx, client, filteredRepos, organization, organizationName, team, teamPermission, teamSlug)
 					if err != nil {
 						log.Fatalf("Failed to add team to repositories: %v", err)
 					}
@@ -364,7 +365,7 @@ func main() {
 					}
 				}
 
-				addTeamToRepositories(ctx, client, filteredRepositories, organization, team, teamPermission, teamSlug)
+				addTeamToRepositories(ctx, client, filteredRepositories, organization, organizationName, team, teamPermission, teamSlug)
 				if err != nil {
 					log.Fatalf("Failed to add team to repositories: %v", err)
 				}
@@ -778,9 +779,9 @@ func fetchAllRepositoriesByPrefix(ctx *cli.Context, client *github.Client, organ
 
 }
 
-func addTeamToRepositories(ctx *cli.Context, client *github.Client, repositories []*github.Repository, organization *github.Organization, team *github.Team, permission, teamSlug string) error {
+func addTeamToRepositories(ctx *cli.Context, client *github.Client, repositories []*github.Repository, organization *github.Organization, organizationName string, team *github.Team, permission, teamSlug string) error {
 	for _, r := range repositories {
-		res, err := client.Teams.AddTeamRepoByID(ctx.Context, *organization.ID, *team.ID, *organization.Name, *r.Name,
+		res, err := client.Teams.AddTeamRepoByID(ctx.Context, *organization.ID, *team.ID, organizationName, *r.Name,
 			&github.TeamAddTeamRepoOptions{
 				Permission: permission,
 			})
