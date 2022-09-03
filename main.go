@@ -662,6 +662,7 @@ func readConfig(ctx *cli.Context) *config.Config {
 }
 
 // Helper function to create a markdown summary of the violations.
+// nolint: gocognit
 func markdownSummary(authors utils.Authors, vs []violation.Violation) string {
 	md := markup.CreateMarkdown("Workflow Summary")
 	md.AddLine(fmt.Sprintf("Created with git-gopher version `%s`", version.BuildVersion()))
@@ -751,7 +752,8 @@ func markdownSummary(authors utils.Authors, vs []violation.Violation) string {
 
 	workflowUrl := os.Getenv("WORKFLOW_URL")
 	if (len(violations)+len(suggestions)) < len(vs) && workflowUrl != "" {
-		md.AddLine(fmt.Sprintf("There still exist some violations beyond the scope of this pull request, please view the full log [here](%s)", workflowUrl))
+		md.AddLine(fmt.Sprintf(`There still exist some violations beyond the scope of this pull request, 
+			please view the full log [here](%s)`, workflowUrl))
 	}
 
 	md.AddLine(fmt.Sprintf("Have any feedback? Feel free to submit it [here](%s)", utils.GoogleFormURL))
