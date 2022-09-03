@@ -114,3 +114,30 @@ func (v *violation) Suggestion() (string, error) {
 func (v *violation) Current() bool {
 	return v.current
 }
+
+func FilterByLogin(violations []Violation, login []string) []Violation {
+	if len(login) == 0 || len(violations) == 0 {
+		return violations
+	}
+
+	loginMap := make(map[string]struct{})
+	for _, l := range login {
+		loginMap[l] = struct{}{}
+	}
+
+	filtered := []Violation{}
+	for _, v := range violations {
+		author, err := v.Author()
+		if err != nil {
+			filtered = append(filtered, v)
+
+			continue
+		}
+
+		if _, ok := loginMap[author.Login]; !ok {
+			filtered = append(filtered, v)
+		}
+	}
+
+	return filtered
+}

@@ -21,9 +21,10 @@ type Grade struct {
 }
 
 type MarkerCtx struct {
-	Model        *enriched.EnrichedModel
-	Contribution *contribution
-	Author       utils.Authors
+	Model          *enriched.EnrichedModel
+	Contribution   *contribution
+	Author         utils.Authors
+	LoginWhiteList []string
 }
 
 type MarkerRun func(MarkerCtx) (string, []Mark)
@@ -44,6 +45,9 @@ func DetectorMarker(
 		}
 
 		_, _, _, violations := d.Result()
+
+		violations = violation.FilterByLogin(violations, m.LoginWhiteList)
+
 		for _, v := range violations {
 			username, err := m.Author.Find(v.Email())
 			if err != nil {

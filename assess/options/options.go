@@ -7,6 +7,7 @@ type Options struct {
 	DefaultAlgorithm string `mapstructure:"default-algorithm"`
 	OutputDir        string `mapstructure:"output-dir"`
 	OutputRepoFolder bool   `mapstructure:"output-repo-folder"`
+	LoginWhiteList   string `mapstructure:"login-whitelist"`
 
 	FilenameTemplate string `mapstructure:"filename-template"`
 	HeaderTemplate   string `mapstructure:"header-template"`
@@ -21,6 +22,7 @@ func (o *Options) GetOptionsDir() string {
 
 func NewDefault() *Options {
 	return &Options{
+		LoginWhiteList:  "github-classroom[bot]",
 		MarkersSettings: defaultMarkersSettings,
 	}
 }
