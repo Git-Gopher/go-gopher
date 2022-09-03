@@ -750,7 +750,12 @@ func markdownSummary(authors utils.Authors, vs []violation.Violation) string {
 	return md.Render()
 }
 
-func fetchAllRepositoriesByPrefix(ctx *cli.Context, client *github.Client, organisationName, prefix string) ([]*github.Repository, error) {
+func fetchAllRepositoriesByPrefix(
+	ctx *cli.Context,
+	client *github.Client,
+	organisationName,
+	prefix string,
+) ([]*github.Repository, error) {
 	opt := &github.RepositoryListByOrgOptions{
 		ListOptions: github.ListOptions{PerPage: 100},
 	}
@@ -776,22 +781,31 @@ func fetchAllRepositoriesByPrefix(ctx *cli.Context, client *github.Client, organ
 	}
 
 	return filteredRepos, nil
-
 }
 
-func addTeamToRepositories(ctx *cli.Context, client *github.Client, repositories []*github.Repository, organization *github.Organization, organizationName string, team *github.Team, permission, teamSlug string) error {
+func addTeamToRepositories(
+	ctx *cli.Context,
+	client *github.Client,
+	repositories []*github.Repository,
+	organization *github.Organization,
+	organizationName string,
+	team *github.Team,
+	permission string,
+	teamSlug string,
+) error {
 	for _, r := range repositories {
 		res, err := client.Teams.AddTeamRepoByID(ctx.Context, *organization.ID, *team.ID, organizationName, *r.Name,
 			&github.TeamAddTeamRepoOptions{
 				Permission: permission,
 			})
 		if res.StatusCode != 204 || err != nil {
-			return fmt.Errorf("failed to add team to repository: %v", err)
+			return fmt.Errorf("failed to add team to repository: %w", err)
 		}
 
 		log.Printf("Added team %s to repository %s", teamSlug, *r.Name)
 	}
 
 	log.Printf("Added team %s to %d repositories", teamSlug, len(repositories))
+
 	return nil
 }
