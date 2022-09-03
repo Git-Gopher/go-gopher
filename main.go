@@ -30,7 +30,7 @@ import (
 	"golang.org/x/oauth2"
 )
 
-var TeamDevs = []string{"wqsz7xn", "scorpionknifes"}
+var Developers = []string{"wqsz7xn", "scorpionknifes"}
 
 //nolint:all
 func main() {
@@ -248,83 +248,101 @@ func main() {
 		{
 			Name:  "team",
 			Usage: "Add wqsz7xn and scorpionknifes as team members to each repository within the organization",
+			Flags: []cli.Flag{
+				&cli.StringFlag{
+					Name:     "prefix",
+					Aliases:  []string{"p"},
+					Usage:    "repository prefix",
+					Required: false,
+				},
+				&cli.StringFlag{
+					Name:     "token",
+					Aliases:  []string{"t"},
+					Usage:    "github token",
+					Required: false,
+				},
+			},
 			Action: func(ctx *cli.Context) error {
-				utils.Environment(".env")
-				orgName := ctx.Args().Get(0)
+				utils.Env(".env")
+				organizationName := ctx.Args().Get(0)
+				prefix := ctx.String("prefix")
 
-				githubToken := os.Getenv("GITHUB_TOKEN")
-				if githubToken == "" {
-					log.Fatalf("GITHUB_TOKEN environment variable is not set")
+				if prefix == "" {
+					log.Printf("No repository prefix set via flat, all repositories within organization will have team added...")
+				} else {
+					log.Printf("Using repository prefix of %s...", prefix)
 				}
 
-				ts := oauth2.StaticTokenSource(
-					&oauth2.Token{AccessToken: os.Getenv("GITHUB_TOKEN")},
-				)
+				token := ctx.String("token")
+				if token == "" {
+					log.Printf("No github token passed in via flag, using environment file instead...")
+					token := os.Getenv("GITHUB_TOKEN")
+					if token == "" {
+						log.Fatalf("Unable to find github token from flag or from environment file, exiting...")
+					}
+				}
+
+				ts := oauth2.StaticTokenSource(&oauth2.Token{AccessToken: token})
 				tc := oauth2.NewClient(ctx.Context, ts)
 				client := github.NewClient(tc)
 
-				log.Printf("Fetching organization %s...\n", orgName)
-
-				org, _, err := client.Organizations.Get(ctx.Context, orgName)
+				log.Printf("Fetching organization %s...\n", organizationName)
+				organization, _, err := client.Organizations.Get(ctx.Context, organizationName)
 				if err != nil {
 					log.Fatalf("Could not fetch orginization: %v", err)
 				}
 
-				slug := "git-gopher"
-				perm := "pull"
+				teamSlug := "git-gopher"
+				teamPermission := "pull"
 
-				team, res, err := client.Teams.GetTeamBySlug(ctx.Context, orgName, slug)
-				if res.StatusCode == 200 || team != nil {
+				team, res, err := client.Teams.GetTeamBySlug(ctx.Context, organizationName, teamSlug)
+				if err != nil || res.StatusCode != 200 {
+					log.Fatalf("Failed to fetch team by slug: %s, %v", res.Status, err)
+				}
+
+				// Team exists, add team to the rest of the organizations that don't have the team added.
+				if team != nil {
 					log.Printf(`Team %s for organization %s already exists.
-						Adding team to all new repositories (duplicates don't matter)...`, slug, orgName)
-					var repos []*github.Repository
-					repos, _, err = client.Repositories.ListByOrg(ctx.Context, orgName, nil)
+						Adding team to all new repositories (duplicates don't matter)...`, teamSlug, organizationName)
+
+					filteredRepos, err := fetchAllRepositoriesByPrefix(ctx, client, organizationName, prefix)
 					if err != nil {
-						log.Fatalf("Failed to fetch repositories for organization: %v", err)
-					}
-					count := 0
-					for _, r := range repos {
-						res, err = client.Teams.AddTeamRepoByID(ctx.Context, *org.ID, *team.ID, orgName, *r.Name,
-							&github.TeamAddTeamRepoOptions{
-								Permission: perm,
-							})
-						if res.StatusCode != 204 || err != nil {
-							log.Fatalf("Failed to add team to repository: %v", err)
-						}
-						count += 1
-						log.Printf("Added team %s to repository %s", slug, *r.Name)
+						log.Fatalf("Failed to fetch all repositories by prefix: %v", err)
 					}
 
-					log.Printf("Added team %s to %d repositories", slug, count)
+					// Add team to each repository, duplicate additions are ignored.
+					addTeamToRepositories(ctx, client, filteredRepos, organization, team, teamPermission, teamSlug)
+					if err != nil {
+						log.Fatalf("Failed to add team to repositories: %v", err)
+					}
 
 					return nil
 				}
 
-				if err != nil {
-					log.Fatalf("Failed to fetch team by slug: %s, %v", res.Status, err)
-				}
-
-				if team != nil {
-					log.Fatalf("Team %s already exists, exiting...", slug)
-				}
-
-				var repoNames []string
-				repos, _, err := client.Repositories.ListByOrg(ctx.Context, orgName, nil)
+				// Team does not exist, create the team and add to all repositories
+				filteredRepositories, err := fetchAllRepositoriesByPrefix(ctx, client, organizationName, prefix)
 				if err != nil {
 					log.Fatalf("Failed to fetch repositories for organization: %v", err)
 				}
-				for _, r := range repos {
-					repoNames = append(repoNames, *r.FullName)
+
+				// Fold repositories into repository names.
+				var repoNames []string
+				for _, r := range filteredRepositories {
+					if strings.HasPrefix(*r.FullName, prefix) {
+						repoNames = append(repoNames, *r.FullName)
+					}
 				}
 
+				// More details for teams.
 				description := "Read access for Git-Gopher to download logs from private repos"
 				privacy := "secret"
 
-				log.Printf("Creating team %s for organization %s...", slug, orgName)
-				team, r, err := client.Teams.CreateTeam(ctx.Context, orgName, github.NewTeam{
-					Name:        slug,
+				// Create team.
+				log.Printf("Creating team %s for organization %s...", teamSlug, organizationName)
+				team, r, err := client.Teams.CreateTeam(ctx.Context, organizationName, github.NewTeam{
+					Name:        teamSlug,
 					Description: &description,
-					Permission:  &perm,
+					Permission:  &teamPermission,
 					Privacy:     &privacy,
 					RepoNames:   repoNames,
 				})
@@ -333,15 +351,22 @@ func main() {
 					log.Fatalf("Could not create team for organization : %s, %v", r.Status, err)
 				}
 
-				for _, u := range TeamDevs {
-					log.Printf("Adding user %s to team %s...", u, slug)
-					_, res, err := client.Teams.AddTeamMembershipByID(ctx.Context, *org.ID, *team.ID, u,
+				// Add developers to team.
+				for _, developer := range Developers {
+					log.Printf("Adding developer %s to team %s...", developer, teamSlug)
+					_, res, err := client.Teams.AddTeamMembershipByID(ctx.Context, *organization.ID, *team.ID, developer,
 						&github.TeamAddTeamMembershipOptions{
 							Role: "maintainer",
 						})
+
 					if res.StatusCode != 200 || err != nil {
 						log.Fatalf("failed to add user to team: %v, %v", res.Status, err)
 					}
+				}
+
+				addTeamToRepositories(ctx, client, filteredRepositories, organization, team, teamPermission, teamSlug)
+				if err != nil {
+					log.Fatalf("Failed to add team to repositories: %v", err)
 				}
 
 				return nil
@@ -722,4 +747,50 @@ func markdownSummary(authors utils.Authors, vs []violation.Violation) string {
 	md.AddLine(fmt.Sprintf("Have any feedback? Feel free to submit it [here](%s)", utils.GoogleFormURL))
 
 	return md.Render()
+}
+
+func fetchAllRepositoriesByPrefix(ctx *cli.Context, client *github.Client, organisationName, prefix string) ([]*github.Repository, error) {
+	opt := &github.RepositoryListByOrgOptions{
+		ListOptions: github.ListOptions{PerPage: 100},
+	}
+
+	var filteredRepos []*github.Repository
+
+	for {
+		repos, res, err := client.Repositories.ListByOrg(ctx.Context, organisationName, opt)
+		if err != nil {
+			return nil, fmt.Errorf("failed to fetch repositories for organization: %w", err)
+		}
+
+		for _, r := range repos {
+			if strings.HasPrefix(*r.FullName, prefix) {
+				filteredRepos = append(filteredRepos, r)
+			}
+		}
+
+		if res.NextPage == 0 {
+			break
+		}
+		opt.Page = res.NextPage
+	}
+
+	return filteredRepos, nil
+
+}
+
+func addTeamToRepositories(ctx *cli.Context, client *github.Client, repositories []*github.Repository, organization *github.Organization, team *github.Team, permission, teamSlug string) error {
+	for _, r := range repositories {
+		res, err := client.Teams.AddTeamRepoByID(ctx.Context, *organization.ID, *team.ID, *organization.Name, *r.Name,
+			&github.TeamAddTeamRepoOptions{
+				Permission: permission,
+			})
+		if res.StatusCode != 204 || err != nil {
+			return fmt.Errorf("failed to add team to repository: %v", err)
+		}
+
+		log.Printf("Added team %s to repository %s", teamSlug, *r.Name)
+	}
+
+	log.Printf("Added team %s to %d repositories", teamSlug, len(repositories))
+	return nil
 }
