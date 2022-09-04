@@ -780,7 +780,7 @@ func fetchAllRepositoriesByPrefix(
 		}
 
 		for _, r := range repos {
-			if strings.HasPrefix(*r.FullName, prefix) {
+			if strings.HasPrefix(*r.Name, prefix) {
 				filteredRepos = append(filteredRepos, r)
 			}
 		}
