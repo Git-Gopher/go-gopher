@@ -46,10 +46,6 @@ func main() {
 				utils.Environment(".env")
 				workspace := utils.EnvGithubWorkspace()
 
-				// repository := os.Getenv("GITHUB_REPOSITORY")
-				// sha := os.Getenv("GITHUB_SHA") // commit sha triggered
-				// ref := os.Getenv("GITHUB_REF") // branch ref triggered
-
 				// Repo
 				repo, err := git.PlainOpen(workspace)
 				if err != nil {
