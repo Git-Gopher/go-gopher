@@ -23,7 +23,8 @@ import (
 var (
 	errOwnerMismatch = errors.New("owner mismatch")
 	ActionCommand    = &cli.Command{
-		Name: "Action",
+		Name:        "Action",
+		Description: "GitHub action runner",
 		Action: func(cCtx *cli.Context) error {
 			log.Printf("BuildVersion: %s", version.BuildVersion())
 			// Load the environment variables from GitHub Actions.

@@ -3,6 +3,7 @@ package main
 import (
 	"os"
 
+	"github.com/Git-Gopher/go-gopher/commands"
 	"github.com/Git-Gopher/go-gopher/version"
 	log "github.com/sirupsen/logrus"
 	"github.com/urfave/cli/v2"
@@ -13,8 +14,6 @@ func main() {
 		ForceColors:  true,
 		PadLevelText: true,
 	})
-
-	var cmd Commands = &Cmds{}
 
 	app := cli.NewApp()
 
@@ -31,7 +30,7 @@ func main() {
 			Usage:     "grade a single repository with GitHub URL",
 			UsageText: "go-gopher-marker url <url> - grade repository with GitHub URL",
 			ArgsUsage: "<url>",
-			Action:    LoadFlags(cmd.SingleUrlCommand),
+			Action:    commands.LoadFlags(commands.Cmd.SingleUrlCommand),
 		},
 		{
 			Name:      "local",
@@ -40,7 +39,7 @@ func main() {
 			Usage:     "grade a single local repository",
 			UsageText: "go-gopher-marker local <path> - grade local repository",
 			ArgsUsage: "<folder>",
-			Action:    LoadFlags(cmd.SingleLocalCommand),
+			Action:    commands.LoadFlags(commands.Cmd.SingleLocalCommand),
 		},
 		{
 			Name:      "folder",
@@ -49,13 +48,13 @@ func main() {
 			Usage:     "grade a folder of repositories",
 			UsageText: "go-gopher-marker folder <path> - grade folder of repositories",
 			ArgsUsage: "<folder>",
-			Action:    LoadFlags(cmd.FolderLocalCommand),
+			Action:    commands.LoadFlags(commands.Cmd.FolderLocalCommand),
 		},
 		{
 			Name:     "generate",
 			Category: "Utils",
 			Usage:    "generate and reset configuration files. options.yml and .env files",
-			Action:   SkipFlags(cmd.GenerateConfigCommand),
+			Action:   commands.SkipFlags(commands.Cmd.GenerateConfigCommand),
 		},
 	}
 	app.Flags = []cli.Flag{

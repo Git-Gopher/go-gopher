@@ -19,6 +19,7 @@ func main() {
 	app.Commands = []*cli.Command{
 		commands.TeamComand,
 		commands.ActionCommand,
+		commands.DownloadCommand,
 	}
 
 	if err := app.Run(os.Args); err != nil {

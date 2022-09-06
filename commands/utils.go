@@ -1,4 +1,4 @@
-package main
+package commands
 
 import (
 	"github.com/Git-Gopher/go-gopher/assess/options"

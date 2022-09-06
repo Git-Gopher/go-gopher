@@ -1,8 +1,7 @@
-package main
+package commands
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"io/fs"
 	"path/filepath"
@@ -11,7 +10,6 @@ import (
 
 	"github.com/Git-Gopher/go-gopher/assess"
 	"github.com/Git-Gopher/go-gopher/assess/markers/analysis"
-	"github.com/Git-Gopher/go-gopher/assess/options"
 	"github.com/Git-Gopher/go-gopher/model"
 	"github.com/Git-Gopher/go-gopher/model/enriched"
 	"github.com/Git-Gopher/go-gopher/utils"
@@ -23,11 +21,10 @@ import (
 )
 
 var (
-	errGitHubURL = fmt.Errorf("missing GitHub URL")
-	errLocalDir  = fmt.Errorf("missing Local Directory")
+	errGitHubURL          = fmt.Errorf("missing GitHub URL")
+	errLocalDir           = fmt.Errorf("missing Local Directory")
+	Cmd          Commands = &Cmds{}
 )
-
-var _ Commands = &Cmds{}
 
 type Commands interface {
 	SingleUrlCommand(cCtx *cli.Context, flags *Flags) error
@@ -150,23 +147,6 @@ func (c *Cmds) FolderLocalCommand(cCtx *cli.Context, flags *Flags) error {
 	cancel()
 
 	log.Printf("# Done %s #\n", directory)
-
-	return nil
-}
-
-func (c *Cmds) GenerateConfigCommand(cCtx *cli.Context, flags *Flags) error {
-	r := options.NewFileReader(log.StandardLogger(), nil)
-	if err := r.GenerateDefault(flags.OptionsDir); err != nil {
-		if !errors.Is(err, utils.ErrSkipped) {
-			return fmt.Errorf("failed to generate default options: %w", err)
-		}
-	}
-
-	if err := utils.GenerateEnv(flags.EnvDir); err != nil {
-		if !errors.Is(err, utils.ErrSkipped) {
-			return fmt.Errorf("failed to generate env: %w", err)
-		}
-	}
 
 	return nil
 }

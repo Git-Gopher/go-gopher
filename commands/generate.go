@@ -6,6 +6,7 @@ import (
 
 	"github.com/Git-Gopher/go-gopher/assess/options"
 	"github.com/Git-Gopher/go-gopher/utils"
+	log "github.com/sirupsen/logrus"
 	"github.com/urfave/cli/v2"
 )
 
