@@ -20,6 +20,7 @@ import (
 	"github.com/Git-Gopher/go-gopher/version"
 	"github.com/Git-Gopher/go-gopher/workflow"
 	"github.com/go-git/go-git/v5"
+	"github.com/go-git/go-git/v5/plumbing"
 	githttp "github.com/go-git/go-git/v5/plumbing/transport/http"
 	"github.com/go-git/go-git/v5/storage/memory"
 	"github.com/google/go-github/v45/github"
@@ -81,6 +82,14 @@ func main() {
 				}
 
 				enrichedModel := enriched.NewEnrichedModel(*gitModel, *remoteModel)
+
+				iter, _ := enrichedModel.Repository.Tags()
+				iter.ForEach(func(r *plumbing.Reference) error {
+					fmt.Printf("r.Hash(): %v\n", r.Hash())
+					return nil
+				})
+
+				os.Exit(0)
 
 				// Authors
 				authors := enriched.PopulateAuthors(enrichedModel)

@@ -7,12 +7,12 @@ import (
 	"github.com/Git-Gopher/go-gopher/workflow/rules/rule"
 )
 
-const exampleName = "example"
+const taggedMainName = "taggedMain"
 
-func NewExample(w *rule.Weights) *rule.Runner {
+func NewTaggedMain(w *rule.Weights) *rule.Runner {
 	return rule.NewRunner(
-		exampleName,
-		"Example rule",
+		taggedMainName,
+		"Tagged Main Commits",
 		func(ctx rule.RuleCtx) (string, *rule.Scores) {
 			d := detector.NewCommitDetector(detector.EmptyCommitDetect())
 
@@ -32,7 +32,8 @@ func NewExample(w *rule.Weights) *rule.Runner {
 				// do nothing
 			}
 
-			return "Example", w.NewScores(rule.NewScore(score))
+			return "Tagged Main Commits", w.NewScores(rule.NewScore(score))
 		},
 	)
+
 }
