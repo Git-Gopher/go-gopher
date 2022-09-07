@@ -35,24 +35,6 @@ func (h Hash) HexString() string {
 	return hex.EncodeToString((h[:]))
 }
 
-type Tag struct {
-	// Name of the tag. Eg: v0.0.8.
-	Name string
-	// Hash of the head commit that the tag object ponits towards
-	Hash Hash
-}
-
-func NewTag(r *plumbing.Reference) *Tag {
-	if r == nil {
-		return nil
-	}
-
-	return &Tag{
-		Name: string(r.Name()),
-		Hash: Hash(r.Hash()),
-	}
-}
-
 type Signature struct {
 	// Name represents a person name. It is an arbitrary string.
 	Name string
@@ -105,8 +87,6 @@ type Commit struct {
 	Author Signature
 	// Committer is the one performing the commit, might be different from Author.
 	Committer Signature `json:"-"`
-	// Tags
-	Tags []*Tag
 	// Message is the commit message, contains arbitrary text.
 	Message       string
 	Content       string
@@ -196,27 +176,6 @@ func NewCommit(r *git.Repository, c *object.Commit) *Commit {
 		}
 	}
 
-	// Gather tag hashes
-	tagIter, err := r.Tags()
-	if err != nil {
-		return nil
-	}
-
-	var ts []*Tag
-	if err = tagIter.ForEach(func(r *plumbing.Reference) error {
-		if r == nil {
-			return fmt.Errorf("nil tag reference")
-		}
-
-		t := NewTag(r)
-		ts = append(ts, t)
-
-		return nil
-
-	}); err != nil {
-		return nil
-	}
-
 	return &Commit{
 		Hash:          Hash(c.Hash),
 		Author:        *NewSignature(&c.Author),
@@ -225,7 +184,6 @@ func NewCommit(r *git.Repository, c *object.Commit) *Commit {
 		TreeHash:      Hash(c.TreeHash),
 		ParentHashes:  parentHashes,
 		DiffToParents: diffs,
-		Tags:          ts,
 	}
 }
 
@@ -255,13 +213,31 @@ func NewBranch(repo *git.Repository, o *plumbing.Reference, c *object.Commit) *B
 	}
 }
 
+type Tag struct {
+	// Name of the tag. Eg: v0.0.8.
+	Name string
+	// Hash of the head commit that the tag object ponits towards
+	Hash Hash
+}
+
+func NewTag(r *plumbing.Reference) *Tag {
+	if r == nil {
+		return nil
+	}
+
+	return &Tag{
+		Name: string(r.Name()),
+		Hash: Hash(r.Hash()),
+	}
+}
+
 type GitModel struct {
 	Commits      []Commit
 	Committer    []Committer
 	Branches     []Branch
 	MainGraph    *BranchGraph
 	BranchMatrix []*BranchMatrix
-
+	Tags         []*Tag
 	// Not all functionality has been ported from go-git.
 	Repository *git.Repository
 }
@@ -336,7 +312,28 @@ func NewGitModel(repo *git.Repository) (*GitModel, error) {
 		return nil, fmt.Errorf("failed to create branch matrix: %w", err)
 	}
 
-	gitModel.Repository = repo
+	// Tags
+	tagIter, err := repo.Tags()
+	if err != nil {
+		return nil, fmt.Errorf("failed to generate tag iter: %v", err)
+	}
 
+	var ts []*Tag
+	if err = tagIter.ForEach(func(r *plumbing.Reference) error {
+		if r == nil {
+			return fmt.Errorf("nil tag reference")
+		}
+
+		t := NewTag(r)
+		ts = append(ts, t)
+
+		return nil
+
+	}); err != nil {
+		return nil, fmt.Errorf("bad tag iteration: %v", err)
+	}
+	gitModel.Tags = ts
+
+	gitModel.Repository = repo
 	return gitModel, nil
 }
