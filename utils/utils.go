@@ -14,12 +14,14 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/Git-Gopher/go-gopher/config"
 	"github.com/go-git/go-git/v5"
 	"github.com/go-git/go-git/v5/plumbing"
 	githttp "github.com/go-git/go-git/v5/plumbing/transport/http"
 	"github.com/go-git/go-git/v5/storage/memory"
 	"github.com/joho/godotenv"
 	log "github.com/sirupsen/logrus"
+	"github.com/urfave/cli/v2"
 	giturls "github.com/whilp/git-urls"
 )
 
@@ -300,4 +302,26 @@ func Confirm(s string, tries int) bool {
 	}
 
 	return false
+}
+
+// Fetch custom or default config. Fatal on bad custom config.
+func ReadConfig(ctx *cli.Context) *config.Config {
+	var cfg *config.Config
+	var err error
+
+	// Custom config
+	if ctx.String("config") != "" {
+		cfg, err = config.Read(ctx.String("config"))
+		if err != nil {
+			log.Fatalf("Failed to read custom config: %v", err)
+		}
+	} else {
+		// Use default config
+		cfg, err = config.Default()
+		if err != nil {
+			log.Fatalf("Failed to read default config: %v", err)
+		}
+	}
+
+	return cfg
 }

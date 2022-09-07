@@ -6,14 +6,17 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"strings"
 	"time"
 
 	"github.com/Git-Gopher/go-gopher/cache"
 	"github.com/Git-Gopher/go-gopher/config"
 	"github.com/Git-Gopher/go-gopher/detector"
+	"github.com/Git-Gopher/go-gopher/markup"
 	"github.com/Git-Gopher/go-gopher/model/enriched"
 	"github.com/Git-Gopher/go-gopher/model/remote"
 	"github.com/Git-Gopher/go-gopher/utils"
+	"github.com/Git-Gopher/go-gopher/version"
 	"github.com/Git-Gopher/go-gopher/violation"
 	log "github.com/sirupsen/logrus"
 )
@@ -365,4 +368,150 @@ func (w *Workflow) WriteLog(em enriched.EnrichedModel, cfg *config.Config) (stri
 	}
 
 	return fn, nil
+}
+
+// Print a summary of the workflow violations to stdout.
+func PrintSummary(authors utils.Authors, v, c, t int, vs []violation.Violation) {
+	var violations, suggestions []violation.Violation
+	for _, v := range vs {
+		switch v.Severity() {
+		case violation.Violated:
+			violations = append(violations, v)
+		case violation.Suggestion:
+			suggestions = append(suggestions, v)
+		}
+	}
+
+	var vSd strings.Builder
+	for _, v := range violations {
+		vSd.WriteString(v.Display(authors))
+	}
+	markup.Group("Violations", vSd.String())
+
+	var sSd strings.Builder
+	for _, v := range suggestions {
+		sSd.WriteString(v.Display(authors))
+	}
+	markup.Group("Suggestions", sSd.String())
+
+	var aSd strings.Builder
+	counts := make(map[string]int)
+	for _, v := range vs {
+		email := v.Email()
+		login, err := authors.Find(email)
+		if err != nil {
+			continue
+		}
+		counts[*login]++
+	}
+
+	for login, count := range counts {
+		aSd.WriteString(fmt.Sprintf("%s: %d\n", login, count))
+	}
+
+	aSd.WriteString(fmt.Sprintf("violated: %d\n", v))
+	aSd.WriteString(fmt.Sprintf("count: %d\n", c))
+	aSd.WriteString(fmt.Sprintf("total: %d\n", t))
+	markup.Group("Summary", aSd.String())
+}
+
+// Create a markdown summary for a workflow, inluding a summary of the violations and suggestions.
+// Usually used in pull request comments.
+func MarkdownSummary(authors utils.Authors, vs []violation.Violation) string { // nolint: gocognit
+	md := markup.CreateMarkdown("Workflow Summary")
+	md.AddLine(fmt.Sprintf("Created with git-gopher version `%s`", version.BuildVersion()))
+
+	// Separate violation types.
+	var violations []violation.Violation
+	var suggestions []violation.Violation
+
+	for _, v := range vs {
+		switch v.Severity() {
+		case violation.Violated:
+			if v.Current() {
+				violations = append(violations, v)
+			}
+		case violation.Suggestion:
+			if v.Current() {
+				suggestions = append(suggestions, v)
+			}
+		default:
+			log.Printf("Unknown violation severity: %v", v.Severity())
+		}
+	}
+
+	if len(violations) > 0 {
+		headers := []string{"Violation", "Message", "Advice", "Author"}
+		rows := make([][]string, len(violations))
+
+		for i, v := range violations {
+			row := make([]string, len(headers))
+			name := v.Name()
+			row[0] = name
+			message := v.Message()
+			row[1] = message
+
+			suggestion, err := v.Suggestion()
+			if err != nil {
+				suggestion = ""
+			}
+			row[2] = suggestion
+
+			usernamePtr, err := authors.Find(v.Email())
+			if err != nil || usernamePtr == nil {
+				row[3] = "unknown"
+			} else {
+				row[3] = markup.Author(*usernamePtr).Markdown()
+			}
+
+			rows[i] = row
+		}
+
+		md.BeginCollapsable("Violations")
+		md.Table(headers, rows)
+		md.EndCollapsable()
+	}
+
+	if len(suggestions) > 0 {
+		headers := []string{"Suggestion", "Message", "Advice", "Author"}
+		rows := make([][]string, len(suggestions))
+
+		for i, v := range suggestions {
+			row := make([]string, len(headers))
+			name := v.Name()
+			row[0] = name
+			message := v.Message()
+			row[1] = message
+
+			suggestion, err := v.Suggestion()
+			if err != nil {
+				suggestion = ""
+			}
+			row[2] = suggestion
+
+			usernamePtr, err := authors.Find(v.Email())
+			if err != nil || usernamePtr == nil {
+				row[3] = "unknown"
+			} else {
+				row[3] = markup.Author(*usernamePtr).Markdown()
+			}
+
+			rows[i] = row
+		}
+
+		md.BeginCollapsable("Suggestions")
+		md.Table(headers, rows)
+		md.EndCollapsable()
+	}
+
+	workflowUrl := os.Getenv("WORKFLOW_URL")
+	if (len(violations)+len(suggestions)) < len(vs) && workflowUrl != "" {
+		md.AddLine(fmt.Sprintf(`There still exist some violations beyond the scope of this pull request, 
+			please view the full log [here](%s)`, workflowUrl))
+	}
+
+	// Google form
+	md.AddLine(fmt.Sprintf("Have any feedback? Feel free to submit it [here](%s)", utils.GoogleFormURL))
+
+	return md.Render()
 }
