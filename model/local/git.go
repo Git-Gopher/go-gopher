@@ -315,25 +315,25 @@ func NewGitModel(repo *git.Repository) (*GitModel, error) {
 	// Tags
 	tagIter, err := repo.Tags()
 	if err != nil {
-		return nil, fmt.Errorf("failed to generate tag iter: %v", err)
+		return nil, fmt.Errorf("failed to generate tag iter: %w", err)
 	}
 
 	var ts []*Tag
 	if err = tagIter.ForEach(func(r *plumbing.Reference) error {
 		if r == nil {
-			return fmt.Errorf("nil tag reference")
+			return fmt.Errorf("nil tag reference: %w", err)
 		}
 
 		t := NewTag(r)
 		ts = append(ts, t)
 
 		return nil
-
 	}); err != nil {
-		return nil, fmt.Errorf("bad tag iteration: %v", err)
+		return nil, fmt.Errorf("bad tag iteration: %w", err)
 	}
 	gitModel.Tags = ts
 
 	gitModel.Repository = repo
+
 	return gitModel, nil
 }

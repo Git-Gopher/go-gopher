@@ -35,5 +35,4 @@ func NewTaggedMain(w *rule.Weights) *rule.Runner {
 			return "Tagged Main Commits", w.NewScores(rule.NewScore(score))
 		},
 	)
-
 }
