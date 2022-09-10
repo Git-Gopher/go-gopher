@@ -10,7 +10,7 @@ import (
 const exampleName = "example"
 
 func NewExample(w *rule.Weights) *rule.Runner {
-	runner := rule.NewRunner(
+	return rule.NewRunner(
 		exampleName,
 		"Example rule",
 		func(ctx rule.RuleCtx) (string, *rule.Scores) {
@@ -35,6 +35,4 @@ func NewExample(w *rule.Weights) *rule.Runner {
 			return "Example", w.NewScores(rule.NewScore(score))
 		},
 	)
-
-	return runner
 }

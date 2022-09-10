@@ -213,12 +213,31 @@ func NewBranch(repo *git.Repository, o *plumbing.Reference, c *object.Commit) *B
 	}
 }
 
+type Tag struct {
+	// Name of the tag. Eg: v0.0.8.
+	Name string
+	// Hash of the head commit that the tag object ponits towards.
+	Hash Hash
+}
+
+func NewTag(r *plumbing.Reference) *Tag {
+	if r == nil {
+		return nil
+	}
+
+	return &Tag{
+		Name: string(r.Name()),
+		Hash: Hash(r.Hash()),
+	}
+}
+
 type GitModel struct {
 	Commits      []Commit
 	Committer    []Committer
 	Branches     []Branch
 	MainGraph    *BranchGraph
 	BranchMatrix []*BranchMatrix
+	Tags         []*Tag
 
 	// Not all functionality has been ported from go-git.
 	Repository *git.Repository
@@ -293,6 +312,27 @@ func NewGitModel(repo *git.Repository) (*GitModel, error) {
 	if err != nil {
 		return nil, fmt.Errorf("failed to create branch matrix: %w", err)
 	}
+
+	// Tags.
+	tagIter, err := repo.Tags()
+	if err != nil {
+		return nil, fmt.Errorf("failed to generate tag iter: %w", err)
+	}
+
+	var ts []*Tag
+	if err = tagIter.ForEach(func(r *plumbing.Reference) error {
+		if r == nil {
+			return fmt.Errorf("nil tag reference: %w", err)
+		}
+
+		t := NewTag(r)
+		ts = append(ts, t)
+
+		return nil
+	}); err != nil {
+		return nil, fmt.Errorf("bad tag iteration: %w", err)
+	}
+	gitModel.Tags = ts
 
 	gitModel.Repository = repo
 
