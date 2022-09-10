@@ -34,23 +34,3 @@ func TestScrapeRemoteModel(t *testing.T) {
 		})
 	}
 }
-
-func BenchmarkScrapeRemoteModel(b *testing.B) {
-	utils.Environment("../../.env")
-	model, err := ScrapeRemoteModel("subquery", "subql") // Just an example of a large repository
-	if err != nil {
-		b.Errorf("BenchmarkScrapeRemoteModel() error = %v", err)
-	}
-
-	b.Logf("BenchmarkScrapeRemoteModel() Issues = %d", len(model.Issues))
-	b.Logf("BenchmarkScrapeRemoteModel() Pull request = %d", len(model.PullRequests))
-	comments := make([]*Comment, 0)
-	for _, pr := range model.PullRequests {
-		comments = append(comments, pr.Comments...)
-	}
-	for _, is := range model.Issues {
-		comments = append(comments, is.Comments...)
-	}
-
-	b.Logf("BenchmarkScrapeRemoteModel() Total comments = %d", len(comments))
-}

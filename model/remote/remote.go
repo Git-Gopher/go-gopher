@@ -20,13 +20,6 @@ type Issue struct {
 	State       string
 	StateReason string
 	Author      *Author
-	Comments    []*Comment
-}
-
-type Comment struct {
-	Id     string
-	Body   string
-	Author *Author
 }
 
 type ReviewThread struct {
@@ -49,7 +42,6 @@ type PullRequest struct {
 	Url            string
 	Author         *Author
 	ClosingIssues  []*Issue
-	Comments       []*Comment
 	ReviewThreads  []*ReviewThread
 }
 
