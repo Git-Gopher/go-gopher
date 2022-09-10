@@ -42,70 +42,6 @@ type PageInfo struct {
 	EndCursor   githubv4.String
 }
 
-func (s *Scraper) FetchIssueComments(ctx context.Context,
-	owner, name string,
-	number int,
-	cursor string,
-) ([]*Comment, error) {
-	var q struct {
-		Repository struct {
-			Issue struct {
-				Comments struct {
-					Nodes []struct {
-						Id     string
-						Body   string
-						Author struct {
-							Login     string
-							AvatarUrl string
-							User      struct {
-								Email string
-							} `graphql:"... on User"`
-						}
-					}
-					PageInfo PageInfo
-				} `graphql:"comments(first: $first, after: $cursor)"`
-			} `graphql:"issue(number: $number)"`
-		} `graphql:"repository(owner: $owner, name: $name)"`
-	}
-
-	var all []*Comment
-	variables := map[string]interface{}{
-		"number": githubv4.Int(number),
-		"first":  githubv4.Int(githubQuerySize),
-		"cursor": githubv4.String(cursor),
-		"owner":  githubv4.String(owner),
-		"name":   githubv4.String(name),
-	}
-
-	for {
-		if err := s.Client.Query(ctx, &q, variables); err != nil {
-			return nil, fmt.Errorf("Failed to fetch additional pull request closing issues references: %w", err)
-		}
-
-		for _, i := range q.Repository.Issue.Comments.Nodes {
-			comment := Comment{
-				Id:   i.Id,
-				Body: i.Body,
-				Author: &Author{
-					Login:     i.Author.Login,
-					AvatarUrl: i.Author.AvatarUrl,
-					Email:     i.Author.User.Email,
-				},
-			}
-
-			all = append(all, &comment)
-		}
-
-		if !q.Repository.Issue.Comments.PageInfo.HasNextPage {
-			break
-		}
-
-		variables["cursor"] = githubv4.NewString(q.Repository.Issue.Comments.PageInfo.EndCursor)
-	}
-
-	return all, nil
-}
-
 func (s *Scraper) FetchPullRequestClosingIssues(
 	ctx context.Context,
 	owner,
@@ -174,70 +110,6 @@ func (s *Scraper) FetchPullRequestClosingIssues(
 	return all, nil
 }
 
-func (s *Scraper) FetchPullRequestComments(ctx context.Context,
-	owner, name string,
-	number int,
-	cursor string,
-) ([]*Comment, error) {
-	var q struct {
-		Repository struct {
-			PullRequest struct {
-				Comments struct {
-					Nodes []struct {
-						Id     string
-						Body   string
-						Author struct {
-							Login     string
-							AvatarUrl string
-							User      struct {
-								Email string
-							} `graphql:"... on User"`
-						}
-					}
-					PageInfo PageInfo
-				} `graphql:"comments(first: $first, after: $cursor)"`
-			} `graphql:"pullRequest(number: $number)"`
-		} `graphql:"repository(owner: $owner, name: $name)"`
-	}
-
-	var all []*Comment
-	variables := map[string]interface{}{
-		"number": githubv4.Int(number),
-		"first":  githubv4.Int(githubQuerySize),
-		"cursor": githubv4.String(cursor),
-		"owner":  githubv4.String(owner),
-		"name":   githubv4.String(name),
-	}
-
-	for {
-		if err := s.Client.Query(ctx, q, variables); err != nil {
-			return nil, fmt.Errorf("Failed to fetch additional pull request closing issues references: %w", err)
-		}
-
-		for _, i := range q.Repository.PullRequest.Comments.Nodes {
-			comment := Comment{
-				Id:   i.Id,
-				Body: i.Body,
-				Author: &Author{
-					Login:     i.Author.Login,
-					AvatarUrl: i.Author.AvatarUrl,
-					Email:     i.Author.User.Email,
-				},
-			}
-
-			all = append(all, &comment)
-		}
-
-		if !q.Repository.PullRequest.Comments.PageInfo.HasNextPage {
-			break
-		}
-
-		variables["cursor"] = githubv4.NewString(q.Repository.PullRequest.Comments.PageInfo.EndCursor)
-	}
-
-	return all, nil
-}
-
 func (s *Scraper) FetchIssues(ctx context.Context, owner, name string) ([]*Issue, error) {
 	var q struct {
 		Repository struct {
@@ -249,21 +121,6 @@ func (s *Scraper) FetchIssues(ctx context.Context, owner, name string) ([]*Issue
 					Body        string
 					State       string
 					StateReason string
-					// Comments
-					Comments struct {
-						Nodes []struct {
-							Id     string
-							Body   string
-							Author struct {
-								Login     string
-								AvatarUrl string
-								User      struct {
-									Email string
-								} `graphql:"... on User"`
-							}
-						}
-						PageInfo PageInfo
-					} `graphql:"comments(first: $first)"`
 					// Author
 					Author struct {
 						Login     string
@@ -291,13 +148,8 @@ func (s *Scraper) FetchIssues(ctx context.Context, owner, name string) ([]*Issue
 			return nil, fmt.Errorf("Failed to fetch issues: %w", err)
 		}
 
-		if !q.Repository.Issues.PageInfo.HasNextPage {
-			break
-		}
-
-		issues := make([]*Issue, len(q.Repository.Issues.Nodes))
-		for i, is := range q.Repository.Issues.Nodes {
-			issue := &Issue{
+		for _, is := range q.Repository.Issues.Nodes {
+			all = append(all, &Issue{
 				Id:          is.Id,
 				Number:      is.Number,
 				Title:       is.Title,
@@ -309,37 +161,12 @@ func (s *Scraper) FetchIssues(ctx context.Context, owner, name string) ([]*Issue
 					AvatarUrl: is.Author.AvatarUrl,
 					Email:     is.Author.User.Email,
 				},
-				Comments: nil,
-			}
-
-			// Comments
-			var cs []*Comment = make([]*Comment, len(is.Comments.Nodes))
-			for i, c := range is.Comments.Nodes {
-				cs[i] = &Comment{
-					Id:   c.Id,
-					Body: c.Body,
-					Author: &Author{
-						Login:     c.Author.Login,
-						AvatarUrl: c.Author.AvatarUrl,
-						Email:     c.Author.User.Email,
-					},
-				}
-			}
-
-			if is.Comments.PageInfo.HasNextPage {
-				acs, err := s.FetchPullRequestComments(ctx, owner, name, is.Number,
-					string(is.Comments.PageInfo.EndCursor))
-				if err != nil {
-					return nil, fmt.Errorf("Failed to fetch issue comments: %w", err)
-				}
-
-				cs = append(cs, acs...)
-			}
-
-			issue.Comments = cs
-			issues[i] = issue
+			})
 		}
-		all = append(all, issues...)
+
+		if !q.Repository.Issues.PageInfo.HasNextPage {
+			break
+		}
 
 		variables["cursor"] = githubv4.NewString(q.Repository.Issues.PageInfo.EndCursor)
 	}
@@ -394,21 +221,6 @@ func (s *Scraper) FetchPullRequests(ctx context.Context, owner, name string) ([]
 						}
 						PageInfo PageInfo
 					} `graphql:"closingIssuesReferences(first: $first)"`
-					// Comments
-					Comments struct {
-						Nodes []struct {
-							Id     string
-							Body   string
-							Author struct {
-								Login     string
-								AvatarUrl string
-								User      struct {
-									Email string
-								} `graphql:"... on User"`
-							}
-						}
-						PageInfo PageInfo
-					} `graphql:"comments(first: $first)"`
 					// XXX: Limitation of the GraphQL API, can't properly paginate reviewthreads, limiting to 100 for now.
 					ReviewThreads struct {
 						Nodes []struct {
@@ -459,7 +271,6 @@ func (s *Scraper) FetchPullRequests(ctx context.Context, owner, name string) ([]
 					Email:     mpr.Author.User.Email,
 				},
 				ClosingIssues: nil,
-				Comments:      nil,
 				ReviewThreads: nil,
 			}
 
@@ -489,32 +300,6 @@ func (s *Scraper) FetchPullRequests(ctx context.Context, owner, name string) ([]
 			}
 
 			pr.ClosingIssues = cis
-
-			// Comments
-			var cs []*Comment = make([]*Comment, len(mpr.Comments.Nodes))
-			for i, c := range mpr.Comments.Nodes {
-				cs[i] = &Comment{
-					Id:   c.Id,
-					Body: c.Body,
-					Author: &Author{
-						Login:     c.Author.Login,
-						AvatarUrl: c.Author.AvatarUrl,
-						Email:     c.Author.User.Email,
-					},
-				}
-			}
-
-			if mpr.Comments.PageInfo.HasNextPage {
-				acs, err := s.FetchPullRequestComments(ctx, owner, name, pr.Number,
-					string(mpr.Comments.PageInfo.EndCursor))
-				if err != nil {
-					return nil, fmt.Errorf("Failed to fetch pull request comments: %w", err)
-				}
-
-				cs = append(cs, acs...)
-			}
-
-			pr.Comments = cs
 
 			// Review threads
 			var rs []*ReviewThread = make([]*ReviewThread, len(mpr.ReviewThreads.Nodes))
