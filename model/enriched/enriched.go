@@ -12,6 +12,8 @@ import (
 	"github.com/go-git/go-git/v5"
 	"github.com/go-git/go-git/v5/plumbing"
 	"github.com/go-git/go-git/v5/plumbing/object"
+	"github.com/go-git/go-git/v5/plumbing/transport/http"
+	"github.com/go-git/go-git/v5/storage/memory"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -61,6 +63,62 @@ func NewEnrichedModel(local local.GitModel, github remote.RemoteModel) *Enriched
 		Owner:            github.Owner,
 		GithubCommitters: github.Committers,
 	}
+}
+
+// Create a new enriched model from a remote url.
+func NewEnrichedFromUrl(url, token string) (*EnrichedModel, error) {
+	repo, err := git.Clone(memory.NewStorage(), nil, &git.CloneOptions{
+		URL: url,
+		Auth: &http.BasicAuth{
+			Username: "non-empty",
+			Password: token,
+		},
+	})
+	if err != nil {
+		return nil, fmt.Errorf("failed to clone repository: %w", err)
+	}
+
+	gitModel, err := local.NewGitModel(repo)
+	if err != nil {
+		return nil, fmt.Errorf("could not create GitModel: %w", err)
+	}
+
+	owner, name, err := utils.OwnerNameFromUrl(url)
+	if err != nil {
+		return nil, fmt.Errorf("could not get owner and name from URL: %w", err)
+	}
+
+	githubModel, err := remote.ScrapeRemoteModel(owner, name)
+	if err != nil {
+		return nil, fmt.Errorf("could not scrape GithubModel: %w", err)
+	}
+
+	return NewEnrichedModel(*gitModel, *githubModel), nil
+}
+
+// Create a new enriched model from a git directory path.
+func NewEnrichedFromFS(path, url string) (*EnrichedModel, error) {
+	repo, err := git.PlainOpen(path)
+	if err != nil {
+		return nil, fmt.Errorf("cannot open repo: %w", err)
+	}
+
+	gitModel, err := local.NewGitModel(repo)
+	if err != nil {
+		return nil, fmt.Errorf("could not create GitModel: %w", err)
+	}
+
+	owner, name, err := utils.OwnerNameFromUrl(url)
+	if err != nil {
+		return nil, fmt.Errorf("could not get owner and name from URL: %w", err)
+	}
+
+	remoteModel, err := remote.ScrapeRemoteModel(owner, name)
+	if err != nil {
+		return nil, fmt.Errorf("could not create RemoteModel: %w", err)
+	}
+
+	return NewEnrichedModel(*gitModel, *remoteModel), nil
 }
 
 func PopulateAuthors( //nolint: ireturn
@@ -227,4 +285,35 @@ func (em *EnrichedModel) FindMergingCommits(pr *remote.PullRequest) ([]local.Has
 	}
 
 	return mergingCommitHashes, nil
+}
+
+// Fetch commits that exist on a particular branch.
+// branchName: friendly branch name without refs/remote prefix, eg: "main".
+func (em *EnrichedModel) CommitsOnBranch(branchName string) ([]local.Hash, error) {
+	var commitHashes []local.Hash
+	refName := fmt.Sprintf("refs/remotes/origin/%s", branchName)
+
+	// Fetch commits that exist on primary branch.
+	branchRef, err := em.Repository.Reference(plumbing.ReferenceName(refName), false)
+	if err != nil {
+		return nil, fmt.Errorf("could not fetch branch reference: %w", err)
+	}
+
+	branchIter, err := em.Repository.Log(&git.LogOptions{
+		From:  branchRef.Hash(),
+		Order: git.LogOrderCommitterTime,
+	})
+	if err != nil {
+		return nil, fmt.Errorf("error creating commit iter for branch: %w", err)
+	}
+
+	if err = branchIter.ForEach(func(c *object.Commit) error {
+		commitHashes = append(commitHashes, local.Hash(c.Hash))
+
+		return nil
+	}); err != nil {
+		return nil, fmt.Errorf("error folding primary branch commits: %w", err)
+	}
+
+	return commitHashes, nil
 }

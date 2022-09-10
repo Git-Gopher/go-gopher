@@ -20,8 +20,6 @@ import (
 	"github.com/Git-Gopher/go-gopher/version"
 	"github.com/Git-Gopher/go-gopher/workflow"
 	"github.com/go-git/go-git/v5"
-	githttp "github.com/go-git/go-git/v5/plumbing/transport/http"
-	"github.com/go-git/go-git/v5/storage/memory"
 	"github.com/google/go-github/v45/github"
 	log "github.com/sirupsen/logrus"
 	"github.com/urfave/cli/v2"
@@ -70,6 +68,7 @@ func main() {
 					}
 					log.Printf("GITHUB_URL is not set, falling back to \"%s\"...\n", url)
 				}
+
 				owner, name, err := utils.OwnerNameFromUrl(url)
 				if err != nil {
 					log.Fatalf("Could not get owner and name from URL: %v\n", err)
@@ -426,32 +425,10 @@ func main() {
 
 						url := ctx.Args().Get(0)
 
-						repo, err := git.Clone(memory.NewStorage(), nil, &git.CloneOptions{
-							URL: url,
-							Auth: &githttp.BasicAuth{
-								Username: "non-empty",
-								Password: token,
-							},
-						})
+						enrichedModel, err := enriched.NewEnrichedFromUrl(url, token)
 						if err != nil {
-							log.Fatalf("Failed to clone repository: %v", err)
+							return fmt.Errorf("could not create enriched model: %w", err)
 						}
-
-						gitModel, err := local.NewGitModel(repo)
-						if err != nil {
-							log.Fatalf("Could not create GitModel: %v\n", err)
-						}
-
-						owner, name, err := utils.OwnerNameFromUrl(url)
-						if err != nil {
-							log.Fatalf("Could not get owner and name from URL: %v\n", err)
-						}
-
-						githubModel, err := remote.ScrapeRemoteModel(owner, name)
-						if err != nil {
-							log.Fatalf("Could not scrape GithubModel: %v\n", err)
-						}
-						enrichedModel := enriched.NewEnrichedModel(*gitModel, *githubModel)
 
 						// Authors
 						authors := enriched.PopulateAuthors(enrichedModel)
