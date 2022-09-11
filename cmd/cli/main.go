@@ -172,6 +172,7 @@ func main() {
 				}
 				var allRepos []*github.Repository
 				for {
+					// nolint: govet
 					repos, resp, err := client.Repositories.ListByOrg(ctx.Context, org, opt)
 					if err != nil {
 						log.Fatalf("Could not fetch orginisation repositories: %v", err)
@@ -184,6 +185,7 @@ func main() {
 				}
 
 				for _, r := range allRepos {
+					// nolint: nestif
 					if strings.HasPrefix(*r.Name, prefix) {
 						var arts *github.ArtifactList
 						arts, _, err = client.Actions.ListArtifacts(ctx.Context, org, *r.Name, nil)
