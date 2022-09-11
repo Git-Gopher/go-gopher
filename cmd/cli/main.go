@@ -148,6 +148,10 @@ func main() {
 			Action: func(ctx *cli.Context) error {
 				utils.Environment(".env")
 				org := ctx.Args().Get(0)
+				prefix := ctx.Args().Get(1)
+				if prefix == "" {
+					log.Info("Empty prefix, running against all repos...")
+				}
 				out := ctx.String("output")
 				ts := oauth2.StaticTokenSource(
 					&oauth2.Token{AccessToken: os.Getenv("GITHUB_TOKEN")},
@@ -162,39 +166,55 @@ func main() {
 				}
 
 				log.Printf("Fetching repositories for organization %s...\n", org)
-				repos, _, err := client.Repositories.ListByOrg(ctx.Context, org, nil)
-				if err != nil {
-					log.Fatalf("Could not fetch orginisation repositories: %v", err)
+
+				opt := &github.RepositoryListByOrgOptions{
+					ListOptions: github.ListOptions{PerPage: 20},
+				}
+				var allRepos []*github.Repository
+				for {
+					repos, resp, err := client.Repositories.ListByOrg(ctx.Context, org, opt)
+					if err != nil {
+						log.Fatalf("Could not fetch orginisation repositories: %v", err)
+					}
+					allRepos = append(allRepos, repos...)
+					if resp.NextPage == 0 {
+						break
+					}
+					opt.Page = resp.NextPage
 				}
 
-				for _, r := range repos {
-					var arts *github.ArtifactList
-					arts, _, err = client.Actions.ListArtifacts(ctx.Context, org, *r.Name, nil)
-					if err != nil {
-						log.Fatalf("Could not fetch artifact list: %v", err)
-					}
-
-					for _, a := range arts.Artifacts {
-						log.Printf("Downloading artifacts for %s/%s...\n", org, *r.Name)
-						var url *url.URL
-						url, _, err = client.Actions.DownloadArtifact(ctx.Context, org, *r.Name, *a.ID, true)
+				for _, r := range allRepos {
+					if strings.HasPrefix(*r.Name, prefix) {
+						var arts *github.ArtifactList
+						arts, _, err = client.Actions.ListArtifacts(ctx.Context, org, *r.Name, nil)
 						if err != nil {
-							log.Fatalf("could not fetch artifact url: %v", err)
+							log.Fatalf("Could not fetch artifact list: %v", err)
 						}
 
-						pathZip := fmt.Sprintf("%s/log-%s-%s-%d.zip", out, org, *r.Name, *a.ID)
-						pathJson := fmt.Sprintf("%s/log-%s-%s-%d", out, org, *r.Name, *a.ID)
+						for _, a := range arts.Artifacts {
+							log.Printf("Downloading artifacts for %s/%s...\n", org, *r.Name)
+							var url *url.URL
+							url, _, err = client.Actions.DownloadArtifact(ctx.Context, org, *r.Name, *a.ID, true)
+							if err != nil {
+								log.Fatalf("could not fetch artifact url: %v", err)
+							}
 
-						log.Printf("Downloading artifact %s...\n", pathZip)
-						err = utils.DownloadFile(pathZip, url.String())
-						if err != nil {
-							log.Fatalf("could not download artifact: %v", err)
-						}
+							pathZip := fmt.Sprintf("%s/log-%s-%s-%d.zip", out, org, *r.Name, *a.ID)
+							pathJson := fmt.Sprintf("%s/log-%s-%s-%d", out, org, *r.Name, *a.ID)
 
-						log.Printf("Unzipping %s...\n", pathZip)
-						if err = utils.Unzip(pathZip, pathJson); err != nil {
-							log.Fatalf("failed to unzip log contents: %v", err)
+							log.Printf("Downloading artifact %s...\n", pathZip)
+							err = utils.DownloadFile(pathZip, url.String())
+							if err != nil {
+								log.Fatalf("could not download artifact: %v", err)
+							}
+
+							log.Printf("Unzipping %s...\n", pathZip)
+							if err = utils.Unzip(pathZip, pathJson); err != nil {
+								log.Fatalf("failed to unzip log contents: %v", err)
+							}
 						}
+					} else {
+						log.Infof("Skipping repository %s as it does not follow prefix", *r.Name)
 					}
 				}
 
@@ -207,7 +227,7 @@ func main() {
 						return nil
 					}
 
-					if matched, err := filepath.Match("log-go-gopher*.json", filepath.Base(path)); err != nil {
+					if matched, err := filepath.Match("log-*.json", filepath.Base(path)); err != nil {
 						return fmt.Errorf("could not match log file: %w", err)
 					} else if matched {
 						logCount++
@@ -241,7 +261,7 @@ func main() {
 					return fmt.Errorf("error writing merged log: %w", err)
 				}
 
-				log.Printf("Downloaded %d logs from %s and merged to %s", logCount, "Git-Gopher", logPath)
+				log.Printf("Downloaded %d logs from %s and merged to %s", logCount, org, logPath)
 
 				return nil
 			},
