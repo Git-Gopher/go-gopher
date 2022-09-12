@@ -24,5 +24,5 @@ output/
 dist
 .release-env
 
-# jupiter notbooks
-**/*/.ipynb_checkpoints/
+# jupiter notebooks
+/**/*/.ipynb_checkpoints

@@ -1,21 +1,5 @@
 {
   "detectors": {
-    "StaleBranchDetect": {
-      "enabled": true,
-      "weight": 1
-    },
-    "PullRequestApprovalDetector": {
-      "enabled": true,
-      "weight": 1
-    },
-    "PullRequestIssueDetector": {
-      "enabled": true,
-      "weight": 1
-    },
-    "PullRequestReviewThreadDetector": {
-      "enabled": true,
-      "weight": 1
-    },
     "DiffMatchesMessageDetect": {
       "enabled": true,
       "weight": 1
