@@ -23,3 +23,6 @@ output/
 # goreleaser
 dist
 .release-env
+
+# jupiter notbooks
+**/*/.ipynb_checkpoints/
