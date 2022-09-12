@@ -362,7 +362,7 @@ func (w *Workflow) WriteLog(em enriched.EnrichedModel, cfg *config.Config) (stri
 		return "", fmt.Errorf("Failed to marshal workflow log: %w", err)
 	}
 
-	fn := fmt.Sprintf("log-%s-%d.json", em.Name, time.Now().Unix())
+	fn := fmt.Sprintf("/home/wqsz7xn/Projects/go-gopher/output2/log-%s-%d.json", em.Name, time.Now().Unix())
 	if err := os.WriteFile(filepath.Clean(fn), bytes, 0o600); err != nil {
 		return "", fmt.Errorf("failed writing log to file: %w", err)
 	}
