@@ -237,6 +237,9 @@ func NewGitModel(repo *git.Repository) (*GitModel, error) {
 			return fmt.Errorf("NewGitModel commit: %w", ErrCommitEmpty)
 		}
 		commit := NewCommit(repo, c)
+		if commit == nil {
+			return fmt.Errorf("NewGitModel commit: %w", ErrCommitEmpty)
+		}
 		gitModel.Commits = append(gitModel.Commits, *commit)
 		gitModel.Committer = append(gitModel.Committer, Committer{
 			CommitId: string(c.Hash[:]),
