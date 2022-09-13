@@ -25,7 +25,9 @@ func FetchDiffs(patch *object.Patch) ([]Diff, error) {
 		switch {
 		case from == nil:
 			// New File is created.
-			name = to.Path()
+			// XXX: Sometimes this panics; idk why. i'll have to eval some commit diffs to see what's up.
+			// Hardcode for now. i know this will make data kinda bad
+			name = ""
 		case to == nil:
 			// File is deleted.
 			name = from.Path()
