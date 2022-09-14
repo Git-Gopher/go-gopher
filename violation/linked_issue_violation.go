@@ -2,6 +2,7 @@ package violation
 
 import (
 	"fmt"
+	"time"
 
 	"github.com/Git-Gopher/go-gopher/markup"
 )
@@ -9,11 +10,13 @@ import (
 func NewLinkedIssueViolation(
 	pr markup.PR,
 	current bool,
+	time time.Time,
 ) *LinkedIssueViolation {
 	violation := &LinkedIssueViolation{
 		violation: violation{
 			name:     "LinkedIssueViolation",
 			severity: Suggestion,
+			time:     time,
 			current:  current,
 		},
 		pr: pr,

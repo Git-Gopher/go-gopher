@@ -2,6 +2,7 @@ package violation
 
 import (
 	"fmt"
+	"time"
 
 	"github.com/Git-Gopher/go-gopher/markup"
 )
@@ -9,11 +10,13 @@ import (
 func NewApprovalViolation(
 	pr markup.PR,
 	current bool,
+	time time.Time,
 ) *ApprovalViolation {
 	violation := &ApprovalViolation{
 		violation: violation{
 			name:     "PullRequestApprovalViolation",
 			severity: Violated,
+			time:     time,
 			current:  current,
 		},
 		pr: pr,

@@ -17,7 +17,11 @@ const (
 	Suggestion
 )
 
-var ErrViolationMethodNotExist = errors.New("Violation method not exist")
+var (
+	ErrViolationMethodNotExist = errors.New("Violation method not exist")
+	ErrCreatedTimePullRequest  = errors.New("no created time for pull request")
+	ErrClosedTimePullRequest   = errors.New("no closed time for pull request")
+)
 
 type Violation interface {
 	Name() string                 // required: Internal name of the violation.
