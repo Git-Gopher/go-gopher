@@ -474,7 +474,6 @@ func main() {
 							log.Fatalf("Could not scrape GithubModel: %v\n", err)
 						}
 
-						// empty enriched model
 						enrichedModel := enriched.NewEnrichedModel(*gitModel, *githubModel)
 
 						// Authors
