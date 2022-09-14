@@ -464,18 +464,18 @@ func main() {
 							log.Fatalf("Could not create GitModel: %v\n", err)
 						}
 
-						//owner, name, err := utils.OwnerNameFromUrl(url)
-						//if err != nil {
-						//	log.Fatalf("Could not get owner and name from URL: %v\n", err)
-						//}
+						owner, name, err := utils.OwnerNameFromUrl(url)
+						if err != nil {
+							log.Fatalf("Could not get owner and name from URL: %v\n", err)
+						}
 
-						//githubModel, err := remote.ScrapeRemoteModel(owner, name)
-						//if err != nil {
-						//	log.Fatalf("Could not scrape GithubModel: %v\n", err)
-						//}
+						githubModel, err := remote.ScrapeRemoteModel(owner, name)
+						if err != nil {
+							log.Fatalf("Could not scrape GithubModel: %v\n", err)
+						}
 
 						// empty enriched model
-						enrichedModel := enriched.NewEnrichedModel(*gitModel, remote.RemoteModel{})
+						enrichedModel := enriched.NewEnrichedModel(*gitModel, *githubModel)
 
 						// Authors
 						authors := enriched.PopulateAuthors(enrichedModel)
@@ -512,15 +512,15 @@ func main() {
 						}
 
 						if ctx.Bool("logging") {
-							_, err := ghwf.WriteLog(*enrichedModel, cfg)
+							fn, err := ghwf.WriteLog(*enrichedModel, cfg)
 							if err != nil {
 								log.Fatalf("Could not write json log: %v", err)
 							}
 
-							//err = discord.SendLog(fn)
-							//if err != nil {
-							//	log.Fatalf("Could not write json log to discord: %v", err)
-							//}
+							err = discord.SendLog(fn)
+							if err != nil {
+								log.Fatalf("Could not write json log to discord: %v", err)
+							}
 						}
 
 						return nil
@@ -534,6 +534,11 @@ func main() {
 						&cli.BoolFlag{
 							Name:     "csv",
 							Usage:    "csv summary of the workflow run",
+							Required: false,
+						},
+						&cli.BoolFlag{
+							Name:     "offline",
+							Usage:    "offline mode and skip remote models",
 							Required: false,
 						},
 					},
@@ -575,33 +580,42 @@ func main() {
 								log.Fatalf("Could not create GitModel: %v\n", err)
 							}
 
-							//url, err := utils.Url(repo)
-							//if err != nil {
-							//	log.Fatalf("Could get url from repository: \"%v\", does it have any remotes?", err)
-							//}
+							var githubModel *remote.RemoteModel
+							if ctx.Bool("offline") {
+								githubModel = &remote.RemoteModel{}
+							} else {
+								url, err := utils.Url(repo)
+								if err != nil {
+									log.Fatalf("Could get url from repository: \"%v\", does it have any remotes?", err)
+								}
 
-							//owner, name, err := utils.OwnerNameFromUrl(url)
-							//if err != nil {
-							//	log.Fatalf("Could get the owner and name from URL: %v", err)
-							//}
+								owner, name, err := utils.OwnerNameFromUrl(url)
+								if err != nil {
+									log.Fatalf("Could get the owner and name from URL: %v", err)
+								}
 
-							//githubModel, err := remote.ScrapeRemoteModel(owner, name)
-							//if err != nil {
-							//	log.Fatalf("Could not create GithubModel: %v\n", err)
-							//}
+								githubModel, err = remote.ScrapeRemoteModel(owner, name)
+								if err != nil {
+									log.Fatalf("Could not create GithubModel: %v\n", err)
+								}
 
-							enrichedModel := enriched.NewEnrichedModel(*gitModel, remote.RemoteModel{})
+							}
+
+							enrichedModel := enriched.NewEnrichedModel(*gitModel, *githubModel)
 
 							// Authors
 							authors := enriched.PopulateAuthors(enrichedModel)
 
 							log.Printf("analyzing %s...", p)
-							_, _, _, _, err = ghwf.Analyze(enrichedModel, authors, nil, nil)
+							v, c, t, vs, err := ghwf.Analyze(enrichedModel, authors, nil, nil)
 							if err != nil {
 								log.Fatalf("Failed to analyze: %v\n", err)
 							}
 
-							//workflow.PrintSummary(authors, v, c, t, vs)
+							if !ctx.Bool("offline") {
+								workflow.PrintSummary(authors, v, c, t, vs)
+							}
+
 							if ctx.Bool("csv") {
 								nameCsv := fmt.Sprintf("batch-%s.csv", filepath.Base(path))
 								err = ghwf.Csv(nameCsv, enrichedModel.Name, enrichedModel.URL)
@@ -611,14 +625,16 @@ func main() {
 							}
 
 							if ctx.Bool("logging") {
-								_, err := ghwf.WriteLog(*enrichedModel, cfg)
+								fn, err := ghwf.WriteLog(*enrichedModel, cfg)
 								if err != nil {
 									log.Fatalf("Could not write json log: %v", err)
 								}
-								//err = discord.SendLog(fn)
-								//if err != nil {
-								//	log.Fatalf("Could not write json log to discord: %v", err)
-								//}
+								if !ctx.Bool("offline") {
+									err = discord.SendLog(fn)
+									if err != nil {
+										log.Fatalf("Could not write json log to discord: %v", err)
+									}
+								}
 							}
 						}
 
