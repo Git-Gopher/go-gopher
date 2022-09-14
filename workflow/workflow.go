@@ -310,6 +310,7 @@ func (w *Workflow) WriteLog(em enriched.EnrichedModel, cfg *config.Config) (stri
 		Message      string
 		Suggestion   string
 		Email        string
+		Time         string
 		Author       remote.Author
 		FileLocation string
 		LineLocation int
@@ -341,6 +342,7 @@ func (w *Workflow) WriteLog(em enriched.EnrichedModel, cfg *config.Config) (stri
 			Message:      v.Message(),
 			Suggestion:   suggestion,
 			Email:        v.Email(),
+			Time:         v.Time().Format(time.UnixDate),
 			Author:       *author,
 			FileLocation: fileLocation,
 			LineLocation: lineLocation,
