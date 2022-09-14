@@ -66,6 +66,10 @@ func (prd *PullRequestDetector) Name() string {
 func PullRequestIssueDetector() (string, PullRequestDetect) {
 	return "PullRequestIssueDetector", func(c *common, pr *remote.PullRequest) (bool, violation.Violation, error) {
 		if len(pr.ClosingIssues) == 0 {
+			if pr.CreatedAt == nil {
+				return false, nil, violation.ErrCreatedTimePullRequest
+			}
+
 			return true, violation.NewLinkedIssueViolation(
 				markup.PR{
 					Number: pr.Number,
@@ -75,6 +79,7 @@ func PullRequestIssueDetector() (string, PullRequestDetect) {
 					},
 				},
 				c.IsCurrentPR(pr),
+				*pr.CreatedAt,
 			), nil
 		}
 
@@ -90,6 +95,11 @@ func PullRequestApprovalDetector() (string, PullRequestDetect) {
 		}
 
 		if pr.ReviewDecision != "APPROVED" {
+			// Pull request must have closed time if merged.
+			if pr.ClosedAt == nil {
+				return false, nil, violation.ErrClosedTimePullRequest
+			}
+
 			return true, violation.NewApprovalViolation(
 				markup.PR{
 					Number: pr.Number,
@@ -99,6 +109,7 @@ func PullRequestApprovalDetector() (string, PullRequestDetect) {
 					},
 				},
 				c.IsCurrentPR(pr),
+				*pr.ClosedAt,
 			), nil
 		}
 
@@ -116,6 +127,10 @@ func PullRequestReviewThreadDetector() (string, PullRequestDetect) {
 
 		for _, thread := range pr.ReviewThreads {
 			if !thread.IsResolved {
+				if pr.ClosedAt == nil {
+					return false, nil, violation.ErrClosedTimePullRequest
+				}
+
 				return true, violation.NewUnresolvedConversationViolation(
 					markup.PR{
 						Number: pr.Number,
@@ -125,6 +140,7 @@ func PullRequestReviewThreadDetector() (string, PullRequestDetect) {
 						},
 					},
 					c.IsCurrentPR(pr),
+					*pr.ClosedAt,
 				), nil
 			}
 		}

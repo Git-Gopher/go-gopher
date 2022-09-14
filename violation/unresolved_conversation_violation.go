@@ -2,6 +2,7 @@ package violation
 
 import (
 	"fmt"
+	"time"
 
 	"github.com/Git-Gopher/go-gopher/markup"
 )
@@ -9,11 +10,13 @@ import (
 func NewUnresolvedConversationViolation(
 	pr markup.PR,
 	current bool,
+	time time.Time,
 ) *UnresolvedConversationViolation {
 	violation := &UnresolvedConversationViolation{
 		violation: violation{
 			name:     "UnresolvedConversationViolation",
 			severity: Violated,
+			time:     time,
 			current:  current,
 		},
 		pr: pr,

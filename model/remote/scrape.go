@@ -187,6 +187,8 @@ func (s *Scraper) FetchPullRequests(ctx context.Context, owner, name string) ([]
 					BaseRefName    string
 					Title          string
 					Body           string
+					ClosedAt       string
+					CreatedAt      string
 					ReviewDecision string
 					Merged         bool
 					MergedBy       struct {
@@ -250,11 +252,38 @@ func (s *Scraper) FetchPullRequests(ctx context.Context, owner, name string) ([]
 		}
 
 		for _, mpr := range q.Repository.PullRequests.Nodes {
+			// ISO8061 layout.
+			layout := "2006-01-02T15:04:05Z0700"
+
+			var createdAt, closedAt *time.Time
+
+			// Pull request will always have valid creation date.
+			{
+				created, err := time.Parse(layout, mpr.CreatedAt)
+				if err != nil {
+					return nil, fmt.Errorf("could not parse ISO time for PR creation: %w", err)
+				}
+				createdAt = &created
+			}
+
+			// Pull request has not been closed.
+			if mpr.ClosedAt == "" {
+				closedAt = nil
+			} else {
+				closed, err := time.Parse(layout, mpr.ClosedAt)
+				if err != nil {
+					return nil, fmt.Errorf("could not parse ISO time for PR close: %w", err)
+				}
+				closedAt = &closed
+			}
+
 			pr := PullRequest{
 				Id:             mpr.Id,
 				Number:         mpr.Number,
 				HeadRefName:    mpr.HeadRefName,
 				BaseRefName:    mpr.BaseRefName,
+				CreatedAt:      createdAt,
+				ClosedAt:       closedAt,
 				Title:          mpr.Title,
 				Body:           mpr.Body,
 				ReviewDecision: mpr.ReviewDecision,

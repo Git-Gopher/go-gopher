@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"sync"
+	"time"
 )
 
 type Author struct {
@@ -34,6 +35,8 @@ type PullRequest struct {
 	Number         int
 	HeadRefName    string // source branch
 	BaseRefName    string // target branch
+	CreatedAt      *time.Time
+	ClosedAt       *time.Time
 	Title          string
 	Body           string
 	ReviewDecision string
