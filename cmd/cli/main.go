@@ -473,6 +473,7 @@ func main() {
 						if err != nil {
 							log.Fatalf("Could not scrape GithubModel: %v\n", err)
 						}
+
 						enrichedModel := enriched.NewEnrichedModel(*gitModel, *githubModel)
 
 						// Authors
@@ -534,9 +535,16 @@ func main() {
 							Usage:    "csv summary of the workflow run",
 							Required: false,
 						},
+						&cli.BoolFlag{
+							Name:     "offline",
+							Usage:    "offline mode and skip remote models",
+							Required: false,
+						},
 					},
 					Action: func(ctx *cli.Context) error {
-						utils.Environment(".env")
+						if !ctx.Bool("offline") {
+							utils.Environment(".env")
+						}
 						path := ctx.Args().Get(0)
 						if path == "" {
 							path = "./"
@@ -573,19 +581,25 @@ func main() {
 								log.Fatalf("Could not create GitModel: %v\n", err)
 							}
 
-							url, err := utils.Url(repo)
-							if err != nil {
-								log.Fatalf("Could get url from repository: \"%v\", does it have any remotes?", err)
-							}
+							var githubModel *remote.RemoteModel
+							if ctx.Bool("offline") {
+								githubModel = &remote.RemoteModel{}
+							} else {
+								var url, owner, name string
+								url, err = utils.Url(repo)
+								if err != nil {
+									log.Fatalf("Could get url from repository: \"%v\", does it have any remotes?", err)
+								}
 
-							owner, name, err := utils.OwnerNameFromUrl(url)
-							if err != nil {
-								log.Fatalf("Could get the owner and name from URL: %v", err)
-							}
+								owner, name, err = utils.OwnerNameFromUrl(url)
+								if err != nil {
+									log.Fatalf("Could get the owner and name from URL: %v", err)
+								}
 
-							githubModel, err := remote.ScrapeRemoteModel(owner, name)
-							if err != nil {
-								log.Fatalf("Could not create GithubModel: %v\n", err)
+								githubModel, err = remote.ScrapeRemoteModel(owner, name)
+								if err != nil {
+									log.Fatalf("Could not create GithubModel: %v\n", err)
+								}
 							}
 
 							enrichedModel := enriched.NewEnrichedModel(*gitModel, *githubModel)
@@ -593,14 +607,18 @@ func main() {
 							// Authors
 							authors := enriched.PopulateAuthors(enrichedModel)
 
+							log.Printf("analyzing %s...", p)
 							v, c, t, vs, err := ghwf.Analyze(enrichedModel, authors, nil, nil)
 							if err != nil {
 								log.Fatalf("Failed to analyze: %v\n", err)
 							}
 
-							workflow.PrintSummary(authors, v, c, t, vs)
-							nameCsv := fmt.Sprintf("batch-%s.csv", filepath.Base(path))
+							if !ctx.Bool("offline") {
+								workflow.PrintSummary(authors, v, c, t, vs)
+							}
+
 							if ctx.Bool("csv") {
+								nameCsv := fmt.Sprintf("batch-%s.csv", filepath.Base(path))
 								err = ghwf.Csv(nameCsv, enrichedModel.Name, enrichedModel.URL)
 								if err != nil {
 									log.Fatalf("Could not create csv summary: %v", err)
@@ -612,9 +630,11 @@ func main() {
 								if err != nil {
 									log.Fatalf("Could not write json log: %v", err)
 								}
-								err = discord.SendLog(fn)
-								if err != nil {
-									log.Fatalf("Could not write json log to discord: %v", err)
+								if !ctx.Bool("offline") {
+									err = discord.SendLog(fn)
+									if err != nil {
+										log.Fatalf("Could not write json log to discord: %v", err)
+									}
 								}
 							}
 						}

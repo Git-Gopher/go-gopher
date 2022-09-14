@@ -1,0 +1,21 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "debug offline",
+      "type": "go",
+      "request": "launch",
+      "mode": "debug",
+      "program": "/home/wqsz7xn/Projects/go-gopher/cmd/cli",
+      "args": [
+        "analyze",
+        "--logging",
+        "--config",
+        "/home/wqsz7xn/Projects/go-gopher/config/offline.json",
+        "batch",
+        "--offline",
+        "/home/wqsz7xn/Desktop/data/assignment-3-and-project-2020"
+      ]
+    }
+  ]
+}
