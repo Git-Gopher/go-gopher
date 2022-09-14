@@ -28,7 +28,7 @@ func FetchDiffs(patch *object.Patch) ([]Diff, error) {
 			// XXX: This panics sometimes on previous repos.
 			// Quick workaround is the hardcode below. You should enable it yourself though.
 			// Needs to be investigated.
-			//name = ""
+			// name = ""
 			name = to.Path()
 		case to == nil:
 			// File is deleted.
