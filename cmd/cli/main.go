@@ -543,7 +543,9 @@ func main() {
 						},
 					},
 					Action: func(ctx *cli.Context) error {
-						//utils.Environment(".env")
+						if !ctx.Bool("offline") {
+							utils.Environment(".env")
+						}
 						path := ctx.Args().Get(0)
 						if path == "" {
 							path = "./"
@@ -584,12 +586,13 @@ func main() {
 							if ctx.Bool("offline") {
 								githubModel = &remote.RemoteModel{}
 							} else {
-								url, err := utils.Url(repo)
+								var url, owner, name string
+								url, err = utils.Url(repo)
 								if err != nil {
 									log.Fatalf("Could get url from repository: \"%v\", does it have any remotes?", err)
 								}
 
-								owner, name, err := utils.OwnerNameFromUrl(url)
+								owner, name, err = utils.OwnerNameFromUrl(url)
 								if err != nil {
 									log.Fatalf("Could get the owner and name from URL: %v", err)
 								}
@@ -598,7 +601,6 @@ func main() {
 								if err != nil {
 									log.Fatalf("Could not create GithubModel: %v\n", err)
 								}
-
 							}
 
 							enrichedModel := enriched.NewEnrichedModel(*gitModel, *githubModel)
