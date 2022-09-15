@@ -18,6 +18,7 @@ import (
 	"github.com/Git-Gopher/go-gopher/model/remote"
 	"github.com/Git-Gopher/go-gopher/utils"
 	"github.com/Git-Gopher/go-gopher/version"
+	"github.com/Git-Gopher/go-gopher/violation"
 	"github.com/Git-Gopher/go-gopher/workflow"
 	"github.com/go-git/go-git/v5"
 	githttp "github.com/go-git/go-git/v5/plumbing/transport/http"
@@ -105,10 +106,12 @@ func main() {
 					log.Fatalf("Failed to analyze: %v\n", err)
 				}
 
-				workflow.PrintSummary(authors, violated, count, total, violations)
+				disallowList := []string{"github-classroom[bot]"}
+				filteredViolations := violation.FilterByLogin(violations, disallowList)
+				workflow.PrintSummary(authors, violated, count, total, filteredViolations)
 
 				// Set action outputs to a markdown summary.
-				summary := workflow.MarkdownSummary(authors, violations)
+				summary := workflow.MarkdownSummary(authors, filteredViolations)
 				markup.Outputs("pr_summary", summary)
 
 				err = ghwf.Csv(workflow.DefaultCsvPath, enrichedModel.Name, enrichedModel.URL)
