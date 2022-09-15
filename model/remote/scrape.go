@@ -187,11 +187,11 @@ func (s *Scraper) FetchPullRequests(ctx context.Context, owner, name string) ([]
 					BaseRefName    string
 					Title          string
 					Body           string
-					Closed         bool
 					ClosedAt       string
 					CreatedAt      string
 					ReviewDecision string
 					Merged         bool
+					Closed         bool
 					MergedBy       struct {
 						Login     string
 						AvatarUrl string
