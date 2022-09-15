@@ -40,6 +40,7 @@ type PullRequest struct {
 	Title          string
 	Body           string
 	ReviewDecision string
+	Closed         bool
 	Merged         bool
 	MergedBy       *Author
 	Url            string

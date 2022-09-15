@@ -120,8 +120,8 @@ func PullRequestApprovalDetector() (string, PullRequestDetect) {
 // All reviews threads should be marked as resolved before merging.
 func PullRequestReviewThreadDetector() (string, PullRequestDetect) {
 	return "PullRequestReviewThreadDetector", func(c *common, pr *remote.PullRequest) (bool, violation.Violation, error) {
-		// Ignore unmerged pull requests.
-		if pr.Merged {
+		// Ignore open and unmerged pull requests.
+		if !pr.Closed || !pr.Merged {
 			return false, nil, nil
 		}
 

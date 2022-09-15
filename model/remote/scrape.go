@@ -187,6 +187,7 @@ func (s *Scraper) FetchPullRequests(ctx context.Context, owner, name string) ([]
 					BaseRefName    string
 					Title          string
 					Body           string
+					Closed         bool
 					ClosedAt       string
 					CreatedAt      string
 					ReviewDecision string
@@ -286,6 +287,7 @@ func (s *Scraper) FetchPullRequests(ctx context.Context, owner, name string) ([]
 				ClosedAt:       closedAt,
 				Title:          mpr.Title,
 				Body:           mpr.Body,
+				Closed:         mpr.Closed,
 				ReviewDecision: mpr.ReviewDecision,
 				Merged:         mpr.Merged,
 				MergedBy: &Author{
