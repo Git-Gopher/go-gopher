@@ -88,9 +88,11 @@ func actionCommand(cCtx *cli.Context) error {
 		violations = violation.FilterByLogin(violations, whitelist)
 	}
 
-	workflow.PrintSummary(authors, violated, count, total, violations)
+	disallowList := []string{"github-classroom[bot]"}
+	filteredViolations := violation.FilterByLogin(violations, disallowList)
+	workflow.PrintSummary(authors, violated, count, total, filteredViolations)
 
-	summary := workflow.MarkdownSummary(authors, violations)
+	summary := workflow.MarkdownSummary(authors, filteredViolations)
 	markup.Outputs("pr_summary", summary)
 
 	fn, err := ghwf.WriteLog(*enrichedModel, cfg)
