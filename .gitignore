@@ -14,7 +14,7 @@ prof/
 /cmd/cli/cli
 
 # artifacts
-output/
+output*/
 **/*.zip 
 **/*.html
 /log-*.json
