@@ -2,6 +2,7 @@ package remote
 
 import (
 	"context"
+	"fmt"
 	"testing"
 
 	"github.com/Git-Gopher/go-gopher/utils"
@@ -25,4 +26,15 @@ func TestScraper_FetchCommitters(t *testing.T) {
 		t.Error(err)
 	}
 	t.Logf("committers: %v\n", committers)
+}
+
+func TestScraper_FetchPopularRepositories(t *testing.T) {
+	utils.Environment("../../.env")
+	s := NewScraper()
+	repos, err := s.FetchPopularRepositories(context.TODO(), 100, 10)
+	if err != nil {
+		t.Error(err)
+	}
+
+	fmt.Printf("repos: %v\n", repos)
 }

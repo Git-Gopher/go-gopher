@@ -64,6 +64,12 @@ type Committer struct {
 	Login    string
 }
 
+type Repository struct {
+	Name       string `json:"name"`
+	Url        string `json:"url"`
+	Stargazers int    `json:"stargazers"`
+}
+
 // TODO: Issues, Author. Also handling the same issue multiple times, should we fetch it multiple
 // times or put in memory and search? The former is more memory efficient and is a 'better solution'
 // where we can use pointers within our structs, the second is easier in terms of managing complexity
