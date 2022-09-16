@@ -40,11 +40,11 @@ var (
 		"CrissCrossMergeDetect":           detector.NewBranchMatrixDetector(detector.CrissCrossMergeDetect()),
 		"UnresolvedDetect":                detector.NewCommitDetector(detector.UnresolvedDetect()),
 		"EmptyCommitDetect":               detector.NewCommitDetector(detector.EmptyCommitDetect()),
+		"BinaryDetect":                    detector.NewCommitDetector(detector.BinaryDetect()),
 
 		// Disabled
 		// "NewFeatureBranchNameDetect": detector.NewBranchCompareDetector(detector.NewFeatureBranchNameDetect()),
 		// "TwoParentsCommitDetect":     detector.NewCommitDetector(detector.TwoParentsCommitDetect()),
-		// "BinaryDetect":                    detector.NewCommitDetector(detector.BinaryDetect()),
 	}
 	cacheDetectorRegistry = map[string]detector.CacheDetector{
 		"ForcePushDetect": detector.NewCommitCacheDetector(detector.ForcePushDetect()),
