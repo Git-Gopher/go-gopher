@@ -47,10 +47,6 @@
     "EmptyCommitDetect": {
       "enabled": true,
       "weight": 1
-    },
-    "BinaryDetect": {
-      "enabled": true,
-      "weight": 1
     }
   }
 }
