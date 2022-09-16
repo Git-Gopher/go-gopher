@@ -653,6 +653,7 @@ func main() {
 			Aliases:     []string{"q"},
 			Description: "query github for some popular git repositories",
 			Usage:       "query <stars> <number-of-repos>",
+			// nolint:goerr113
 			Action: func(ctx *cli.Context) error {
 				utils.Environment(".env")
 
@@ -674,24 +675,23 @@ func main() {
 				scraper := remote.NewScraper()
 				repositories, err := scraper.FetchPopularRepositories(ctx.Context, stars, numberRepositories)
 				if err != nil {
-					return fmt.Errorf("failed to fetch repositories: %v", err)
+					return fmt.Errorf("failed to fetch repositories: %w", err)
 				}
 
 				payload, err := json.Marshal(repositories)
 				if err != nil {
-					return fmt.Errorf("failed to marshal repositories: %v", err)
+					return fmt.Errorf("failed to marshal repositories: %w", err)
 				}
 
 				fh, err := os.Create("repositories.json")
-
 				if err != nil {
-					return fmt.Errorf("could not create json file: %v", err)
+					return fmt.Errorf("could not create json file: %w", err)
 				}
 
-				defer fh.Close()
+				defer fh.Close() //nolint: errcheck, gosec
 
 				if _, err = fh.Write(payload); err != nil {
-					return fmt.Errorf("could not write payload to repositories file: %v", err)
+					return fmt.Errorf("could not write payload to repositories file: %w", err)
 				}
 
 				log.Printf("Scraped %d repositories", len(repositories))

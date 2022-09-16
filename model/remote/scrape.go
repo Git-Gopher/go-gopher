@@ -2,6 +2,7 @@ package remote
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"os"
 	"sync"
@@ -12,7 +13,10 @@ import (
 	"golang.org/x/oauth2"
 )
 
-var githubQuerySize = 100
+var (
+	ErrQueryParameters = errors.New("invalid query parameters")
+	githubQuerySize    = 100
+)
 
 const GITHUB_NOREPLY_EMAIL = "noreply@github.com"
 
@@ -657,7 +661,7 @@ func (s *Scraper) FetchBranchHeads(ctx context.Context, owner, name string) (str
 
 func (s *Scraper) FetchPopularRepositories(ctx context.Context, stars int, number int) ([]Repository, error) {
 	if stars < 0 || number < 0 {
-		return nil, fmt.Errorf("invalid query parameters: %v, %v", stars, number)
+		return nil, fmt.Errorf("%w: %v, %v", ErrQueryParameters, stars, number)
 	}
 
 	var q struct {
@@ -689,7 +693,6 @@ func (s *Scraper) FetchPopularRepositories(ctx context.Context, stars int, numbe
 
 	var repos []Repository
 	for len(repos) != number {
-
 		if err := s.Client.Query(ctx, &q, variables); err != nil {
 			return nil, fmt.Errorf("failed to fetch popular repositories: %w", err)
 		}
