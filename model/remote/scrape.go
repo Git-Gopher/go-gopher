@@ -654,3 +654,28 @@ func (s *Scraper) FetchBranchHeads(ctx context.Context, owner, name string) (str
 
 	return q.Repository.DefaultBranchRef.Name, m, nil
 }
+
+func (s *Scraper) FetchPopularRepositories(stars int) error {
+	var q struct {
+		RepositoryCount struct {
+		} `graphql:"search(query: "stars:>10000", type: REPOSITORY, first: 10)"`
+		Edges struct {
+			Node struct {
+				Repository struct {
+					Name       string
+					Url        string
+					Stargazers struct {
+						TotalCount int
+					}
+				} `graphql:"... on"`
+			}
+		}
+		PageInfo PageInfo
+	}
+
+	// variables := map[string]interface{}{
+	// 	"first":  githubv4.Int(githubQuerySize),
+	// 	"cursor": (*githubv4.String)(nil),
+	// }
+	return nil
+}
