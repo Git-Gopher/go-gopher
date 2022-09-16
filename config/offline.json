@@ -12,14 +12,6 @@
       "enabled": true,
       "weight": 1
     },
-    "BranchNameConsistencyDetect": {
-      "enabled": true,
-      "weight": 1
-    },
-    "FeatureBranchDetector": {
-      "enabled": true,
-      "weight": 1
-    },
     "CrissCrossMergeDetect": {
       "enabled": true,
       "weight": 1

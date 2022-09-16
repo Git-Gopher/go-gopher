@@ -1,6 +1,7 @@
 package local
 
 import (
+	"errors"
 	"fmt"
 	"strings"
 
@@ -9,9 +10,16 @@ import (
 	"github.com/scorpionknifes/go-pcre"
 )
 
-var splitLinesRegexp = pcre.MustCompileJIT(`[^\n]*(\n|$)`, 0, pcre.STUDY_JIT_COMPILE)
+var (
+	ErrNilPatch      = errors.New("nil patch")
+	splitLinesRegexp = pcre.MustCompileJIT(`[^\n]*(\n|$)`, 0, pcre.STUDY_JIT_COMPILE)
+)
 
 func FetchDiffs(patch *object.Patch) ([]Diff, error) {
+	if patch == nil {
+		return nil, ErrNilPatch
+	}
+
 	filePatches := patch.FilePatches()
 
 	diffs := make([]Diff, 0)
@@ -23,12 +31,11 @@ func FetchDiffs(patch *object.Patch) ([]Diff, error) {
 		from, to := fp.Files()
 
 		switch {
+		case from == nil && to == nil:
+			// Case in some submodule diffs.
+			continue
 		case from == nil:
-			// New File is created.
-			// XXX: This panics sometimes on previous repos.
-			// Quick workaround is the hardcode below. You should enable it yourself though.
-			// Needs to be investigated.
-			// name = ""
+			// File is created.
 			name = to.Path()
 		case to == nil:
 			// File is deleted.
@@ -43,7 +50,7 @@ func FetchDiffs(patch *object.Patch) ([]Diff, error) {
 			// chunk len == 0 means patch is binary.
 			diffs = append(diffs, Diff{
 				Name:     name,
-				IsBinary: fp.IsBinary(),
+				IsBinary: fp.IsBinary() || len(chunks) == 0,
 			})
 
 			continue

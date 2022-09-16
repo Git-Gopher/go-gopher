@@ -196,8 +196,9 @@ func BinaryDetect() (string, CommitDetect) {
 
 	return "BinaryDetect", func(c *common, commit *local.Commit) (bool, []violation.Violation, error) {
 		vs := []violation.Violation{}
+		var seen []string // Seen binaries for a commit.
 		for _, d := range commit.DiffToParents {
-			if d.IsBinary && utils.Contains(d.Name, disallowedExtensions) {
+			if d.IsBinary && utils.Contains(d.Name, disallowedExtensions) && !utils.StringInSlice(d.Name, seen) {
 				vs = append(vs, violation.NewBinaryViolation(
 					markup.File{
 						Commit: markup.Commit{
@@ -213,6 +214,7 @@ func BinaryDetect() (string, CommitDetect) {
 					commit.Committer.When,
 					c.IsCurrentCommit(commit.Hash),
 				))
+				seen = append(seen, d.Name)
 			}
 		}
 
