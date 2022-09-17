@@ -2,6 +2,7 @@ package remote
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"os"
 	"sync"
@@ -12,7 +13,10 @@ import (
 	"golang.org/x/oauth2"
 )
 
-var githubQuerySize = 100
+var (
+	ErrQueryParameters = errors.New("invalid query parameters")
+	githubQuerySize    = 100
+)
 
 const GITHUB_NOREPLY_EMAIL = "noreply@github.com"
 
@@ -653,4 +657,66 @@ func (s *Scraper) FetchBranchHeads(ctx context.Context, owner, name string) (str
 	}
 
 	return q.Repository.DefaultBranchRef.Name, m, nil
+}
+
+func (s *Scraper) FetchPopularRepositories(ctx context.Context, stars int, number int) ([]Repository, error) {
+	if stars < 0 || number < 0 {
+		return nil, fmt.Errorf("%w: %v, %v", ErrQueryParameters, stars, number)
+	}
+
+	var q struct {
+		Search struct {
+			Nodes []struct {
+				Repository struct {
+					Name       string
+					Url        string
+					Stargazers struct {
+						TotalCount int
+					}
+				} `graphql:"... on Repository"`
+			}
+			PageInfo PageInfo
+		} `graphql:"search(first: $first, after: $cursor, query: $searchQuery, type: $searchType)"`
+	}
+
+	first := githubQuerySize
+	if number < first {
+		first = number
+	}
+
+	variables := map[string]interface{}{
+		"first":       githubv4.Int(first),
+		"cursor":      (*githubv4.String)(nil),
+		"searchQuery": githubv4.String(fmt.Sprintf("stars:>%d", stars)),
+		"searchType":  githubv4.SearchTypeRepository,
+	}
+
+	var repos []Repository
+	for len(repos) != number {
+		if err := s.Client.Query(ctx, &q, variables); err != nil {
+			return nil, fmt.Errorf("failed to fetch popular repositories: %w", err)
+		}
+
+		for _, r := range q.Search.Nodes {
+			repos = append(repos, Repository{
+				Name:       r.Repository.Name,
+				Url:        r.Repository.Url,
+				Stargazers: r.Repository.Stargazers.TotalCount,
+			})
+		}
+
+		if !q.Search.PageInfo.HasNextPage {
+			break
+		}
+
+		first := githubQuerySize
+		if (number - len(repos)) < first {
+			first = number - len(repos)
+		}
+
+		variables["first"] = githubv4.NewInt(githubv4.Int(first))
+		variables["cursor"] = githubv4.NewString(q.Search.PageInfo.EndCursor)
+	}
+
+	return repos, nil
 }

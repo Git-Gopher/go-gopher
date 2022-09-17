@@ -8,6 +8,7 @@ import (
 	"net/url"
 	"os"
 	"path/filepath"
+	"strconv"
 	"strings"
 
 	"github.com/Git-Gopher/go-gopher/cache"
@@ -645,6 +646,58 @@ func main() {
 						return nil
 					},
 				},
+			},
+		},
+		{
+			Name:        "query",
+			Aliases:     []string{"q"},
+			Description: "query github for some popular git repositories",
+			Usage:       "query <stars> <number-of-repos>",
+			// nolint:goerr113
+			Action: func(ctx *cli.Context) error {
+				utils.Environment(".env")
+
+				args := ctx.Args()
+				if args.Len() < 2 {
+					return fmt.Errorf("incorrect number of args (require 2)")
+				}
+
+				stars, err := strconv.Atoi(args.Get(0))
+				if err != nil {
+					return fmt.Errorf("failed to convert stars arg to string %s", args.Get(0))
+				}
+
+				numberRepositories, err := strconv.Atoi(args.Get(1))
+				if err != nil {
+					return fmt.Errorf("failed to convert stars arg to string %s", args.Get(0))
+				}
+
+				scraper := remote.NewScraper()
+				repositories, err := scraper.FetchPopularRepositories(ctx.Context, stars, numberRepositories)
+				if err != nil {
+					return fmt.Errorf("failed to fetch repositories: %w", err)
+				}
+
+				payload, err := json.Marshal(repositories)
+				if err != nil {
+					return fmt.Errorf("failed to marshal repositories: %w", err)
+				}
+
+				fh, err := os.Create("repositories.json")
+				if err != nil {
+					return fmt.Errorf("could not create json file: %w", err)
+				}
+
+				defer fh.Close() //nolint: errcheck, gosec
+
+				if _, err = fh.Write(payload); err != nil {
+					return fmt.Errorf("could not write payload to repositories file: %w", err)
+				}
+
+				log.Printf("Scraped %d repositories", len(repositories))
+				log.Print("Wrote repositories.json with output")
+
+				return nil
 			},
 		},
 	}

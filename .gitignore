@@ -14,6 +14,7 @@ prof/
 /cmd/cli/cli
 
 # artifacts
+**/repositories.json
 output/
 **/*.zip 
 **/*.html
