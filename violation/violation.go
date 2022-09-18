@@ -49,8 +49,8 @@ func (d *display) Display(authors utils.Authors) string {
 	if login, err := d.v.Login(); err == nil {
 		authorLink = markup.Author(login).Markdown()
 	} else if email, err := d.v.Email(); err == nil {
-		login, _ := authors.Find(email)
-		if login != nil {
+		login, err := authors.Find(email)
+		if login != nil && err != nil {
 			authorLink = markup.Author(*login).Markdown()
 		}
 	}
@@ -145,7 +145,7 @@ func FilterByLogin(violations []Violation, users utils.Authors, filter []string)
 		if l, err := v.Login(); err == nil {
 			login = l
 		} else if email, err := v.Email(); users != nil && err == nil {
-			if l, err := users.Find(email); err != nil {
+			if l, err := users.Find(email); err == nil {
 				login = *l
 			}
 		} else {
