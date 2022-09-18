@@ -457,8 +457,26 @@ func MarkdownSummary(authors utils.Authors, vs []violation.Violation) string { /
 		}
 	}
 
-	if len(violations) > 0 {
-		headers := []string{"Violation", "Message", "Advice", "Author"}
+	// Create table.
+	markdownTable(md, violations, "Violation", authors)
+	markdownTable(md, suggestions, "Suggestion", authors)
+
+	workflowUrl := os.Getenv("WORKFLOW_URL")
+	if (len(violations)+len(suggestions)) < len(vs) && workflowUrl != "" {
+		md.AddLine(fmt.Sprintf(`There still exist some violations beyond the scope of this pull request, 
+			please view the full log [here](%s)`, workflowUrl))
+	}
+
+	// Google form
+	md.AddLine(fmt.Sprintf("Have any feedback? Feel free to submit it [here](%s)", utils.GoogleFormURL))
+
+	return md.Render()
+}
+
+// Create a markdown table for a array of violations.
+func markdownTable(md *markup.Markdown, violations []violation.Violation, tableHeader string, authors utils.Authors) {
+	if len(violations) > 0 { // nolint: nestif
+		headers := []string{tableHeader, "Message", "Advice", "Author"}
 		rows := make([][]string, len(violations))
 
 		for i, v := range violations {
@@ -488,6 +506,7 @@ func MarkdownSummary(authors utils.Authors, vs []violation.Violation) string { /
 				login = UnknownLogin
 			}
 
+			// Don't link if unknown login.
 			if login == UnknownLogin {
 				row[3] = login
 			} else {
@@ -497,64 +516,8 @@ func MarkdownSummary(authors utils.Authors, vs []violation.Violation) string { /
 			rows[i] = row
 		}
 
-		md.BeginCollapsable("Violations")
+		md.BeginCollapsable(tableHeader + "s")
 		md.Table(headers, rows)
 		md.EndCollapsable()
 	}
-
-	if len(suggestions) > 0 {
-		headers := []string{"Suggestion", "Message", "Advice", "Author"}
-		rows := make([][]string, len(suggestions))
-
-		for i, v := range suggestions {
-			row := make([]string, len(headers))
-			name := v.Name()
-			row[0] = name
-			message := v.Message()
-			row[1] = message
-
-			suggestion, err := v.Suggestion()
-			if err != nil {
-				suggestion = ""
-			}
-			row[2] = suggestion
-
-			var login string
-			if l, err := v.Login(); err == nil {
-				login = l
-			} else if email, err := v.Email(); err == nil {
-				l, err := authors.Find(email)
-				if err != nil {
-					login = UnknownLogin
-				} else {
-					login = *l
-				}
-			} else {
-				login = UnknownLogin
-			}
-
-			if login == UnknownLogin {
-				row[3] = login
-			} else {
-				row[3] = markup.Author(login).Markdown()
-			}
-
-			rows[i] = row
-		}
-
-		md.BeginCollapsable("Suggestions")
-		md.Table(headers, rows)
-		md.EndCollapsable()
-	}
-
-	workflowUrl := os.Getenv("WORKFLOW_URL")
-	if (len(violations)+len(suggestions)) < len(vs) && workflowUrl != "" {
-		md.AddLine(fmt.Sprintf(`There still exist some violations beyond the scope of this pull request, 
-			please view the full log [here](%s)`, workflowUrl))
-	}
-
-	// Google form
-	md.AddLine(fmt.Sprintf("Have any feedback? Feel free to submit it [here](%s)", utils.GoogleFormURL))
-
-	return md.Render()
 }

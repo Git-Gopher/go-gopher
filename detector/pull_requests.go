@@ -111,7 +111,7 @@ func PullRequestApprovalDetector() (string, PullRequestDetect) {
 				},
 				c.IsCurrentPR(pr),
 				*pr.ClosedAt,
-				*&pr.Author.Login,
+				pr.Author.Login,
 			), nil
 		}
 

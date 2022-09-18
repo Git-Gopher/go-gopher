@@ -103,6 +103,7 @@ func (v *violation) Login() (string, error) {
 	if v.login == "" {
 		return "", ErrViolationMethodNotExist
 	}
+
 	return v.login, nil
 }
 
@@ -151,6 +152,7 @@ func FilterByLogin(violations []Violation, users utils.Authors, filter []string)
 		} else {
 			// Violation does not have author.
 			filtered = append(filtered, v)
+
 			continue
 		}
 
