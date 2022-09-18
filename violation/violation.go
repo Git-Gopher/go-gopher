@@ -50,7 +50,7 @@ func (d *display) Display(authors utils.Authors) string {
 		authorLink = markup.Author(login).Markdown()
 	} else if email, err := d.v.Email(); err == nil {
 		login, err := authors.Find(email)
-		if login != nil && err != nil {
+		if login != nil && err == nil {
 			authorLink = markup.Author(*login).Markdown()
 		}
 	}
