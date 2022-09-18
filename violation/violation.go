@@ -6,7 +6,6 @@ import (
 	"time"
 
 	"github.com/Git-Gopher/go-gopher/markup"
-	"github.com/Git-Gopher/go-gopher/model/remote"
 	"github.com/Git-Gopher/go-gopher/utils"
 )
 
@@ -27,15 +26,15 @@ type Violation interface {
 	Name() string                 // required: Internal name of the violation.
 	Message() string              // required: Warning message.
 	Display(utils.Authors) string // required: Formal display line of the violation.
-	Email() string                // required: Email address of the violator.
 	Time() time.Time              // required: Time of the violation.
 	Severity() Severity           // required: Severity of the violation.
 	Current() bool                // required: Is the violation related to the current reporting
 
-	Author() (*remote.Author, error) // optional: GitHub author which caused the violation.
-	FileLocation() (string, error)   // optional: File location of the violation.
-	LineLocation() (int, error)      // optional: Line location of violation.
-	Suggestion() (string, error)     // optional: Suggestion to fix the violation.
+	Email() (string, error)        // optional Email address of the violator.
+	Login() (string, error)        // optional username of the violator.
+	FileLocation() (string, error) // optional: File location of the violation.
+	LineLocation() (int, error)    // optional: Line location of violation.
+	Suggestion() (string, error)   // optional: Suggestion to fix the violation.
 }
 
 // display struct implements the Display method part of Violation using Violation.
@@ -47,9 +46,13 @@ type display struct {
 func (d *display) Display(authors utils.Authors) string {
 	// Get the author of the violation.
 	authorLink := "unknown"
-	author, _ := authors.Find(d.v.Email())
-	if author != nil {
-		authorLink = markup.Author(*author).Markdown()
+	if login, err := d.v.Login(); err == nil {
+		authorLink = markup.Author(login).Markdown()
+	} else if email, err := d.v.Email(); err == nil {
+		login, _ := authors.Find(email)
+		if login != nil {
+			authorLink = markup.Author(*login).Markdown()
+		}
 	}
 
 	suggestion, err := d.v.Suggestion()
@@ -78,6 +81,7 @@ func (d *display) Display(authors utils.Authors) string {
 type violation struct {
 	name     string
 	email    string
+	login    string
 	time     time.Time
 	severity Severity
 	current  bool
@@ -87,8 +91,19 @@ func (v *violation) Name() string {
 	return v.name
 }
 
-func (v *violation) Email() string {
-	return v.email
+func (v *violation) Email() (string, error) {
+	if v.email == "" {
+		return "", ErrViolationMethodNotExist
+	}
+
+	return v.email, nil
+}
+
+func (v *violation) Login() (string, error) {
+	if v.login == "" {
+		return "", ErrViolationMethodNotExist
+	}
+	return v.login, nil
 }
 
 func (v *violation) Time() time.Time {
@@ -97,10 +112,6 @@ func (v *violation) Time() time.Time {
 
 func (v *violation) Severity() Severity {
 	return v.severity
-}
-
-func (v *violation) Author() (*remote.Author, error) {
-	return nil, ErrViolationMethodNotExist
 }
 
 func (v *violation) FileLocation() (string, error) {
@@ -119,26 +130,31 @@ func (v *violation) Current() bool {
 	return v.current
 }
 
-func FilterByLogin(violations []Violation, login []string) []Violation {
-	if len(login) == 0 || len(violations) == 0 {
+func FilterByLogin(violations []Violation, users utils.Authors, filter []string) []Violation {
+	if len(filter) == 0 || len(violations) == 0 {
 		return violations
 	}
-
 	loginMap := make(map[string]struct{})
-	for _, l := range login {
+	for _, l := range filter {
 		loginMap[l] = struct{}{}
 	}
 
 	filtered := []Violation{}
 	for _, v := range violations {
-		author, err := v.Author()
-		if err != nil {
+		login := ""
+		if l, err := v.Login(); err == nil {
+			login = l
+		} else if email, err := v.Email(); users != nil && err == nil {
+			if l, err := users.Find(email); err != nil {
+				login = *l
+			}
+		} else {
+			// Violation does not have author.
 			filtered = append(filtered, v)
-
 			continue
 		}
 
-		if _, ok := loginMap[author.Login]; !ok {
+		if _, ok := loginMap[login]; !ok {
 			filtered = append(filtered, v)
 		}
 	}

@@ -11,12 +11,14 @@ func NewUnresolvedConversationViolation(
 	pr markup.PR,
 	current bool,
 	time time.Time,
+	login string,
 ) *UnresolvedConversationViolation {
 	violation := &UnresolvedConversationViolation{
 		violation: violation{
 			name:     "UnresolvedConversationViolation",
 			severity: Violated,
 			time:     time,
+			login:    login,
 			current:  current,
 		},
 		pr: pr,

@@ -75,24 +75,21 @@ func actionCommand(cCtx *cli.Context) error {
 			return fmt.Errorf("failed to write cache: %w", err)
 		}
 	}
-
 	cfg := readConfig(cCtx)
 	ghwf := workflow.GithubFlowWorkflow(cfg)
-	violated, count, total, violations, err := ghwf.Analyze(enrichedModel, authors, current, caches)
+	violated, count, total, violations, err := ghwf.Analyze(enrichedModel, current, caches)
 	if err != nil {
 		log.Fatalf("Failed to analyze: %v\n", err)
 	}
 
-	if config.LoginWhiteList != "" {
-		whitelist := strings.Split(config.LoginWhiteList, ",")
-		violations = violation.FilterByLogin(violations, whitelist)
+	if config.LoginDisallowList != "" {
+		disallowList := strings.Split(config.LoginDisallowList, ",")
+		violations = violation.FilterByLogin(violations, authors, disallowList)
 	}
 
-	disallowList := []string{"github-classroom[bot]"}
-	filteredViolations := violation.FilterByLogin(violations, disallowList)
-	workflow.PrintSummary(authors, violated, count, total, filteredViolations)
+	workflow.PrintSummary(authors, violated, count, total, violations)
 
-	summary := workflow.MarkdownSummary(authors, filteredViolations)
+	summary := workflow.MarkdownSummary(authors, violations)
 	markup.Outputs("pr_summary", summary)
 
 	fn, err := ghwf.WriteLog(*enrichedModel, cfg)

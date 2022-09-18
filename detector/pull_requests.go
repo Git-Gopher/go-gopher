@@ -80,6 +80,7 @@ func PullRequestIssueDetector() (string, PullRequestDetect) {
 				},
 				c.IsCurrentPR(pr),
 				*pr.CreatedAt,
+				pr.Author.Login,
 			), nil
 		}
 
@@ -110,6 +111,7 @@ func PullRequestApprovalDetector() (string, PullRequestDetect) {
 				},
 				c.IsCurrentPR(pr),
 				*pr.ClosedAt,
+				*&pr.Author.Login,
 			), nil
 		}
 
@@ -141,6 +143,7 @@ func PullRequestReviewThreadDetector() (string, PullRequestDetect) {
 					},
 					c.IsCurrentPR(pr),
 					*pr.ClosedAt,
+					pr.MergedBy.Login,
 				), nil
 			}
 		}

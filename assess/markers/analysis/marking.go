@@ -46,15 +46,23 @@ func DetectorMarker(
 
 		_, _, _, violations := d.Result()
 
-		violations = violation.FilterByLogin(violations, m.LoginWhiteList)
+		violations = violation.FilterByLogin(violations, nil, m.LoginWhiteList)
 
 		for _, v := range violations {
-			username, err := m.Author.Find(v.Email())
-			if err != nil {
+			login := ""
+			if l, err := v.Login(); err == nil {
+				login = l
+			} else if email, err := v.Email(); err == nil {
+				l, err := m.Author.Find(email)
+				if err != nil {
+					continue
+				}
+				login = *l
+			} else {
 				continue
 			}
 
-			violationsMap[*username] = append(violationsMap[*username], v)
+			violationsMap[login] = append(violationsMap[login], v)
 		}
 	}
 

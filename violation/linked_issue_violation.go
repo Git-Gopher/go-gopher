@@ -11,11 +11,13 @@ func NewLinkedIssueViolation(
 	pr markup.PR,
 	current bool,
 	time time.Time,
+	login string,
 ) *LinkedIssueViolation {
 	violation := &LinkedIssueViolation{
 		violation: violation{
 			name:     "LinkedIssueViolation",
 			severity: Suggestion,
+			login:    login,
 			time:     time,
 			current:  current,
 		},
