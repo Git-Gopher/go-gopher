@@ -37,8 +37,8 @@ func FetchDiffs(patch *object.Patch) ([]Diff, error) {
 		default:
 			name = from.Path()
 		}
+		// Patch is binary.
 		if len(chunks) == 0 {
-			// chunk len == 0 means patch is binary.
 			diffs = append(diffs, Diff{
 				Name:     name,
 				IsBinary: fp.IsBinary(),
