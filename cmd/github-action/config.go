@@ -18,8 +18,8 @@ type githubConfig struct {
 	GithubRepository      string `env:"GITHUB_REPOSITORY,required"`       // example: octocat/Hello-World.
 	GithubRepositoryOwner string `env:"GITHUB_REPOSITORY_OWNER,required"` // example: octocat.
 	GithubActor           string `env:"GITHUB_ACTOR,required"`            // example: octocat.
-	// comma separated list of whitelisted users.
-	LoginWhiteList string `env:"LOGIN_WHITELIST,default=github-classroom[bot]"`
+	// Comma separated list of disallowed (blacklisted) users. Primarily used in the case of filtering bot accounts.
+	LoginDisallowList string `env:"LOGIN_DISALLOW_LIST,default=github-classroom[bot]"`
 }
 
 // Load the environment variables from GitHub Actions.

@@ -11,12 +11,14 @@ func NewApprovalViolation(
 	pr markup.PR,
 	current bool,
 	time time.Time,
+	login string,
 ) *ApprovalViolation {
 	violation := &ApprovalViolation{
 		violation: violation{
 			name:     "PullRequestApprovalViolation",
 			severity: Violated,
 			time:     time,
+			login:    login,
 			current:  current,
 		},
 		pr: pr,

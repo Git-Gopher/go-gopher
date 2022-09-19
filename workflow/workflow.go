@@ -14,7 +14,6 @@ import (
 	"github.com/Git-Gopher/go-gopher/detector"
 	"github.com/Git-Gopher/go-gopher/markup"
 	"github.com/Git-Gopher/go-gopher/model/enriched"
-	"github.com/Git-Gopher/go-gopher/model/remote"
 	"github.com/Git-Gopher/go-gopher/utils"
 	"github.com/Git-Gopher/go-gopher/version"
 	"github.com/Git-Gopher/go-gopher/violation"
@@ -40,15 +39,16 @@ var (
 		"CrissCrossMergeDetect":           detector.NewBranchMatrixDetector(detector.CrissCrossMergeDetect()),
 		"UnresolvedDetect":                detector.NewCommitDetector(detector.UnresolvedDetect()),
 		"EmptyCommitDetect":               detector.NewCommitDetector(detector.EmptyCommitDetect()),
-		"BinaryDetect":                    detector.NewCommitDetector(detector.BinaryDetect()),
 
 		// Disabled
 		// "NewFeatureBranchNameDetect": detector.NewBranchCompareDetector(detector.NewFeatureBranchNameDetect()),
 		// "TwoParentsCommitDetect":     detector.NewCommitDetector(detector.TwoParentsCommitDetect()),
+		// "BinaryDetect":                    detector.NewCommitDetector(detector.BinaryDetect()),
 	}
 	cacheDetectorRegistry = map[string]detector.CacheDetector{
 		"ForcePushDetect": detector.NewCommitCacheDetector(detector.ForcePushDetect()),
 	}
+	UnknownLogin = "unknown"
 )
 
 type Workflow struct {
@@ -99,7 +99,6 @@ func LocalDetectors() []detector.Detector {
 // Run analysis on the git project for all the detectors defined by the workflow.
 func (w *Workflow) Analyze(
 	model *enriched.EnrichedModel,
-	authors utils.Authors,
 	current *cache.Cache,
 	previous []*cache.Cache,
 ) (violated int,
@@ -310,8 +309,8 @@ func (w *Workflow) WriteLog(em enriched.EnrichedModel, cfg *config.Config) (stri
 		Message      string
 		Suggestion   string
 		Email        string
+		Login        string
 		Time         string
-		Author       remote.Author
 		FileLocation string
 		LineLocation int
 		Severity     int
@@ -330,9 +329,17 @@ func (w *Workflow) WriteLog(em enriched.EnrichedModel, cfg *config.Config) (stri
 
 	for i, v := range w.Violations {
 		suggestion, _ := v.Suggestion()
-		author, err := v.Author()
+		var login, email string
+		var err error
+
+		email, err = v.Email()
 		if err != nil {
-			author = &remote.Author{}
+			email = ""
+		}
+
+		login, err = v.Login()
+		if err != nil {
+			login = ""
 		}
 
 		fileLocation, _ := v.FileLocation()
@@ -341,9 +348,9 @@ func (w *Workflow) WriteLog(em enriched.EnrichedModel, cfg *config.Config) (stri
 			Name:         v.Name(),
 			Message:      v.Message(),
 			Suggestion:   suggestion,
-			Email:        v.Email(),
+			Login:        login,
+			Email:        email,
 			Time:         v.Time().Format(time.UnixDate),
-			Author:       *author,
 			FileLocation: fileLocation,
 			LineLocation: lineLocation,
 			Severity:     int(v.Severity()),
@@ -399,12 +406,20 @@ func PrintSummary(authors utils.Authors, v, c, t int, vs []violation.Violation) 
 	var aSd strings.Builder
 	counts := make(map[string]int)
 	for _, v := range vs {
-		email := v.Email()
-		login, err := authors.Find(email)
-		if err != nil {
+		var login string
+
+		if l, err := v.Login(); err == nil {
+			login = l
+		} else if email, err := v.Email(); err == nil {
+			l, err := authors.Find(email)
+			if err != nil {
+				continue
+			}
+			login = *l
+		} else {
 			continue
 		}
-		counts[*login]++
+		counts[login]++
 	}
 
 	for login, count := range counts {
@@ -442,8 +457,26 @@ func MarkdownSummary(authors utils.Authors, vs []violation.Violation) string { /
 		}
 	}
 
-	if len(violations) > 0 {
-		headers := []string{"Violation", "Message", "Advice", "Author"}
+	// Create table.
+	markdownTable(md, violations, "Violation", authors)
+	markdownTable(md, suggestions, "Suggestion", authors)
+
+	workflowUrl := os.Getenv("WORKFLOW_URL")
+	if (len(violations)+len(suggestions)) < len(vs) && workflowUrl != "" {
+		md.AddLine(fmt.Sprintf(`There still exist some violations beyond the scope of this pull request, 
+			please view the full log [here](%s)`, workflowUrl))
+	}
+
+	// Google form
+	md.AddLine(fmt.Sprintf("Have any feedback? Feel free to submit it [here](%s)", utils.GoogleFormURL))
+
+	return md.Render()
+}
+
+// Create a markdown table for a array of violations.
+func markdownTable(md *markup.Markdown, violations []violation.Violation, tableHeader string, authors utils.Authors) {
+	if len(violations) > 0 { // nolint: nestif
+		headers := []string{tableHeader, "Message", "Advice", "Author"}
 		rows := make([][]string, len(violations))
 
 		for i, v := range violations {
@@ -459,61 +492,32 @@ func MarkdownSummary(authors utils.Authors, vs []violation.Violation) string { /
 			}
 			row[2] = suggestion
 
-			usernamePtr, err := authors.Find(v.Email())
-			if err != nil || usernamePtr == nil {
-				row[3] = "unknown"
+			var login string
+			if l, err := v.Login(); err == nil {
+				login = l
+			} else if email, err := v.Email(); err == nil {
+				l, err := authors.Find(email)
+				if err != nil {
+					login = UnknownLogin
+				} else {
+					login = *l
+				}
 			} else {
-				row[3] = markup.Author(*usernamePtr).Markdown()
+				login = UnknownLogin
+			}
+
+			// Don't link if unknown login.
+			if login == UnknownLogin {
+				row[3] = login
+			} else {
+				row[3] = markup.Author(login).Markdown()
 			}
 
 			rows[i] = row
 		}
 
-		md.BeginCollapsable("Violations")
+		md.BeginCollapsable(tableHeader + "s")
 		md.Table(headers, rows)
 		md.EndCollapsable()
 	}
-
-	if len(suggestions) > 0 {
-		headers := []string{"Suggestion", "Message", "Advice", "Author"}
-		rows := make([][]string, len(suggestions))
-
-		for i, v := range suggestions {
-			row := make([]string, len(headers))
-			name := v.Name()
-			row[0] = name
-			message := v.Message()
-			row[1] = message
-
-			suggestion, err := v.Suggestion()
-			if err != nil {
-				suggestion = ""
-			}
-			row[2] = suggestion
-
-			usernamePtr, err := authors.Find(v.Email())
-			if err != nil || usernamePtr == nil {
-				row[3] = "unknown"
-			} else {
-				row[3] = markup.Author(*usernamePtr).Markdown()
-			}
-
-			rows[i] = row
-		}
-
-		md.BeginCollapsable("Suggestions")
-		md.Table(headers, rows)
-		md.EndCollapsable()
-	}
-
-	workflowUrl := os.Getenv("WORKFLOW_URL")
-	if (len(violations)+len(suggestions)) < len(vs) && workflowUrl != "" {
-		md.AddLine(fmt.Sprintf(`There still exist some violations beyond the scope of this pull request, 
-			please view the full log [here](%s)`, workflowUrl))
-	}
-
-	// Google form
-	md.AddLine(fmt.Sprintf("Have any feedback? Feel free to submit it [here](%s)", utils.GoogleFormURL))
-
-	return md.Render()
 }

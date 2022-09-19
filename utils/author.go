@@ -26,7 +26,7 @@ type Authors interface {
 }
 
 type authors struct {
-	data  map[string]string
+	data  map[string]string // email => username
 	mutex sync.RWMutex
 }
 

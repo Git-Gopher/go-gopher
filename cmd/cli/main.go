@@ -19,7 +19,6 @@ import (
 	"github.com/Git-Gopher/go-gopher/model/remote"
 	"github.com/Git-Gopher/go-gopher/utils"
 	"github.com/Git-Gopher/go-gopher/version"
-	"github.com/Git-Gopher/go-gopher/violation"
 	"github.com/Git-Gopher/go-gopher/workflow"
 	"github.com/go-git/go-git/v5"
 	githttp "github.com/go-git/go-git/v5/plumbing/transport/http"
@@ -102,17 +101,15 @@ func main() {
 
 				cfg := utils.ReadConfig(ctx)
 				ghwf := workflow.GithubFlowWorkflow(cfg)
-				violated, count, total, violations, err := ghwf.Analyze(enrichedModel, authors, current, caches)
+				violated, count, total, violations, err := ghwf.Analyze(enrichedModel, current, caches)
 				if err != nil {
 					log.Fatalf("Failed to analyze: %v\n", err)
 				}
 
-				disallowList := []string{"github-classroom[bot]"}
-				filteredViolations := violation.FilterByLogin(violations, disallowList)
-				workflow.PrintSummary(authors, violated, count, total, filteredViolations)
+				workflow.PrintSummary(authors, violated, count, total, violations)
 
 				// Set action outputs to a markdown summary.
-				summary := workflow.MarkdownSummary(authors, filteredViolations)
+				summary := workflow.MarkdownSummary(authors, violations)
 				markup.Outputs("pr_summary", summary)
 
 				err = ghwf.Csv(workflow.DefaultCsvPath, enrichedModel.Name, enrichedModel.URL)
@@ -500,7 +497,7 @@ func main() {
 
 						cfg := utils.ReadConfig(ctx)
 						ghwf := workflow.GithubFlowWorkflow(cfg)
-						violated, count, total, violations, err := ghwf.Analyze(enrichedModel, authors, current, caches)
+						violated, count, total, violations, err := ghwf.Analyze(enrichedModel, current, caches)
 						if err != nil {
 							log.Fatalf("Failed to analyze: %v\n", err)
 						}
@@ -612,7 +609,7 @@ func main() {
 							authors := enriched.PopulateAuthors(enrichedModel)
 
 							log.Printf("analyzing %s...", p)
-							v, c, t, vs, err := ghwf.Analyze(enrichedModel, authors, nil, nil)
+							v, c, t, vs, err := ghwf.Analyze(enrichedModel, nil, nil)
 							if err != nil {
 								log.Fatalf("Failed to analyze: %v\n", err)
 							}
