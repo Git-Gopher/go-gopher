@@ -19,6 +19,7 @@ type Weights struct {
 	GitFlow    *Weight
 	GitLabFlow *Weight
 	OneFlow    *Weight
+	TrunkBased *Weight
 }
 
 func (w *Weights) NewScores(v *Score) *Scores {
@@ -27,6 +28,7 @@ func (w *Weights) NewScores(v *Score) *Scores {
 		gitFlow:    v.Weight(w.GitFlow),
 		gitLabFlow: v.Weight(w.GitLabFlow),
 		oneFlow:    v.Weight(w.OneFlow),
+		trunkBased: v.Weight(w.TrunkBased),
 	}
 }
 
@@ -36,6 +38,7 @@ func NewDefaultWeights() *Weights {
 		GitFlow:    NewWeight(1.0),
 		GitLabFlow: NewWeight(1.0),
 		OneFlow:    NewWeight(1.0),
+		TrunkBased: NewWeight(1.0),
 	}
 }
 
@@ -66,6 +69,7 @@ type Scores struct {
 	gitFlow    *Score
 	gitLabFlow *Score
 	oneFlow    *Score
+	trunkBased *Score
 }
 
 func (s *Scores) GitHubFlow() *Score {
@@ -82,6 +86,10 @@ func (s *Scores) GitLabFlow() *Score {
 
 func (s *Scores) OneFlow() *Score {
 	return s.oneFlow
+}
+
+func (s *Scores) TrunkBased() *Score {
+	return s.trunkBased
 }
 
 // Runner - rule runner.

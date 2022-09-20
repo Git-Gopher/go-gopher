@@ -27,9 +27,11 @@ type EnrichedModel struct {
 	URL             string
 	Commits         []local.Commit
 	Branches        []local.Branch
-	MainGraph       *local.BranchGraph    `json:"-"` // Graph representation of commits in the main branch
+	MainGraph       *local.BranchGraph    `json:"-"` // Graph representation of commits in the main/dev branch
 	BranchMatrix    []*local.BranchMatrix `json:"-"` // Matrix representation by comparing branches
 	LocalCommitters []local.Committer
+	Tags            []*local.Tag
+	ReleaseGraph    *local.BranchGraph `json:"-"` // Graph representation of commits in the release branch
 
 	// Not all functionality has been ported from go-git.
 	Repository *git.Repository
@@ -50,6 +52,7 @@ func NewEnrichedModel(local local.GitModel, github remote.RemoteModel) *Enriched
 		BranchMatrix:    local.BranchMatrix,
 		LocalCommitters: local.Committer,
 		Repository:      local.Repository,
+		Tags:            local.Tags,
 
 		// remote.RemoteModel
 		Name:             github.Name,

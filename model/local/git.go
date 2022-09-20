@@ -1,9 +1,12 @@
 package local
 
 import (
+	"crypto/md5" //nolint:gosec // we don't need a strong hash here
 	"encoding/hex"
 	"errors"
 	"fmt"
+	"io"
+	"strings"
 	"time"
 
 	"github.com/bluekeyes/go-gitdiff/gitdiff"
@@ -91,6 +94,8 @@ type Commit struct {
 	Message       string
 	Content       string
 	DiffToParents []Diff `json:"-"`
+	// PatchID is the hash of the patch. If empty means more than one parent (not cherry-picked)
+	PatchID *string `json:"-"`
 }
 
 type Committer struct {
@@ -176,6 +181,22 @@ func NewCommit(r *git.Repository, c *object.Commit) *Commit {
 		}
 	}
 
+	var patchID *string
+
+	// calculate patch id
+	h := md5.New() //nolint:gosec // we don't need a strong hash here
+
+	patchDiff := strings.Builder{}
+	for _, diff := range diffs {
+		patchDiff.WriteString(diff.Name)
+		patchDiff.WriteString(diff.Equal)
+		patchDiff.WriteString(diff.Addition)
+		patchDiff.WriteString(diff.Deletion)
+	}
+	io.WriteString(h, patchDiff.String()) //nolint:errcheck,gosec
+	p := fmt.Sprintf("%x", h.Sum(nil))
+	patchID = &p
+
 	return &Commit{
 		Hash:          Hash(c.Hash),
 		Author:        *NewSignature(&c.Author),
@@ -184,6 +205,7 @@ func NewCommit(r *git.Repository, c *object.Commit) *Commit {
 		TreeHash:      Hash(c.TreeHash),
 		ParentHashes:  parentHashes,
 		DiffToParents: diffs,
+		PatchID:       patchID,
 	}
 }
 
@@ -209,7 +231,25 @@ func NewBranch(repo *git.Repository, o *plumbing.Reference, c *object.Commit) *B
 
 	return &Branch{
 		Head: *NewCommit(repo, c),
+		Name: strings.Replace(o.Name().Short(), "origin/", "", 1),
+	}
+}
+
+type Tag struct {
+	// Name of the tag. Eg: v0.0.8.
+	Name string
+	// Head of the tag.
+	Head Commit
+}
+
+func NewTag(repo *git.Repository, o *plumbing.Reference, c *object.Commit) *Tag {
+	if o == nil {
+		return nil
+	}
+
+	return &Tag{
 		Name: o.Name().Short(),
+		Head: *NewCommit(repo, c),
 	}
 }
 
@@ -219,6 +259,7 @@ type GitModel struct {
 	Branches     []Branch
 	MainGraph    *BranchGraph
 	BranchMatrix []*BranchMatrix
+	Tags         []*Tag
 
 	// Not all functionality has been ported from go-git.
 	Repository *git.Repository
@@ -237,9 +278,6 @@ func NewGitModel(repo *git.Repository) (*GitModel, error) {
 			return fmt.Errorf("NewGitModel commit: %w", ErrCommitEmpty)
 		}
 		commit := NewCommit(repo, c)
-		if commit == nil {
-			return fmt.Errorf("NewGitModel commit: %w", ErrCommitEmpty)
-		}
 		gitModel.Commits = append(gitModel.Commits, *commit)
 		gitModel.Committer = append(gitModel.Committer, Committer{
 			CommitId: string(c.Hash[:]),
@@ -252,13 +290,29 @@ func NewGitModel(repo *git.Repository) (*GitModel, error) {
 		return nil, fmt.Errorf("failed to graft commits to model: %w", err)
 	}
 
+	// MainGraph
+	ref, err := repo.Head()
+	if err != nil {
+		return nil, fmt.Errorf("failed to find head reference: %w", err)
+	}
+	refCommit, err := repo.CommitObject(ref.Hash())
+	if err != nil {
+		return nil, fmt.Errorf("failed to find head commit: %w", err)
+	}
+	gitModel.MainGraph = FetchBranchGraph(refCommit)
+
 	// Branches
 	branches := []plumbing.Hash{}
-	bIter, err := repo.Branches()
+	rIter, err := repo.References()
 	if err != nil {
 		return nil, fmt.Errorf("failed to retrieve branches from repository: %w", err)
 	}
-	err = bIter.ForEach(func(b *plumbing.Reference) error {
+	err = rIter.ForEach(func(b *plumbing.Reference) error {
+		if !b.Name().IsRemote() {
+			// not a branch
+			return nil
+		}
+
 		if b == nil {
 			return fmt.Errorf("NewGitModel branch: %w", ErrBranchEmpty)
 		}
@@ -273,29 +327,49 @@ func NewGitModel(repo *git.Repository) (*GitModel, error) {
 		branch := NewBranch(repo, b, c)
 		gitModel.Branches = append(gitModel.Branches, *branch)
 
+		if b.Hash().String() == ref.Hash().String() {
+			gitModel.MainGraph.BranchName = strings.Replace(ref.Name().Short(), "origin/", "", 1)
+		}
+
 		return nil
 	})
 	if err != nil {
 		return nil, fmt.Errorf("failed to graft branches to model: %w", err)
 	}
 
-	// MainGraph
-	ref, err := repo.Head()
-	if err != nil {
-		return nil, fmt.Errorf("failed to find head reference: %w", err)
-	}
-	refCommit, err := repo.CommitObject(ref.Hash())
-	if err != nil {
-		return nil, fmt.Errorf("failed to find head commit: %w", err)
-	}
-	gitModel.MainGraph = FetchBranchGraph(refCommit)
-	gitModel.MainGraph.BranchName = ref.Hash().String()
-
 	// BranchMatrix
 	gitModel.BranchMatrix, err = CreateBranchMatrix(repo, branches)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create branch matrix: %w", err)
 	}
+
+	// Tags.
+	tagIter, err := repo.Tags()
+	if err != nil {
+		return nil, fmt.Errorf("failed to generate tag iter: %w", err)
+	}
+
+	var ts []*Tag
+	if err = tagIter.ForEach(func(o *plumbing.Reference) error {
+		if o == nil {
+			return fmt.Errorf("nil tag reference: %w", err)
+		}
+
+		var c *object.Commit
+		c, err = repo.CommitObject(o.Hash())
+		if err != nil {
+			return fmt.Errorf("failed to find head commit from branch: %w", err)
+		}
+
+		t := NewTag(repo, o, c)
+		ts = append(ts, t)
+
+		return nil
+	}); err != nil {
+		return nil, fmt.Errorf("bad tag iteration: %w", err)
+	}
+
+	gitModel.Tags = ts
 
 	gitModel.Repository = repo
 
