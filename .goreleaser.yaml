@@ -1,18 +1,4 @@
 builds:
-  - id: main-darwin-amd64
-    main: ./
-    binary: go-gopher
-    goos:
-      - darwin
-    goarch:
-      - amd64
-    env:
-      - CC=o64-clang
-      - CXX=o64-clang++
-    flags:
-      - -mod=readonly
-    ldflags:
-      - -s -w -X github.com/Git-Gopher/go-gopher/version.Version={{.Version}} -X github.com/Git-Gopher/go-gopher/version.CommitHash={{.Commit}} -X github.com/Git-Gopher/go-gopher/version.CompileDate={{.Date}}
   - id: cli-darwin-amd64
     main: ./cmd/cli
     binary: go-gopher-cli
@@ -41,20 +27,6 @@ builds:
       - -mod=readonly
     ldflags:
       - -s -w -X github.com/Git-Gopher/go-gopher/version.Version={{.Version}} -X github.com/Git-Gopher/go-gopher/version.CommitHash={{.Commit}} -X github.com/Git-Gopher/go-gopher/version.CompileDate={{.Date}}
-  - id: main-linux-amd64
-    main: ./
-    binary: go-gopher
-    goos:
-      - linux
-    goarch:
-      - amd64
-    env:
-      - CC=gcc
-      - CXX=g++
-    flags:
-      - -mod=readonly
-    ldflags:
-      - -s -w -X github.com/Git-Gopher/go-gopher/version.Version={{.Version}} -X github.com/Git-Gopher/go-gopher/version.CommitHash={{.Commit}} -X github.com/Git-Gopher/go-gopher/version.CompileDate={{.Date}}
   - id: cli-linux-amd64
     main: ./cmd/cli
     binary: go-gopher-cli
@@ -79,20 +51,6 @@ builds:
     env:
       - CC=gcc
       - CXX=g++
-    flags:
-      - -mod=readonly
-    ldflags:
-      - -s -w -X github.com/Git-Gopher/go-gopher/version.Version={{.Version}} -X github.com/Git-Gopher/go-gopher/version.CommitHash={{.Commit}} -X github.com/Git-Gopher/go-gopher/version.CompileDate={{.Date}}
-  - id: main-windows-amd64
-    main: ./
-    binary: go-gopher
-    goos:
-      - windows
-    goarch:
-      - amd64
-    env:
-      - CC=x86_64-w64-mingw32-gcc
-      - CXX=x86_64-w64-mingw32-g++
     flags:
       - -mod=readonly
     ldflags:
@@ -128,13 +86,10 @@ builds:
 archives:
   - id: golang-cross
     builds:
-      - main-darwin-amd64
       - cli-darwin-amd64
       - marker-darwin-amd64
-      - main-linux-amd64
       - cli-linux-amd64
       - marker-linux-amd64
-      - main-windows-amd64
       - cli-windows-amd64
       - marker-windows-amd64
     name_template: "{{ .ProjectName }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}"
