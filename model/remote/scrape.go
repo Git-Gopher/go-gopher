@@ -664,15 +664,15 @@ func (s *Scraper) FetchBranchHeads(ctx context.Context, owner, name string) (str
 // Fetch repositories that have a minimum amoutn of stars, issues and contributors.
 func (s *Scraper) FetchPopularRepositories( // nolint: gocognit // needs to be complex
 	ctx context.Context,
-	numStars int,
-	numIssues int,
-	numContributors int,
-	numLanguages int, // helpful to filter activist or wiki type repositories
-	numPullRequests int,
+	minStars int,
+	minIssues int,
+	minContributors int,
+	minLanguages int, // helpful to filter activist or wiki type repositories
+	minPullRequests int,
 	numRepos int,
 ) ([]Repository, error) {
-	if numStars < 0 || numRepos < 0 {
-		return nil, fmt.Errorf("%w: %v, %v", ErrQueryParameters, numStars, numRepos)
+	if minStars < 0 || numRepos < 0 {
+		return nil, fmt.Errorf("%w: %v, %v", ErrQueryParameters, minStars, numRepos)
 	}
 
 	var q struct {
@@ -712,7 +712,7 @@ func (s *Scraper) FetchPopularRepositories( // nolint: gocognit // needs to be c
 	variables := map[string]interface{}{
 		"first":       githubv4.Int(first),
 		"cursor":      (*githubv4.String)(nil),
-		"searchQuery": githubv4.String(fmt.Sprintf("stars:>%d is:public archived:false mirror:false", numStars)),
+		"searchQuery": githubv4.String(fmt.Sprintf("stars:>%d is:public archived:false mirror:false", minStars)),
 		"searchType":  githubv4.SearchTypeRepository,
 	}
 
@@ -768,10 +768,10 @@ func (s *Scraper) FetchPopularRepositories( // nolint: gocognit // needs to be c
 
 			candidateRepo.Contributors = res.LastPage - res.FirstPage + 1
 
-			if candidateRepo.Contributors >= numContributors &&
-				candidateRepo.Issues >= numIssues &&
-				len(candidateRepo.Languages) >= numLanguages &&
-				candidateRepo.PullRequests >= numPullRequests {
+			if candidateRepo.Contributors >= minContributors &&
+				candidateRepo.Issues >= minIssues &&
+				len(candidateRepo.Languages) >= minLanguages &&
+				candidateRepo.PullRequests >= minPullRequests {
 				acceptedRepos = append(acceptedRepos, candidateRepo)
 			} else {
 				log.Infof("skipping %s, %d contributors, %d issues, %d languages, %d prs",
