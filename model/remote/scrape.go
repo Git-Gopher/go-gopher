@@ -668,10 +668,10 @@ func (s *Scraper) FetchPopularRepositories( // nolint: gocognit // needs to be c
 	numIssues int,
 	numContributors int,
 	numLanguages int, // helpful to filter activist or wiki type repositories
-	numberRepos int,
+	numRepos int,
 ) ([]Repository, error) {
-	if numStars < 0 || numberRepos < 0 {
-		return nil, fmt.Errorf("%w: %v, %v", ErrQueryParameters, numStars, numberRepos)
+	if numStars < 0 || numRepos < 0 {
+		return nil, fmt.Errorf("%w: %v, %v", ErrQueryParameters, numStars, numRepos)
 	}
 
 	var q struct {
@@ -704,8 +704,8 @@ func (s *Scraper) FetchPopularRepositories( // nolint: gocognit // needs to be c
 	}
 
 	first := githubQuerySize
-	if numberRepos < first {
-		first = numberRepos
+	if numRepos < first {
+		first = numRepos
 	}
 
 	variables := map[string]interface{}{
@@ -716,7 +716,7 @@ func (s *Scraper) FetchPopularRepositories( // nolint: gocognit // needs to be c
 	}
 
 	var acceptedRepos []Repository
-	for len(acceptedRepos) != numberRepos {
+	for len(acceptedRepos) != numRepos {
 		if err := s.Client.Query(ctx, &q, variables); err != nil {
 			return nil, fmt.Errorf("failed to fetch popular repositories: %w", err)
 		}
@@ -783,8 +783,8 @@ func (s *Scraper) FetchPopularRepositories( // nolint: gocognit // needs to be c
 		}
 
 		first := githubQuerySize
-		if (numberRepos - len(acceptedRepos)) < first {
-			first = numberRepos - len(acceptedRepos)
+		if (numRepos - len(acceptedRepos)) < first {
+			first = numRepos - len(acceptedRepos)
 		}
 
 		variables["first"] = githubv4.NewInt(githubv4.Int(first))

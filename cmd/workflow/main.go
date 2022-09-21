@@ -29,7 +29,16 @@ func main() {
 			Aliases:   []string{"u"},
 			Category:  "Repository",
 			Usage:     "grade a single repository with GitHub URL",
-			UsageText: "go-gopher-workflow url <url> - grade repository with GitHub URL",
+			UsageText: "go-gopher-workflow url <url> - evaluate repository with GitHub remote URL",
+			ArgsUsage: "<url>",
+			Action:    LoadFlags(cmd.SingleUrlCommand),
+		},
+		{
+			Name:      "batch",
+			Aliases:   []string{"b"},
+			Category:  "Repository",
+			Usage:     "grade a set of repositories from a json file",
+			UsageText: "go-gopher-workflow batch <file.json> - parse file with GitHub remote URL",
 			ArgsUsage: "<url>",
 			Action:    LoadFlags(cmd.SingleUrlCommand),
 		},
@@ -45,6 +54,10 @@ func main() {
 			Aliases:     []string{"e"},
 			DefaultText: ".env",
 			Usage:       "Environment file location. Default: .env",
+		},
+		&cli.StringFlag{
+			Name:  "json",
+			Usage: "Use json file to load workflow urls",
 		},
 	}
 
