@@ -3,6 +3,29 @@ package rule
 // Weight - weight of the rule, can be negative or positive.
 type Weight float64
 
+type WorkflowType int
+
+const (
+	// Supported workflow types.
+	// XXX: Ordering matters.
+	GitHubFlow WorkflowType = iota
+	GitFlow
+	GitlabFlow
+	OneFlow
+	TrunkBased
+)
+
+// WorkflowType string lookup.
+func (wt WorkflowType) String() string {
+	return [...]string{
+		"GitHubFlow",
+		"GitFlow",
+		"GitlabFlow",
+		"OneFlow",
+		"Trunkbased",
+	}[wt]
+}
+
 func (w *Weight) Value() float64 {
 	return float64(*w)
 }

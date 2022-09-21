@@ -674,33 +674,38 @@ func main() {
 
 				args := ctx.Args()
 
-				if args.Len() < 2 {
-					return fmt.Errorf("incorrect number of args (require 2)")
+				if args.Len() < 6 {
+					return fmt.Errorf("incorrect number of args (require 6)")
 				}
 
 				numStars, err := strconv.Atoi(args.Get(0))
 				if err != nil {
-					return fmt.Errorf("failed to convert stars arg to int %s", args.Get(0))
+					return fmt.Errorf("failed to convert number of stars arg to int %s", args.Get(0))
 				}
 
 				numIssues, err := strconv.Atoi(args.Get(1))
 				if err != nil {
-					return fmt.Errorf("failed to convert stars arg to int %s", args.Get(0))
+					return fmt.Errorf("failed to convert number of issues arg to int %s", args.Get(1))
 				}
 
 				numContributors, err := strconv.Atoi(args.Get(2))
 				if err != nil {
-					return fmt.Errorf("failed to convert languages arg to int %s", args.Get(0))
+					return fmt.Errorf("failed to convert number of contributors arg to int %s", args.Get(2))
 				}
 
 				numLanguages, err := strconv.Atoi(args.Get(3))
 				if err != nil {
-					return fmt.Errorf("failed to convert languages arg to int %s", args.Get(0))
+					return fmt.Errorf("failed to convert number of languages arg to int %s", args.Get(3))
 				}
 
-				numberRepositories, err := strconv.Atoi(args.Get(4))
+				numPullRequests, err := strconv.Atoi(args.Get(4))
 				if err != nil {
-					return fmt.Errorf("failed to convert stars arg to string %s", args.Get(0))
+					return fmt.Errorf("failed to convert number of pull requests arg to int %s", args.Get(4))
+				}
+
+				numberRepositories, err := strconv.Atoi(args.Get(5))
+				if err != nil {
+					return fmt.Errorf("failed to convert number of repositories arg to string %s", args.Get(5))
 				}
 
 				scraper := remote.NewScraper()
@@ -709,6 +714,7 @@ func main() {
 					numIssues,
 					numContributors,
 					numLanguages,
+					numPullRequests,
 					numberRepositories)
 				if err != nil {
 					return fmt.Errorf("failed to fetch repositories: %w", err)
@@ -716,7 +722,7 @@ func main() {
 
 				if ctx.String("json") != "" {
 					var payload []byte
-					payload, err = json.Marshal(repositories)
+					payload, err = json.MarshalIndent(repositories, "", " ")
 					if err != nil {
 						return fmt.Errorf("failed to marshal repositories: %w", err)
 					}

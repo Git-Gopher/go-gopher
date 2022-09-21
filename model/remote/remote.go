@@ -71,8 +71,7 @@ type Repository struct {
 	Languages    []string `json:"languages"`
 	Issues       int      `json:"issues"`
 	PullRequests int      `json:"pullRequests"`
-
-	Contributors int `json:"contributors"`
+	Contributors int      `json:"contributors"`
 }
 
 // TODO: Issues, Author. Also handling the same issue multiple times, should we fetch it multiple

@@ -668,6 +668,7 @@ func (s *Scraper) FetchPopularRepositories( // nolint: gocognit // needs to be c
 	numIssues int,
 	numContributors int,
 	numLanguages int, // helpful to filter activist or wiki type repositories
+	numPullRequests int,
 	numRepos int,
 ) ([]Repository, error) {
 	if numStars < 0 || numRepos < 0 {
@@ -726,10 +727,11 @@ func (s *Scraper) FetchPopularRepositories( // nolint: gocognit // needs to be c
 		// Eg: Contributors.
 		for _, r := range q.Search.Nodes {
 			candidateRepo := Repository{
-				Name:       r.Repository.Name,
-				Url:        r.Repository.Url,
-				Stargazers: r.Repository.Stargazers.TotalCount,
-				Issues:     r.Repository.Issues.TotalCount,
+				Name:         r.Repository.Name,
+				Url:          r.Repository.Url,
+				Stargazers:   r.Repository.Stargazers.TotalCount,
+				Issues:       r.Repository.Issues.TotalCount,
+				PullRequests: r.Repository.PullRequests.TotalCount,
 			}
 
 			languages := []string{}
@@ -768,13 +770,17 @@ func (s *Scraper) FetchPopularRepositories( // nolint: gocognit // needs to be c
 
 			if candidateRepo.Contributors >= numContributors &&
 				candidateRepo.Issues >= numIssues &&
-				len(candidateRepo.Languages) >= numLanguages {
+				len(candidateRepo.Languages) >= numLanguages &&
+				candidateRepo.PullRequests >= numPullRequests {
 				acceptedRepos = append(acceptedRepos, candidateRepo)
 			} else {
-				log.Infof("skipping %s, %d contributors, %d issues",
+				log.Infof("skipping %s, %d contributors, %d issues, %d languages, %d prs",
 					candidateRepo.Url,
 					candidateRepo.Contributors,
-					candidateRepo.Issues)
+					candidateRepo.Issues,
+					len(candidateRepo.Languages),
+					candidateRepo.PullRequests,
+				)
 			}
 		}
 
