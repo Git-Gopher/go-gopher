@@ -7,6 +7,7 @@ import (
 	"io/fs"
 	"net/url"
 	"os"
+	"path"
 	"path/filepath"
 	"strconv"
 	"strings"
@@ -656,9 +657,9 @@ func main() {
 					Usage:    "output the file to json",
 					Required: false,
 				},
-				&cli.BoolFlag{
+				&cli.StringFlag{
 					Name:     "clone",
-					Usage:    "clone all repositories found",
+					Usage:    "clone all repositories to a directory",
 					Required: false,
 				},
 			},
@@ -666,44 +667,56 @@ func main() {
 			// nolint:goerr113
 			Action: func(ctx *cli.Context) error {
 				utils.Environment(".env")
+				token := os.Getenv("GITHUB_TOKEN")
+				if token == "" {
+					return fmt.Errorf("empty github token")
+				}
 
 				args := ctx.Args()
+
 				if args.Len() < 2 {
 					return fmt.Errorf("incorrect number of args (require 2)")
 				}
 
-				stars, err := strconv.Atoi(args.Get(0))
+				numStars, err := strconv.Atoi(args.Get(0))
 				if err != nil {
 					return fmt.Errorf("failed to convert stars arg to int %s", args.Get(0))
 				}
 
-				issues, err := strconv.Atoi(args.Get(1))
+				numIssues, err := strconv.Atoi(args.Get(1))
 				if err != nil {
 					return fmt.Errorf("failed to convert stars arg to int %s", args.Get(0))
 				}
 
-				contributors, err := strconv.Atoi(args.Get(2))
+				numContributors, err := strconv.Atoi(args.Get(2))
 				if err != nil {
 					return fmt.Errorf("failed to convert languages arg to int %s", args.Get(0))
 				}
 
-				numberRepositories, err := strconv.Atoi(args.Get(3))
+				numLanguages, err := strconv.Atoi(args.Get(3))
+				if err != nil {
+					return fmt.Errorf("failed to convert languages arg to int %s", args.Get(0))
+				}
+
+				numberRepositories, err := strconv.Atoi(args.Get(4))
 				if err != nil {
 					return fmt.Errorf("failed to convert stars arg to string %s", args.Get(0))
 				}
 
 				scraper := remote.NewScraper()
 				repositories, err := scraper.FetchPopularRepositories(ctx.Context,
-					stars,
-					issues,
-					contributors,
+					numStars,
+					numIssues,
+					numContributors,
+					numLanguages,
 					numberRepositories)
 				if err != nil {
 					return fmt.Errorf("failed to fetch repositories: %w", err)
 				}
 
 				if ctx.String("json") != "" {
-					payload, err := json.Marshal(repositories)
+					var payload []byte
+					payload, err = json.Marshal(repositories)
 					if err != nil {
 						return fmt.Errorf("failed to marshal repositories: %w", err)
 					}
@@ -722,13 +735,39 @@ func main() {
 					log.Printf("Wrote file %s with output", ctx.String("json"))
 				}
 				// Output urls to stdout if no output options provided.
-				if ctx.String("json") == "" && !ctx.Bool("clone") {
+				if ctx.String("json") == "" && ctx.String("clone") == "" {
 					for _, r := range repositories {
 						log.Println(r.Url)
 					}
 				}
 
 				log.Printf("Scraped %d repositories", len(repositories))
+
+				if ctx.String("clone") != "" {
+					if err = os.MkdirAll(ctx.String("clone"), os.ModePerm); err != nil {
+						return fmt.Errorf("can't create clone dir: %w", err)
+					}
+
+					log.Printf("Cloning %d respositories", len(repositories))
+					for _, r := range repositories {
+						path := path.Join(ctx.String("clone"), r.Name)
+						log.Printf("Cloning repository %s (%s)...", r.Name, r.Url)
+						_, err := git.PlainClone(path, false, &git.CloneOptions{
+							Depth: 0,
+							URL:   r.Url,
+							// Authed clients can make more requests.
+							Auth: &githttp.BasicAuth{
+								Username: "non-empty",
+								Password: token,
+							},
+						})
+						if err != nil {
+							log.Errorf("Failed to clone %s: %v", r.Name, err)
+						}
+
+					}
+					log.Printf("Cloned %d repositories", len(repositories))
+				}
 
 				return nil
 			},

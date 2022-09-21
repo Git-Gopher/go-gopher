@@ -33,26 +33,12 @@ func main() {
 			ArgsUsage: "<url>",
 			Action:    LoadFlags(cmd.SingleUrlCommand),
 		},
-		{
-			Name:      "batch",
-			Aliases:   []string{"u"},
-			Category:  "Repository",
-			Usage:     "evaluate the workflows of a batch of GitHub URLs from JSON",
-			UsageText: "go-gopher-workflow batch <url> - grade repository with GitHub URL",
-			ArgsUsage: "<url>",
-			Action:    LoadFlags(cmd.SingleUrlCommand),
-		},
 	}
 	app.Flags = []cli.Flag{
 		&cli.StringFlag{
 			Name:    "token",
 			Aliases: []string{"t", "gh"},
 			Usage:   "GitHub token to access private repositories",
-		},
-		&cli.StringFlag{
-			Name:    "from-json",
-			Aliases: []string{"t", "gh"},
-			Usage:   "load urls from a json file",
 		},
 		&cli.StringFlag{
 			Name:        "env",

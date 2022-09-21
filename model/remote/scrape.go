@@ -664,13 +664,14 @@ func (s *Scraper) FetchBranchHeads(ctx context.Context, owner, name string) (str
 // Fetch repositories that have a minimum amoutn of stars, issues and contributors.
 func (s *Scraper) FetchPopularRepositories( // nolint: gocognit // needs to be complex
 	ctx context.Context,
-	stars int,
-	issues int,
-	contributors int,
-	number int,
+	numStars int,
+	numIssues int,
+	numContributors int,
+	numLanguages int, // helpful to filter activist or wiki type repositories
+	numberRepos int,
 ) ([]Repository, error) {
-	if stars < 0 || number < 0 {
-		return nil, fmt.Errorf("%w: %v, %v", ErrQueryParameters, stars, number)
+	if numStars < 0 || numberRepos < 0 {
+		return nil, fmt.Errorf("%w: %v, %v", ErrQueryParameters, numStars, numberRepos)
 	}
 
 	var q struct {
@@ -703,19 +704,19 @@ func (s *Scraper) FetchPopularRepositories( // nolint: gocognit // needs to be c
 	}
 
 	first := githubQuerySize
-	if number < first {
-		first = number
+	if numberRepos < first {
+		first = numberRepos
 	}
 
 	variables := map[string]interface{}{
 		"first":       githubv4.Int(first),
 		"cursor":      (*githubv4.String)(nil),
-		"searchQuery": githubv4.String(fmt.Sprintf("stars:>%d is:public archived:false mirror:false", stars)),
+		"searchQuery": githubv4.String(fmt.Sprintf("stars:>%d is:public archived:false mirror:false", numStars)),
 		"searchType":  githubv4.SearchTypeRepository,
 	}
 
 	var acceptedRepos []Repository
-	for len(acceptedRepos) != number {
+	for len(acceptedRepos) != numberRepos {
 		if err := s.Client.Query(ctx, &q, variables); err != nil {
 			return nil, fmt.Errorf("failed to fetch popular repositories: %w", err)
 		}
@@ -765,8 +766,9 @@ func (s *Scraper) FetchPopularRepositories( // nolint: gocognit // needs to be c
 
 			candidateRepo.Contributors = res.LastPage - res.FirstPage + 1
 
-			if candidateRepo.Contributors >= contributors &&
-				candidateRepo.Issues >= issues {
+			if candidateRepo.Contributors >= numContributors &&
+				candidateRepo.Issues >= numIssues &&
+				len(candidateRepo.Languages) >= numLanguages {
 				acceptedRepos = append(acceptedRepos, candidateRepo)
 			} else {
 				log.Infof("skipping %s, %d contributors, %d issues",
@@ -781,8 +783,8 @@ func (s *Scraper) FetchPopularRepositories( // nolint: gocognit // needs to be c
 		}
 
 		first := githubQuerySize
-		if (number - len(acceptedRepos)) < first {
-			first = number - len(acceptedRepos)
+		if (numberRepos - len(acceptedRepos)) < first {
+			first = numberRepos - len(acceptedRepos)
 		}
 
 		variables["first"] = githubv4.NewInt(githubv4.Int(first))
