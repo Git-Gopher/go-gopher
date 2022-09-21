@@ -9,6 +9,7 @@ import (
 	"io"
 	"math"
 	"net/http"
+	"net/url"
 	"os"
 	"path/filepath"
 	"strings"
@@ -34,12 +35,11 @@ var (
 
 // Fetch the owner and the name from the given URL.
 // Supports https and ssh URLs.
-func OwnerNameFromUrl(rawUrl string) (string, string, error) {
-	var owner, name string
-
-	url, err := giturls.Parse(rawUrl)
+func OwnerNameFromUrl(rawUrl string) (owner string, name string, err error) {
+	var url *url.URL
+	url, err = giturls.Parse(rawUrl)
 	if err != nil {
-		return "", "", fmt.Errorf("Could not parse git URL: %w", err)
+		return "", "", fmt.Errorf("could not parse git URL: %w", err)
 	}
 
 	xs := strings.Split(url.Path, "/")

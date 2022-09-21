@@ -8,8 +8,10 @@ import (
 	"sync"
 	"time"
 
+	"github.com/Git-Gopher/go-gopher/utils"
 	"github.com/google/go-github/v47/github"
 	"github.com/shurcooL/githubv4"
+	log "github.com/sirupsen/logrus"
 	"golang.org/x/oauth2"
 )
 
@@ -659,9 +661,17 @@ func (s *Scraper) FetchBranchHeads(ctx context.Context, owner, name string) (str
 	return q.Repository.DefaultBranchRef.Name, m, nil
 }
 
-func (s *Scraper) FetchPopularRepositories(ctx context.Context, stars int, number int) ([]Repository, error) {
-	if stars < 0 || number < 0 {
-		return nil, fmt.Errorf("%w: %v, %v", ErrQueryParameters, stars, number)
+// Fetch repositories that have a minimum amoutn of stars, issues and contributors.
+func (s *Scraper) FetchPopularRepositories( // nolint: gocognit // needs to be complex
+	ctx context.Context,
+	numStars int,
+	numIssues int,
+	numContributors int,
+	numLanguages int, // helpful to filter activist or wiki type repositories
+	numberRepos int,
+) ([]Repository, error) {
+	if numStars < 0 || numberRepos < 0 {
+		return nil, fmt.Errorf("%w: %v, %v", ErrQueryParameters, numStars, numberRepos)
 	}
 
 	var q struct {
@@ -673,6 +683,20 @@ func (s *Scraper) FetchPopularRepositories(ctx context.Context, stars int, numbe
 					Stargazers struct {
 						TotalCount int
 					}
+					Languages struct {
+						Nodes []struct {
+							Name string
+						}
+					} `graphql:"languages(first: 100)"` // hopefully 100 will be enough to cover them all
+					Issues struct {
+						TotalCount int
+					}
+					PullRequests struct {
+						TotalCount int
+					}
+					Releases struct {
+						TotalCount int
+					} `graphql:"Releases: refs(first: 0, refPrefix: \"refs/tags/\")"`
 				} `graphql:"... on Repository"`
 			}
 			PageInfo PageInfo
@@ -680,29 +704,78 @@ func (s *Scraper) FetchPopularRepositories(ctx context.Context, stars int, numbe
 	}
 
 	first := githubQuerySize
-	if number < first {
-		first = number
+	if numberRepos < first {
+		first = numberRepos
 	}
 
 	variables := map[string]interface{}{
 		"first":       githubv4.Int(first),
 		"cursor":      (*githubv4.String)(nil),
-		"searchQuery": githubv4.String(fmt.Sprintf("stars:>%d", stars)),
+		"searchQuery": githubv4.String(fmt.Sprintf("stars:>%d is:public archived:false mirror:false", numStars)),
 		"searchType":  githubv4.SearchTypeRepository,
 	}
 
-	var repos []Repository
-	for len(repos) != number {
+	var acceptedRepos []Repository
+	for len(acceptedRepos) != numberRepos {
 		if err := s.Client.Query(ctx, &q, variables); err != nil {
 			return nil, fmt.Errorf("failed to fetch popular repositories: %w", err)
 		}
 
+		// Some query graphql search parameters simply don't exist.
+		// Have to manually check if the repository is a hit or miss for a number of fields.
+		// Eg: Contributors.
 		for _, r := range q.Search.Nodes {
-			repos = append(repos, Repository{
+			candidateRepo := Repository{
 				Name:       r.Repository.Name,
 				Url:        r.Repository.Url,
 				Stargazers: r.Repository.Stargazers.TotalCount,
-			})
+				Issues:     r.Repository.Issues.TotalCount,
+			}
+
+			languages := []string{}
+			for _, l := range r.Repository.Languages.Nodes {
+				languages = append(languages, l.Name)
+			}
+
+			candidateRepo.Languages = languages
+
+			owner, name, err := utils.OwnerNameFromUrl(candidateRepo.Url)
+			// Log and ignore if unable to parse
+			if err != nil {
+				log.Warnf("unable to parse url (%s) for owner and name %v", candidateRepo.Url, err)
+
+				continue
+			}
+
+			// Count number of contributors via pages
+			// nolint: lll
+			// https://stackoverflow.com/questions/44347339/github-api-how-efficiently-get-the-total-contributors-amount-per-repository
+			_, res, err := s.API.Repositories.ListContributors(ctx, owner, name,
+				&github.ListContributorsOptions{
+					Anon: "true",
+					ListOptions: github.ListOptions{
+						PerPage: 1,
+					},
+				},
+			)
+			if err != nil || res.StatusCode != 200 {
+				log.Infof("unable to fetch contributors for %s, skipping...", candidateRepo.Url)
+
+				continue
+			}
+
+			candidateRepo.Contributors = res.LastPage - res.FirstPage + 1
+
+			if candidateRepo.Contributors >= numContributors &&
+				candidateRepo.Issues >= numIssues &&
+				len(candidateRepo.Languages) >= numLanguages {
+				acceptedRepos = append(acceptedRepos, candidateRepo)
+			} else {
+				log.Infof("skipping %s, %d contributors, %d issues",
+					candidateRepo.Url,
+					candidateRepo.Contributors,
+					candidateRepo.Issues)
+			}
 		}
 
 		if !q.Search.PageInfo.HasNextPage {
@@ -710,13 +783,13 @@ func (s *Scraper) FetchPopularRepositories(ctx context.Context, stars int, numbe
 		}
 
 		first := githubQuerySize
-		if (number - len(repos)) < first {
-			first = number - len(repos)
+		if (numberRepos - len(acceptedRepos)) < first {
+			first = numberRepos - len(acceptedRepos)
 		}
 
 		variables["first"] = githubv4.NewInt(githubv4.Int(first))
 		variables["cursor"] = githubv4.NewString(q.Search.PageInfo.EndCursor)
 	}
 
-	return repos, nil
+	return acceptedRepos, nil
 }

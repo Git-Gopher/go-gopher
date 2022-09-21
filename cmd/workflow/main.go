@@ -27,9 +27,9 @@ func main() {
 		{
 			Name:      "url",
 			Aliases:   []string{"u"},
-			Category:  "Marker",
+			Category:  "Repository",
 			Usage:     "grade a single repository with GitHub URL",
-			UsageText: "go-gopher-marker url <url> - grade repository with GitHub URL",
+			UsageText: "go-gopher-workflow url <url> - grade repository with GitHub URL",
 			ArgsUsage: "<url>",
 			Action:    LoadFlags(cmd.SingleUrlCommand),
 		},
