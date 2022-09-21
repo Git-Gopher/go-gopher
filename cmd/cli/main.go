@@ -721,7 +721,8 @@ func main() {
 						return fmt.Errorf("failed to marshal repositories: %w", err)
 					}
 
-					fh, err := os.Create(ctx.String("json"))
+					var fh *os.File
+					fh, err = os.Create(ctx.String("json"))
 					if err != nil {
 						return fmt.Errorf("could not create json file: %w", err)
 					}
@@ -748,7 +749,7 @@ func main() {
 						return fmt.Errorf("can't create clone dir: %w", err)
 					}
 
-					log.Printf("Cloning %d respositories", len(repositories))
+					log.Printf("Cloning %d repositories", len(repositories))
 					for _, r := range repositories {
 						path := path.Join(ctx.String("clone"), r.Name)
 						log.Printf("Cloning repository %s (%s)...", r.Name, r.Url)
@@ -764,8 +765,8 @@ func main() {
 						if err != nil {
 							log.Errorf("Failed to clone %s: %v", r.Name, err)
 						}
-
 					}
+
 					log.Printf("Cloned %d repositories", len(repositories))
 				}
 
