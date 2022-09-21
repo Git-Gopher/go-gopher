@@ -65,9 +65,14 @@ type Committer struct {
 }
 
 type Repository struct {
-	Name       string `json:"name"`
-	Url        string `json:"url"`
-	Stargazers int    `json:"stargazers"`
+	Name         string   `json:"name"`
+	Url          string   `json:"url"`
+	Stargazers   int      `json:"stargazers"`
+	Languages    []string `json:"languages"`
+	Issues       int      `json:"issues"`
+	PullRequests int      `json:"pullRequests"`
+
+	Contributors int `json:"contributors"`
 }
 
 // TODO: Issues, Author. Also handling the same issue multiple times, should we fetch it multiple
