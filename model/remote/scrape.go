@@ -662,13 +662,22 @@ func (s *Scraper) FetchBranchHeads(ctx context.Context, owner, name string) (str
 }
 
 // Fetch repositories that have a minimum amoutn of stars, issues and contributors.
+// Search filters are not particularly expressive. have to do a lot of brute because
+// of this. Manually filter for repos that have been active in the past year.
+// https://docs.github.com/en/search-github/searching-on-github/searching-for-repositories#search-by-repository-size
 func (s *Scraper) FetchPopularRepositories( // nolint: gocognit // needs to be complex
 	ctx context.Context,
 	minStars int,
+	maxStars int,
 	minIssues int,
+	maxIssues int,
 	minContributors int,
-	minLanguages int, // helpful to filter activist or wiki type repositories
+	maxContributors int,
+	// helpful to filter activist or wiki type repositories
+	minLanguages int,
+	maxLanguages int,
 	minPullRequests int,
+	maxPullRequests int,
 	numRepos int,
 ) ([]Repository, error) {
 	if minStars < 0 || numRepos < 0 {
@@ -712,8 +721,9 @@ func (s *Scraper) FetchPopularRepositories( // nolint: gocognit // needs to be c
 	variables := map[string]interface{}{
 		"first":  githubv4.Int(first),
 		"cursor": (*githubv4.String)(nil),
-		// Stars are limited between starrs..stars+10
-		"searchQuery": githubv4.String(fmt.Sprintf("stars:%d..%d is:public archived:false mirror:false", minStars, minStars+40)),
+		// nolint: lll
+		// doesn't work as qq string
+		"searchQuery": githubv4.String(fmt.Sprintf("stars:%d..%d is:public archived:false mirror:false pushed:>2021-09-23 sort:updated-desc", minStars, maxStars)),
 		"searchType":  githubv4.SearchTypeRepository,
 	}
 
@@ -771,13 +781,13 @@ func (s *Scraper) FetchPopularRepositories( // nolint: gocognit // needs to be c
 			candidateRepo.Contributors = res.LastPage - res.FirstPage + 1
 
 			if candidateRepo.Contributors >= minContributors &&
-				candidateRepo.Contributors <= minContributors+10 &&
+				candidateRepo.Contributors <= maxContributors &&
 				candidateRepo.Issues >= minIssues &&
-				//candidateRepo.Issues <= minIssues+50 &&
+				candidateRepo.Issues <= maxIssues &&
 				len(candidateRepo.Languages) >= minLanguages &&
-				//len(candidateRepo.Languages) <= minLanguages+4 &&
-				candidateRepo.PullRequests >= minPullRequests {
-				//candidateRepo.PullRequests <= minPullRequests+50 {
+				len(candidateRepo.Languages) <= maxLanguages &&
+				candidateRepo.PullRequests >= minPullRequests &&
+				candidateRepo.PullRequests <= maxPullRequests {
 				acceptedRepos = append(acceptedRepos, candidateRepo)
 				log.Infof("\033[32m ADDED \033[0m %s,\t %d stars, %d contributors, %d issues, %d languages, %d prs",
 					candidateRepo.Url,
@@ -800,6 +810,7 @@ func (s *Scraper) FetchPopularRepositories( // nolint: gocognit // needs to be c
 			}
 		}
 
+		// nolint: lll
 		log.Printf("\033[34m collected %d repos so far, skipped %d repos (%d remaining to collect)... \033[0m", len(acceptedRepos), skippedRepos, numRepos-len(acceptedRepos))
 
 		if !q.Search.PageInfo.HasNextPage {
@@ -808,6 +819,7 @@ func (s *Scraper) FetchPopularRepositories( // nolint: gocognit // needs to be c
 			} else {
 				log.Print("successfully scraped all repos")
 			}
+
 			break
 		}
 

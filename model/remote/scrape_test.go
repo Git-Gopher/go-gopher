@@ -30,7 +30,7 @@ func TestScraper_FetchCommitters(t *testing.T) {
 func TestScraper_FetchPopularRepositories(t *testing.T) {
 	utils.Environment("../../.env")
 	s := NewScraper()
-	repos, err := s.FetchPopularRepositories(context.TODO(), 1000, 100, 10, 3, 0, 1)
+	repos, err := s.FetchPopularRepositories(context.TODO(), 1000, 1500, 100, 150, 10, 15, 3, 10, 0, 100, 1)
 	if err != nil {
 		t.Error(err)
 	}

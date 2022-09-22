@@ -650,7 +650,9 @@ func main() {
 			Name:        "query",
 			Aliases:     []string{"q"},
 			Description: "query github for some popular git repositories",
-			Usage:       "query <stars> <issues> <contributors> <languages> <prs> <total-number-of-repos-to-scrape>",
+			Usage: `query <min-stars> <max-stars> <min-issues> <max-issues> 
+					<min-contributors> <max-contributors> <min-languages> <max-languages>
+					<min-prs> <max-prs> <total-number-of-repos-to-scrape>`,
 			Flags: []cli.Flag{
 				&cli.StringFlag{
 					Name:     "json",
@@ -674,47 +676,76 @@ func main() {
 
 				args := ctx.Args()
 
-				if args.Len() < 6 {
-					return fmt.Errorf("incorrect number of args (require 6)")
+				if args.Len() < 11 {
+					return fmt.Errorf("incorrect number of args (require 12)")
 				}
 
-				numStars, err := strconv.Atoi(args.Get(0))
+				minStars, err := strconv.Atoi(args.Get(0))
 				if err != nil {
 					return fmt.Errorf("failed to convert number of stars arg to int %s", args.Get(0))
 				}
 
-				numIssues, err := strconv.Atoi(args.Get(1))
+				maxStars, err := strconv.Atoi(args.Get(1))
 				if err != nil {
-					return fmt.Errorf("failed to convert number of issues arg to int %s", args.Get(1))
+					return fmt.Errorf("failed to convert number of stars arg to int %s", args.Get(1))
 				}
 
-				numContributors, err := strconv.Atoi(args.Get(2))
+				minIssues, err := strconv.Atoi(args.Get(2))
 				if err != nil {
-					return fmt.Errorf("failed to convert number of contributors arg to int %s", args.Get(2))
+					return fmt.Errorf("failed to convert number of issues arg to int %s", args.Get(2))
+				}
+				maxIssues, err := strconv.Atoi(args.Get(3))
+				if err != nil {
+					return fmt.Errorf("failed to convert number of issues arg to int %s", args.Get(3))
 				}
 
-				numLanguages, err := strconv.Atoi(args.Get(3))
+				minContributors, err := strconv.Atoi(args.Get(4))
 				if err != nil {
-					return fmt.Errorf("failed to convert number of languages arg to int %s", args.Get(3))
+					return fmt.Errorf("failed to convert number of contributors arg to int %s", args.Get(4))
 				}
 
-				numPullRequests, err := strconv.Atoi(args.Get(4))
+				maxContributors, err := strconv.Atoi(args.Get(5))
 				if err != nil {
-					return fmt.Errorf("failed to convert number of pull requests arg to int %s", args.Get(4))
+					return fmt.Errorf("failed to convert number of contributors arg to int %s", args.Get(5))
 				}
 
-				numberRepositories, err := strconv.Atoi(args.Get(5))
+				minLanguages, err := strconv.Atoi(args.Get(6))
 				if err != nil {
-					return fmt.Errorf("failed to convert number of repositories arg to string %s", args.Get(5))
+					return fmt.Errorf("failed to convert number of languages arg to int %s", args.Get(6))
+				}
+
+				maxLanguages, err := strconv.Atoi(args.Get(7))
+				if err != nil {
+					return fmt.Errorf("failed to convert number of languages arg to int %s", args.Get(7))
+				}
+
+				minPullRequests, err := strconv.Atoi(args.Get(8))
+				if err != nil {
+					return fmt.Errorf("failed to convert number of pull requests arg to int %s", args.Get(8))
+				}
+
+				maxPullRequests, err := strconv.Atoi(args.Get(9))
+				if err != nil {
+					return fmt.Errorf("failed to convert number of pull requests arg to int %s", args.Get(9))
+				}
+
+				numberRepositories, err := strconv.Atoi(args.Get(10))
+				if err != nil {
+					return fmt.Errorf("failed to convert number of repositories arg to string %s", args.Get(10))
 				}
 
 				scraper := remote.NewScraper()
 				repositories, err := scraper.FetchPopularRepositories(ctx.Context,
-					numStars,
-					numIssues,
-					numContributors,
-					numLanguages,
-					numPullRequests,
+					minStars,
+					maxStars,
+					minIssues,
+					maxIssues,
+					minContributors,
+					maxContributors,
+					minLanguages,
+					maxLanguages,
+					minPullRequests,
+					maxPullRequests,
 					numberRepositories)
 				if err != nil {
 					return fmt.Errorf("failed to fetch repositories: %w", err)
