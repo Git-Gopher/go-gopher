@@ -710,12 +710,14 @@ func (s *Scraper) FetchPopularRepositories( // nolint: gocognit // needs to be c
 	}
 
 	variables := map[string]interface{}{
-		"first":       githubv4.Int(first),
-		"cursor":      (*githubv4.String)(nil),
-		"searchQuery": githubv4.String(fmt.Sprintf("stars:>%d is:public archived:false mirror:false", minStars)),
+		"first":  githubv4.Int(first),
+		"cursor": (*githubv4.String)(nil),
+		// Stars are limited between starrs..stars+10
+		"searchQuery": githubv4.String(fmt.Sprintf("stars:%d..%d is:public archived:false mirror:false", minStars, minStars+40)),
 		"searchType":  githubv4.SearchTypeRepository,
 	}
 
+	skippedRepos := 0
 	var acceptedRepos []Repository
 	for len(acceptedRepos) != numRepos {
 		if err := s.Client.Query(ctx, &q, variables); err != nil {
@@ -769,22 +771,43 @@ func (s *Scraper) FetchPopularRepositories( // nolint: gocognit // needs to be c
 			candidateRepo.Contributors = res.LastPage - res.FirstPage + 1
 
 			if candidateRepo.Contributors >= minContributors &&
+				candidateRepo.Contributors <= minContributors+10 &&
 				candidateRepo.Issues >= minIssues &&
+				//candidateRepo.Issues <= minIssues+50 &&
 				len(candidateRepo.Languages) >= minLanguages &&
+				//len(candidateRepo.Languages) <= minLanguages+4 &&
 				candidateRepo.PullRequests >= minPullRequests {
+				//candidateRepo.PullRequests <= minPullRequests+50 {
 				acceptedRepos = append(acceptedRepos, candidateRepo)
-			} else {
-				log.Infof("skipping %s, %d contributors, %d issues, %d languages, %d prs",
+				log.Infof("\033[32m ADDED \033[0m %s,\t %d stars, %d contributors, %d issues, %d languages, %d prs",
 					candidateRepo.Url,
+					candidateRepo.Stargazers,
 					candidateRepo.Contributors,
 					candidateRepo.Issues,
 					len(candidateRepo.Languages),
 					candidateRepo.PullRequests,
 				)
+			} else {
+				log.Infof("\033[31m SKIPPING \033[0m %s,\t %d stars, %d contributors, %d issues, %d languages, %d prs",
+					candidateRepo.Url,
+					candidateRepo.Stargazers,
+					candidateRepo.Contributors,
+					candidateRepo.Issues,
+					len(candidateRepo.Languages),
+					candidateRepo.PullRequests,
+				)
+				skippedRepos++
 			}
 		}
 
+		log.Printf("\033[34m collected %d repos so far, skipped %d repos (%d remaining to collect)... \033[0m", len(acceptedRepos), skippedRepos, numRepos-len(acceptedRepos))
+
 		if !q.Search.PageInfo.HasNextPage {
+			if len(acceptedRepos) < numRepos {
+				log.Print("ran out of repos while scraping (out of pages)")
+			} else {
+				log.Print("successfully scraped all repos")
+			}
 			break
 		}
 

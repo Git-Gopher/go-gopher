@@ -650,7 +650,7 @@ func main() {
 			Name:        "query",
 			Aliases:     []string{"q"},
 			Description: "query github for some popular git repositories",
-			Usage:       "query <stars> <number-of-repos>",
+			Usage:       "query <stars> <issues> <contributors> <languages> <prs> <total-number-of-repos-to-scrape>",
 			Flags: []cli.Flag{
 				&cli.StringFlag{
 					Name:     "json",
