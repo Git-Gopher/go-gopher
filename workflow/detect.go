@@ -47,8 +47,11 @@ var rulesConfig = []*rule.Runner{
 
 	rules.NewCherryPickRelease(rule.NewDefaultWeights()),
 	rules.NewCherryPick(rule.NewDefaultWeights()),
+	rules.NewCrissCrossMerged(rule.NewDefaultWeights()),
+	rules.NewEmptyCommit(rule.NewDefaultWeights()),
 	rules.NewFeatureBranching(rule.NewDefaultWeights()),
 	rules.NewHotfix(rule.NewDefaultWeights()),
+	rules.NewUnresolved(rule.NewDefaultWeights()),
 
 	// When just starting out use default weight before calibrating
 	// default weight is 1.0 for all workflows
