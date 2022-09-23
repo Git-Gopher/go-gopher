@@ -33,7 +33,7 @@ type logs struct {
 	// If the repository has been skipped from running due to timeout.
 	// Skipped          bool                    `json"skipped"`
 	Scores           map[string]*rule.Scores `json:"scores"`
-	DetectedWorkflow []string                `json:"detected_workflow"`
+	DetectedWorkflow []string                `json:"detectedWorkflow"`
 }
 
 var _ Commands = &Cmds{}
@@ -146,8 +146,9 @@ func (c *Cmds) BatchUrlCommand(cCtx *cli.Context, flags *Flags) error {
 						Password: flags.GithubToken,
 					}
 				} else {
-					fmt.Errorf("no github token passed in as flag (required for upgraded api limits): %w", err)
+					log.Errorf("no github token passed in as flag (required for upgraded api limits): %v", err)
 					wg.Done()
+
 					return
 				}
 
@@ -159,8 +160,9 @@ func (c *Cmds) BatchUrlCommand(cCtx *cli.Context, flags *Flags) error {
 					Auth: auth,
 				})
 				if err != nil {
-					log.Errorf("failed to clone repository: %w", err)
+					log.Errorf("failed to clone repository: %v", err)
 					wg.Done()
+
 					return
 				}
 
@@ -168,12 +170,15 @@ func (c *Cmds) BatchUrlCommand(cCtx *cli.Context, flags *Flags) error {
 				if err = c.runRules(repo, url); err != nil {
 					log.Errorf("failed to run rules: %v", err)
 					wg.Done()
+
 					return
 				}
 
 				wg.Done()
 			case <-time.After(time.Duration(flags.Timeout) * time.Second):
 				log.Error("repo Timed out, continuing")
+				wg.Done()
+
 				return
 
 			case <-ctx.Done():
@@ -253,18 +258,23 @@ func (c *Cmds) runRules(repo *git.Repository, githubURL string) error {
 }
 
 // Write an individual log file for the repository to disk.
-func writeLog(githubURL string, scoresMap map[string]*rule.Scores, detectedWorkflow []string, repoOwner string, repoName string) error {
+func writeLog(githubURL string,
+	scoresMap map[string]*rule.Scores,
+	detectedWorkflow []string,
+	repoOwner string,
+	repoName string,
+) error {
 	logFilePath := fmt.Sprintf("output/workflow-output-%s-%s.json", repoOwner, repoName)
 
 	log.Infof("Writing log for %s/%s to %s...", repoOwner, repoName, logFilePath)
-	logs := logs{
+	logging := logs{
 		Url:              githubURL,
 		DetectedWorkflow: detectedWorkflow,
 		Scores:           scoresMap,
 		// Skipped:          false,
 	}
 
-	payload, err := json.MarshalIndent(logs, "", " ")
+	payload, err := json.MarshalIndent(logging, "", " ")
 	if err != nil {
 		return fmt.Errorf("could not marshal log payload: %w", err)
 	}
@@ -274,5 +284,6 @@ func writeLog(githubURL string, scoresMap map[string]*rule.Scores, detectedWorkf
 	}
 
 	log.Infof("Output workflow logs to for %s/%s to %s", repoOwner, repoName, logFilePath)
-	return err
+
+	return nil
 }

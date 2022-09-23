@@ -55,12 +55,13 @@ func LoadFlags(command ActionWithFlagFunc) cli.ActionFunc {
 
 		_ = os.Setenv("GITHUB_TOKEN", flags.GithubToken)
 
-		if cCtx.Int("timeout") == 0 {
+		switch timeout := cCtx.Int("timeout"); {
+		case timeout == 0:
 			flags.Timeout = 3 * 60 // 3 minutes
-		} else if cCtx.Int("timeout") < 0 {
+		case timeout < 0:
 			return errTimeout
-		} else {
-			flags.Timeout = cCtx.Int("timeout")
+		default:
+			flags.Timeout = timeout
 		}
 
 		return command(cCtx, flags)
