@@ -169,7 +169,7 @@ func (c *Cmds) BatchUrlCommand(cCtx *cli.Context, flags *Flags) error {
 				}
 
 				wg.Done()
-			case <-time.After(360 * time.Second):
+			case <-time.After(time.Duration(flags.Timeout) * time.Second):
 				log.Error("repo Timed out, continuing")
 				return
 
@@ -193,14 +193,14 @@ func (c *Cmds) runRules(repo *git.Repository, githubURL string) error {
 	}
 
 	// Create enrichedModel.
-	log.Printf("Fetching enriched model for repository...")
+	log.Infof("Fetching enriched model for repository %s/%s...", repoOwner, repoName)
 	start := time.Now()
 
 	enrichedModel, err := model.FetchEnrichedModel(repo, repoOwner, repoName)
 	if err != nil {
 		return fmt.Errorf("failed to create enriched model: %w", err)
 	}
-	log.Printf("Done Fetching enriched model for repository (%s)...", time.Since(start))
+	log.Infof("Done Fetching enriched model for repository  %s/%s (%s)...", repoOwner, repoName, time.Since(start))
 
 	log.Infof("Running rules for %s/%s", repoOwner, repoName)
 	start = time.Now()
@@ -249,8 +249,9 @@ func (c *Cmds) runRules(repo *git.Repository, githubURL string) error {
 	return nil
 }
 
+// Write an individual log file for the repository to disk.
 func writeLog(githubURL string, scoresMap map[string]*rule.Scores, detectedWorkflow []string, repoOwner string, repoName string) error {
-	log.Info("Writing log...")
+	log.Infof("Writing log for %s/%s...", repoOwner, repoName)
 	logs := logs{
 		Url:              githubURL,
 		Scores:           scoresMap,
@@ -268,6 +269,6 @@ func writeLog(githubURL string, scoresMap map[string]*rule.Scores, detectedWorkf
 		return fmt.Errorf("failed to write log file: %w", err)
 	}
 
-	log.Infof("Output workflow logs to %s", logFilePath)
+	log.Infof("Output workflow logs to for %s/%s to %s", repoOwner, repoName, logFilePath)
 	return err
 }
