@@ -2,6 +2,7 @@ package rules
 
 import (
 	"fmt"
+	"math"
 
 	"github.com/Git-Gopher/go-gopher/detector"
 	"github.com/Git-Gopher/go-gopher/workflow/rules/rule"
@@ -26,6 +27,9 @@ func NewExample(w *rule.Weights) *rule.Runner {
 				_, found, total, _ := d.Result()
 
 				score = float64(found) / float64(total)
+				if math.IsNaN(score) {
+					score = 0
+				}
 
 				return nil
 			}(); err != nil {
