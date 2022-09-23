@@ -703,15 +703,6 @@ func (s *Scraper) FetchPopularRepositories( // nolint: gocognit // needs to be c
 					Issues struct {
 						TotalCount int
 					}
-					DefaultBranchRef struct {
-						Target struct {
-							Commit struct {
-								History struct {
-									TotalCount int
-								}
-							} `graphql:"... on Commit"`
-						}
-					}
 					PullRequests struct {
 						TotalCount int
 					}
@@ -734,7 +725,7 @@ func (s *Scraper) FetchPopularRepositories( // nolint: gocognit // needs to be c
 		"cursor": (*githubv4.String)(nil),
 		// nolint: lll
 		// doesn't work as qq string
-		"searchQuery": githubv4.String(fmt.Sprintf("stars:%d..%d is:public archived:false mirror:false pushed:>2021-09-23 sort:updated-desc", minStars, maxStars)),
+		"searchQuery": githubv4.String(fmt.Sprintf("stars:%d..%d is:public archived:false mirror:false pushed:>2021-09-23", minStars, maxStars)),
 		"searchType":  githubv4.SearchTypeRepository,
 	}
 
@@ -750,12 +741,11 @@ func (s *Scraper) FetchPopularRepositories( // nolint: gocognit // needs to be c
 		// Eg: Contributors.
 		for _, r := range q.Search.Nodes {
 			candidateRepo := Repository{
-				Name:                 r.Repository.Name,
-				Url:                  r.Repository.Url,
-				Stargazers:           r.Repository.Stargazers.TotalCount,
-				Issues:               r.Repository.Issues.TotalCount,
-				PullRequests:         r.Repository.PullRequests.TotalCount,
-				PrimaryBranchCommits: r.Repository.DefaultBranchRef.Target.Commit.History.TotalCount,
+				Name:         r.Repository.Name,
+				Url:          r.Repository.Url,
+				Stargazers:   r.Repository.Stargazers.TotalCount,
+				Issues:       r.Repository.Issues.TotalCount,
+				PullRequests: r.Repository.PullRequests.TotalCount,
 			}
 
 			languages := []string{}
@@ -792,6 +782,32 @@ func (s *Scraper) FetchPopularRepositories( // nolint: gocognit // needs to be c
 
 			candidateRepo.Contributors = res.LastPage - res.FirstPage + 1
 
+			// fetch number of commits as secondary query.
+			var q2 struct {
+				Repository struct {
+					DefaultBranchRef struct {
+						Target struct {
+							Commit struct {
+								History struct {
+									TotalCount int
+								}
+							} `graphql:"... on Commit"`
+						}
+					}
+				} `graphql:"repository(owner: $owner, name: $name)"`
+			}
+
+			variables2 := map[string]interface{}{
+				"owner": githubv4.String(owner),
+				"name":  githubv4.String(name),
+			}
+
+			if err := s.Client.Query(ctx, &q2, variables2); err != nil {
+				return nil, fmt.Errorf("failed to fetch repository commit count: %w", err)
+			}
+
+			candidateRepo.PrimaryBranchCommits = q2.Repository.DefaultBranchRef.Target.Commit.History.TotalCount
+
 			if candidateRepo.Contributors >= minContributors &&
 				candidateRepo.Contributors <= maxContributors &&
 				candidateRepo.Issues >= minIssues &&
@@ -803,22 +819,24 @@ func (s *Scraper) FetchPopularRepositories( // nolint: gocognit // needs to be c
 				candidateRepo.PrimaryBranchCommits >= minCommits &&
 				candidateRepo.PrimaryBranchCommits <= maxCommits {
 				acceptedRepos = append(acceptedRepos, candidateRepo)
-				log.Infof("\033[32m ADDED \033[0m %s,\t %d stars, %d contributors, %d issues, %d languages, %d prs",
+				log.Infof("\033[32m ADDED \033[0m %s,\t %d stars, %d contributors, %d issues, %d languages, %d prs, commits %d",
 					candidateRepo.Url,
 					candidateRepo.Stargazers,
 					candidateRepo.Contributors,
 					candidateRepo.Issues,
 					len(candidateRepo.Languages),
 					candidateRepo.PullRequests,
+					candidateRepo.PrimaryBranchCommits,
 				)
 			} else {
-				log.Infof("\033[31m SKIPPING \033[0m %s,\t %d stars, %d contributors, %d issues, %d languages, %d prs",
+				log.Infof("\033[31m SKIPPING \033[0m %s,\t %d stars, %d contributors, %d issues, %d languages, %d prs, commits %d",
 					candidateRepo.Url,
 					candidateRepo.Stargazers,
 					candidateRepo.Contributors,
 					candidateRepo.Issues,
 					len(candidateRepo.Languages),
 					candidateRepo.PullRequests,
+					candidateRepo.PrimaryBranchCommits,
 				)
 				skippedRepos++
 			}

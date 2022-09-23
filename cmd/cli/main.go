@@ -652,7 +652,7 @@ func main() {
 			Description: "query github for some popular git repositories",
 			Usage: `query <min-stars> <max-stars> <min-issues> <max-issues> 
 					<min-contributors> <max-contributors> <min-languages> <max-languages>
-					<min-prs> <max-prs> <total-number-of-repos-to-scrape>`,
+					<min-prs> <max-prs> <min-commits> <max-commits> <total-number-of-repos-to-scrape>`,
 			Flags: []cli.Flag{
 				&cli.StringFlag{
 					Name:     "json",

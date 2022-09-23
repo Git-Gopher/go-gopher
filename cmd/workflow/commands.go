@@ -155,6 +155,7 @@ func (c *Cmds) BatchUrlCommand(cCtx *cli.Context, flags *Flags) error {
 				log.Infof("Cloning repository %s to memory...", url)
 
 				start := time.Now()
+				// nolint: contextcheck
 				repo, err := git.Clone(memory.NewStorage(), nil, &git.CloneOptions{
 					URL:  url,
 					Auth: auth,
