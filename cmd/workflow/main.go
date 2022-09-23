@@ -56,6 +56,11 @@ func main() {
 			DefaultText: ".env",
 			Usage:       "Environment file location. Default: .env",
 		},
+		&cli.IntFlag{
+			Name:    "timeout",
+			Aliases: []string{"t"},
+			Usage:   "timeout in seconds before the repository is skipped",
+		},
 	}
 
 	if err := app.Run(os.Args); err != nil {

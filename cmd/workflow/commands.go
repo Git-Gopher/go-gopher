@@ -199,11 +199,16 @@ func (c *Cmds) runRules(repo *git.Repository, githubURL string) error {
 	}
 
 	logs := struct {
-		Scores           map[string]*rule.Scores
-		DetectedWorkflow []string
+		Url string `json:"url"`
+		// If the repository has been skipped from running due to timeout.
+		Skipped          bool                    `json"skipped"`
+		Scores           map[string]*rule.Scores `json:"scores"`
+		DetectedWorkflow []string                `json:"detected_workflow"`
 	}{
+		Url:              githubURL,
 		Scores:           scoresMap,
 		DetectedWorkflow: detectedWorkflow,
+		Skipped:          false,
 	}
 
 	payload, err := json.MarshalIndent(logs, "", " ")

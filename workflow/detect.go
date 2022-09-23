@@ -9,13 +9,13 @@ import (
 
 // rulesConfig is set manually.
 var rulesConfig = []*rule.Runner{
-	rules.NewExample(&rule.Weights{
-		GitHubFlow: rule.NewWeight(1.0),
-		GitFlow:    rule.NewWeight(-1.0), // can have negative weights
-		GitLabFlow: rule.NewWeight(0.0),  // can have zero weights
-		OneFlow:    nil,                  // can be nil, which means that the rule is not used
-		TrunkBased: nil,
-	}),
+	// rules.NewExample(&rule.Weights{
+	// 	GitHubFlow: rule.NewWeight(1.0),
+	// 	GitFlow:    rule.NewWeight(-1.0), // can have negative weights
+	// 	GitLabFlow: rule.NewWeight(0.0),  // can have zero weights
+	// 	OneFlow:    nil,                  // can be nil, which means that the rule is not used
+	// 	TrunkBased: nil,
+	// }),
 	rules.NewFeatureBranching(&rule.Weights{
 		GitHubFlow: rule.NewWeight(1.0),
 		GitFlow:    rule.NewWeight(1.0),
@@ -50,7 +50,7 @@ var rulesConfig = []*rule.Runner{
 	// ```go
 	// rules.NewExample(rule.NewDefaultWeights()),
 	// ```
-	rules.NewExample(rule.NewDefaultWeights()),
+	// rules.NewExample(rule.NewDefaultWeights()),
 }
 
 func Detect(ctx rule.RuleCtx) map[string]*rule.Scores {
