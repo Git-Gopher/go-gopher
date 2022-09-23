@@ -678,6 +678,8 @@ func (s *Scraper) FetchPopularRepositories( // nolint: gocognit // needs to be c
 	maxLanguages int,
 	minPullRequests int,
 	maxPullRequests int,
+	minCommits int,
+	maxCommits int,
 	numRepos int,
 ) ([]Repository, error) {
 	if minStars < 0 || numRepos < 0 {
@@ -700,6 +702,15 @@ func (s *Scraper) FetchPopularRepositories( // nolint: gocognit // needs to be c
 					} `graphql:"languages(first: 100)"` // hopefully 100 will be enough to cover them all
 					Issues struct {
 						TotalCount int
+					}
+					DefaultBranchRef struct {
+						Target struct {
+							Commit struct {
+								History struct {
+									TotalCount int
+								}
+							} `graphql:"... on Commit"`
+						}
 					}
 					PullRequests struct {
 						TotalCount int
@@ -739,11 +750,12 @@ func (s *Scraper) FetchPopularRepositories( // nolint: gocognit // needs to be c
 		// Eg: Contributors.
 		for _, r := range q.Search.Nodes {
 			candidateRepo := Repository{
-				Name:         r.Repository.Name,
-				Url:          r.Repository.Url,
-				Stargazers:   r.Repository.Stargazers.TotalCount,
-				Issues:       r.Repository.Issues.TotalCount,
-				PullRequests: r.Repository.PullRequests.TotalCount,
+				Name:                 r.Repository.Name,
+				Url:                  r.Repository.Url,
+				Stargazers:           r.Repository.Stargazers.TotalCount,
+				Issues:               r.Repository.Issues.TotalCount,
+				PullRequests:         r.Repository.PullRequests.TotalCount,
+				PrimaryBranchCommits: r.Repository.DefaultBranchRef.Target.Commit.History.TotalCount,
 			}
 
 			languages := []string{}
@@ -787,7 +799,9 @@ func (s *Scraper) FetchPopularRepositories( // nolint: gocognit // needs to be c
 				len(candidateRepo.Languages) >= minLanguages &&
 				len(candidateRepo.Languages) <= maxLanguages &&
 				candidateRepo.PullRequests >= minPullRequests &&
-				candidateRepo.PullRequests <= maxPullRequests {
+				candidateRepo.PullRequests <= maxPullRequests &&
+				candidateRepo.PrimaryBranchCommits >= minCommits &&
+				candidateRepo.PrimaryBranchCommits <= maxCommits {
 				acceptedRepos = append(acceptedRepos, candidateRepo)
 				log.Infof("\033[32m ADDED \033[0m %s,\t %d stars, %d contributors, %d issues, %d languages, %d prs",
 					candidateRepo.Url,

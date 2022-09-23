@@ -676,7 +676,7 @@ func main() {
 
 				args := ctx.Args()
 
-				if args.Len() < 11 {
+				if args.Len() < 13 {
 					return fmt.Errorf("incorrect number of args (require 12)")
 				}
 
@@ -728,8 +728,16 @@ func main() {
 				if err != nil {
 					return fmt.Errorf("failed to convert number of pull requests arg to int %s", args.Get(9))
 				}
+				minCommits, err := strconv.Atoi(args.Get(10))
+				if err != nil {
+					return fmt.Errorf("failed to convert number of pull requests arg to int %s", args.Get(10))
+				}
+				maxCommits, err := strconv.Atoi(args.Get(11))
+				if err != nil {
+					return fmt.Errorf("failed to convert number of pull requests arg to int %s", args.Get(11))
+				}
 
-				numberRepositories, err := strconv.Atoi(args.Get(10))
+				numberRepositories, err := strconv.Atoi(args.Get(12))
 				if err != nil {
 					return fmt.Errorf("failed to convert number of repositories arg to string %s", args.Get(10))
 				}
@@ -746,6 +754,8 @@ func main() {
 					maxLanguages,
 					minPullRequests,
 					maxPullRequests,
+					minCommits,
+					maxCommits,
 					numberRepositories)
 				if err != nil {
 					return fmt.Errorf("failed to fetch repositories: %w", err)
