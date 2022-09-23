@@ -9,41 +9,46 @@ import (
 
 // rulesConfig is set manually.
 var rulesConfig = []*rule.Runner{
-	rules.NewExample(&rule.Weights{
-		GitHubFlow: rule.NewWeight(1.0),
-		GitFlow:    rule.NewWeight(-1.0), // can have negative weights
-		GitLabFlow: rule.NewWeight(0.0),  // can have zero weights
-		OneFlow:    nil,                  // can be nil, which means that the rule is not used
-		TrunkBased: nil,
-	}),
-	rules.NewFeatureBranching(&rule.Weights{
-		GitHubFlow: rule.NewWeight(1.0),
-		GitFlow:    rule.NewWeight(1.0),
-		GitLabFlow: rule.NewWeight(1.0),
-		OneFlow:    rule.NewWeight(1.0),
-		TrunkBased: rule.NewWeight(-1.0), // feature branching is not used in trunk-based
-	}),
-	rules.NewCherryPick(&rule.Weights{
-		GitHubFlow: nil,
-		GitFlow:    rule.NewWeight(1.0),
-		GitLabFlow: rule.NewWeight(2.0), // Cherry pick is more important in GitLab
-		OneFlow:    rule.NewWeight(1.0),
-		TrunkBased: nil,
-	}),
-	rules.NewCherryPickRelease(&rule.Weights{
-		GitHubFlow: rule.NewWeight(-1.0),
-		GitFlow:    rule.NewWeight(1.0),
-		GitLabFlow: rule.NewWeight(1.0),
-		OneFlow:    rule.NewWeight(1.0),
-		TrunkBased: nil,
-	}),
-	rules.NewHotfix(&rule.Weights{
-		GitHubFlow: nil,
-		GitFlow:    rule.NewWeight(1.0),
-		GitLabFlow: rule.NewWeight(1.0),
-		OneFlow:    rule.NewWeight(1.0),
-		TrunkBased: nil,
-	}),
+	// rules.NewExample(&rule.Weights{
+	// 	GitHubFlow: rule.NewWeight(1.0),
+	// 	GitFlow:    rule.NewWeight(-1.0), // can have negative weights
+	// 	GitLabFlow: rule.NewWeight(0.0),  // can have zero weights
+	// 	OneFlow:    nil,                  // can be nil, which means that the rule is not used
+	// 	TrunkBased: nil,
+	// }),
+	// rules.NewFeatureBranching(&rule.Weights{
+	// 	GitHubFlow: rule.NewWeight(1.0),
+	// 	GitFlow:    rule.NewWeight(1.0),
+	// 	GitLabFlow: rule.NewWeight(1.0),
+	// 	OneFlow:    rule.NewWeight(1.0),
+	// 	TrunkBased: rule.NewWeight(-1.0), // feature branching is not used in trunk-based
+	// }),
+	// rules.NewCherryPick(&rule.Weights{
+	// 	GitHubFlow: nil,
+	// 	GitFlow:    rule.NewWeight(1.0),
+	// 	GitLabFlow: rule.NewWeight(2.0), // Cherry pick is more important in GitLab
+	// 	OneFlow:    rule.NewWeight(1.0),
+	// 	TrunkBased: nil,
+	// }),
+	// rules.NewCherryPickRelease(&rule.Weights{
+	// 	GitHubFlow: rule.NewWeight(-1.0),
+	// 	GitFlow:    rule.NewWeight(1.0),
+	// 	GitLabFlow: rule.NewWeight(1.0),
+	// 	OneFlow:    rule.NewWeight(1.0),
+	// 	TrunkBased: nil,
+	// }),
+	// rules.NewHotfix(&rule.Weights{
+	// 	GitHubFlow: nil,
+	// 	GitFlow:    rule.NewWeight(1.0),
+	// 	GitLabFlow: rule.NewWeight(1.0),
+	// 	OneFlow:    rule.NewWeight(1.0),
+	// 	TrunkBased: nil,
+	// }),
+
+	rules.NewCherryPickRelease(rule.NewDefaultWeights()),
+	rules.NewCherryPick(rule.NewDefaultWeights()),
+	rules.NewFeatureBranching(rule.NewDefaultWeights()),
+	rules.NewHotfix(rule.NewDefaultWeights()),
 
 	// When just starting out use default weight before calibrating
 	// default weight is 1.0 for all workflows
