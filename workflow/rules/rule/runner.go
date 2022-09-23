@@ -38,20 +38,20 @@ func NewWeight(weight float64) *Weight {
 
 // Weights - weights for each workflow.
 type Weights struct {
-	GitHubFlow *Weight
-	GitFlow    *Weight
-	GitLabFlow *Weight
-	OneFlow    *Weight
-	TrunkBased *Weight
+	GitHubFlow *Weight `json:",omitempty"`
+	GitFlow    *Weight `json:",omitempty"`
+	GitLabFlow *Weight `json:",omitempty"`
+	OneFlow    *Weight `json:",omitempty"`
+	TrunkBased *Weight `json:",omitempty"`
 }
 
 func (w *Weights) NewScores(v *Score) *Scores {
 	return &Scores{
-		gitHubFlow: v.Weight(w.GitHubFlow),
-		gitFlow:    v.Weight(w.GitFlow),
-		gitLabFlow: v.Weight(w.GitLabFlow),
-		oneFlow:    v.Weight(w.OneFlow),
-		trunkBased: v.Weight(w.TrunkBased),
+		GitHubFlow: v.Weight(w.GitHubFlow),
+		GitFlow:    v.Weight(w.GitFlow),
+		GitLabFlow: v.Weight(w.GitLabFlow),
+		OneFlow:    v.Weight(w.OneFlow),
+		TrunkBased: v.Weight(w.TrunkBased),
 	}
 }
 
@@ -88,31 +88,11 @@ func NewScore(score float64) *Score {
 
 // Scores - scores for each workflow.
 type Scores struct {
-	gitHubFlow *Score
-	gitFlow    *Score
-	gitLabFlow *Score
-	oneFlow    *Score
-	trunkBased *Score
-}
-
-func (s *Scores) GitHubFlow() *Score {
-	return s.gitHubFlow
-}
-
-func (s *Scores) GitFlow() *Score {
-	return s.gitFlow
-}
-
-func (s *Scores) GitLabFlow() *Score {
-	return s.gitLabFlow
-}
-
-func (s *Scores) OneFlow() *Score {
-	return s.oneFlow
-}
-
-func (s *Scores) TrunkBased() *Score {
-	return s.trunkBased
+	GitHubFlow *Score `json:",omitempty"`
+	GitFlow    *Score `json:",omitempty"`
+	GitLabFlow *Score `json:",omitempty"`
+	OneFlow    *Score `json:",omitempty"`
+	TrunkBased *Score `json:",omitempty"`
 }
 
 // Runner - rule runner.

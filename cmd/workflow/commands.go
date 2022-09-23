@@ -31,7 +31,7 @@ var (
 type logs struct {
 	Url string `json:"url"`
 	// If the repository has been skipped from running due to timeout.
-	Skipped          bool                    `json"skipped"`
+	// Skipped          bool                    `json"skipped"`
 	Scores           map[string]*rule.Scores `json:"scores"`
 	DetectedWorkflow []string                `json:"detected_workflow"`
 }
@@ -147,6 +147,7 @@ func (c *Cmds) BatchUrlCommand(cCtx *cli.Context, flags *Flags) error {
 					}
 				} else {
 					fmt.Errorf("no github token passed in as flag (required for upgraded api limits): %w", err)
+					wg.Done()
 					return
 				}
 
@@ -159,12 +160,14 @@ func (c *Cmds) BatchUrlCommand(cCtx *cli.Context, flags *Flags) error {
 				})
 				if err != nil {
 					log.Errorf("failed to clone repository: %w", err)
+					wg.Done()
 					return
 				}
 
 				log.Infof("Finished repository %s to memory (%s)...", url, time.Since(start))
 				if err = c.runRules(repo, url); err != nil {
 					log.Errorf("failed to run rules: %v", err)
+					wg.Done()
 					return
 				}
 
@@ -214,18 +217,18 @@ func (c *Cmds) runRules(repo *git.Repository, githubURL string) error {
 
 	accScores := make(map[rule.WorkflowType]float64) // workflow types iota
 	for name, scores := range scoresMap {
-		accScores[rule.GitHubFlow] += scores.GitHubFlow().Value()
-		accScores[rule.GitFlow] += scores.GitFlow().Value()
-		accScores[rule.GitlabFlow] += scores.GitLabFlow().Value()
-		accScores[rule.OneFlow] += scores.OneFlow().Value()
-		accScores[rule.TrunkBased] += scores.TrunkBased().Value()
+		accScores[rule.GitHubFlow] += scores.GitHubFlow.Value()
+		accScores[rule.GitFlow] += scores.GitFlow.Value()
+		accScores[rule.GitlabFlow] += scores.GitLabFlow.Value()
+		accScores[rule.OneFlow] += scores.OneFlow.Value()
+		accScores[rule.TrunkBased] += scores.TrunkBased.Value()
 
 		log.Infof("Rule: %s", name)
-		log.Infof("	GitHubFlow: %v", scores.GitHubFlow().Value())
-		log.Infof("	GitFlow: %v", scores.GitFlow().Value())
-		log.Infof("	GitLabFlow: %v", scores.GitLabFlow().Value())
-		log.Infof("	OneFlow: %v", scores.OneFlow().Value())
-		log.Infof("	TrunkBased: %v", scores.TrunkBased().Value())
+		log.Infof("	GitHubFlow: %v", scores.GitHubFlow.Value())
+		log.Infof("	GitFlow: %v", scores.GitFlow.Value())
+		log.Infof("	GitLabFlow: %v", scores.GitLabFlow.Value())
+		log.Infof("	OneFlow: %v", scores.OneFlow.Value())
+		log.Infof("	TrunkBased: %v", scores.TrunkBased.Value())
 	}
 	// Detect workflow type.
 	// Slice as might be multiple equal scores.
@@ -251,12 +254,14 @@ func (c *Cmds) runRules(repo *git.Repository, githubURL string) error {
 
 // Write an individual log file for the repository to disk.
 func writeLog(githubURL string, scoresMap map[string]*rule.Scores, detectedWorkflow []string, repoOwner string, repoName string) error {
-	log.Infof("Writing log for %s/%s...", repoOwner, repoName)
+	logFilePath := fmt.Sprintf("output/workflow-output-%s-%s.json", repoOwner, repoName)
+
+	log.Infof("Writing log for %s/%s to %s...", repoOwner, repoName, logFilePath)
 	logs := logs{
 		Url:              githubURL,
-		Scores:           scoresMap,
 		DetectedWorkflow: detectedWorkflow,
-		Skipped:          false,
+		Scores:           scoresMap,
+		// Skipped:          false,
 	}
 
 	payload, err := json.MarshalIndent(logs, "", " ")
@@ -264,7 +269,6 @@ func writeLog(githubURL string, scoresMap map[string]*rule.Scores, detectedWorkf
 		return fmt.Errorf("could not marshal log payload: %w", err)
 	}
 
-	logFilePath := fmt.Sprintf("output/workflow-output-%s-%s.json", repoOwner, repoName)
 	if err = os.WriteFile(logFilePath, payload, 0o600); err != nil {
 		return fmt.Errorf("failed to write log file: %w", err)
 	}
