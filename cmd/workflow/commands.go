@@ -1,10 +1,13 @@
 package main
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"os"
 	"path/filepath"
+	"runtime"
+	"sync"
 	"time"
 
 	"github.com/Git-Gopher/go-gopher/model"
@@ -24,6 +27,14 @@ var (
 	errLocalDir  = fmt.Errorf("missing Local Directory")
 	errBatchJson = fmt.Errorf("missing repository json file")
 )
+
+type logs struct {
+	Url string `json:"url"`
+	// If the repository has been skipped from running due to timeout.
+	Skipped          bool                    `json"skipped"`
+	Scores           map[string]*rule.Scores `json:"scores"`
+	DetectedWorkflow []string                `json:"detected_workflow"`
+}
 
 var _ Commands = &Cmds{}
 
@@ -109,34 +120,67 @@ func (c *Cmds) BatchUrlCommand(cCtx *cli.Context, flags *Flags) error {
 		return fmt.Errorf("unable to marshal payload to repositories: %w", err)
 	}
 
-	for _, r := range repositories {
-		var auth *githttp.BasicAuth
+	var wg sync.WaitGroup
+	ctx, cancel := context.WithCancel(context.Background())
+	repoUrlChan := make(chan string, runtime.NumCPU())
 
-		if flags.GithubToken != "" {
-			auth = &githttp.BasicAuth{
-				Username: "non-empty",
-				Password: flags.GithubToken,
+	wg.Add(1)
+	go func() {
+		for _, repo := range repositories {
+			wg.Add(1)
+			repoUrlChan <- repo.Url
+		}
+		wg.Done()
+	}()
+
+	log.Infof("Running batch workflow detection on %d threads...", runtime.NumCPU())
+	for i := 0; i < runtime.NumCPU()-1; i++ {
+		go func() {
+			select {
+			case url := <-repoUrlChan:
+				var auth *githttp.BasicAuth
+
+				if flags.GithubToken != "" {
+					auth = &githttp.BasicAuth{
+						Username: "non-empty",
+						Password: flags.GithubToken,
+					}
+				} else {
+					fmt.Errorf("no github token passed in as flag (required for upgraded api limits): %w", err)
+					return
+				}
+
+				log.Infof("Cloning repository %s to memory...", url)
+
+				start := time.Now()
+				repo, err := git.Clone(memory.NewStorage(), nil, &git.CloneOptions{
+					URL:  url,
+					Auth: auth,
+				})
+				if err != nil {
+					log.Errorf("failed to clone repository: %w", err)
+					return
+				}
+
+				log.Infof("Finished repository %s to memory (%s)...", url, time.Since(start))
+				if err = c.runRules(repo, url); err != nil {
+					log.Errorf("failed to run rules: %v", err)
+					return
+				}
+
+				wg.Done()
+			case <-time.After(360 * time.Second):
+				log.Error("repo Timed out, continuing")
+				return
+
+			case <-ctx.Done():
+				return
 			}
-		} else {
-			return fmt.Errorf("no github token passed in as flag (required for upgraded api limits): %w", err)
-		}
-
-		log.Infof("Cloning repository %s to memory...", r.Url)
-
-		start := time.Now()
-		repo, err := git.Clone(memory.NewStorage(), nil, &git.CloneOptions{
-			URL:  r.Url,
-			Auth: auth,
-		})
-		if err != nil {
-			return fmt.Errorf("failed to clone repository: %w", err)
-		}
-
-		log.Infof("Finished repository %s to memory (%s)...", r.Url, time.Since(start))
-		if err = c.runRules(repo, r.Url); err != nil {
-			return err
-		}
+		}()
 	}
+
+	wg.Wait()
+	cancel()
 
 	return nil
 }
@@ -198,13 +242,16 @@ func (c *Cmds) runRules(repo *git.Repository, githubURL string) error {
 		}
 	}
 
-	logs := struct {
-		Url string `json:"url"`
-		// If the repository has been skipped from running due to timeout.
-		Skipped          bool                    `json"skipped"`
-		Scores           map[string]*rule.Scores `json:"scores"`
-		DetectedWorkflow []string                `json:"detected_workflow"`
-	}{
+	if err = writeLog(githubURL, scoresMap, detectedWorkflow, repoOwner, repoName); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func writeLog(githubURL string, scoresMap map[string]*rule.Scores, detectedWorkflow []string, repoOwner string, repoName string) error {
+	log.Info("Writing log...")
+	logs := logs{
 		Url:              githubURL,
 		Scores:           scoresMap,
 		DetectedWorkflow: detectedWorkflow,
@@ -216,12 +263,11 @@ func (c *Cmds) runRules(repo *git.Repository, githubURL string) error {
 		return fmt.Errorf("could not marshal log payload: %w", err)
 	}
 
-	logFilePath := "workflow-output.json"
+	logFilePath := fmt.Sprintf("output/workflow-output-%s-%s.json", repoOwner, repoName)
 	if err = os.WriteFile(logFilePath, payload, 0o600); err != nil {
 		return fmt.Errorf("failed to write log file: %w", err)
 	}
 
 	log.Infof("Output workflow logs to %s", logFilePath)
-
-	return nil
+	return err
 }

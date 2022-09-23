@@ -57,9 +57,8 @@ func main() {
 			Usage:       "Environment file location. Default: .env",
 		},
 		&cli.IntFlag{
-			Name:    "timeout",
-			Aliases: []string{"t"},
-			Usage:   "timeout in seconds before the repository is skipped",
+			Name:  "timeout",
+			Usage: "timeout in seconds before the repository is skipped",
 		},
 	}
 
