@@ -29,9 +29,19 @@ func main() {
 			Aliases:   []string{"u"},
 			Category:  "Repository",
 			Usage:     "grade a single repository with GitHub URL",
-			UsageText: "go-gopher-workflow url <url> - grade repository with GitHub URL",
+			UsageText: "go-gopher-workflow url <url> - evaluate repository with GitHub remote URL",
 			ArgsUsage: "<url>",
 			Action:    LoadFlags(cmd.SingleUrlCommand),
+		},
+		{
+			Name:     "batch",
+			Aliases:  []string{"b"},
+			Category: "Repository",
+			Usage:    "grade a set of repositories from a json file",
+			UsageText: `go-gopher-workflow batch <repos.json> - 
+					parse file with GitHub remote URL that has been generated from go-gopher-cli query`,
+			ArgsUsage: "<repos.json>",
+			Action:    LoadFlags(cmd.BatchUrlCommand),
 		},
 	}
 	app.Flags = []cli.Flag{
@@ -45,6 +55,10 @@ func main() {
 			Aliases:     []string{"e"},
 			DefaultText: ".env",
 			Usage:       "Environment file location. Default: .env",
+		},
+		&cli.IntFlag{
+			Name:  "timeout",
+			Usage: "timeout in seconds before the repository is skipped",
 		},
 	}
 

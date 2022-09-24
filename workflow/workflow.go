@@ -366,9 +366,9 @@ func (w *Workflow) WriteLog(em enriched.EnrichedModel, cfg *config.Config) (stri
 		Config:     *cfg,
 	}
 
-	bytes, err := json.MarshalIndent(l, "", "")
+	bytes, err := json.MarshalIndent(l, "", " ")
 	if err != nil {
-		return "", fmt.Errorf("Failed to marshal workflow log: %w", err)
+		return "", fmt.Errorf("failed to marshal workflow log: %w", err)
 	}
 
 	fn := fmt.Sprintf("log-%s-%d.json", em.Name, time.Now().Unix())

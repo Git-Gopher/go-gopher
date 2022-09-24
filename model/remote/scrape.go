@@ -662,16 +662,28 @@ func (s *Scraper) FetchBranchHeads(ctx context.Context, owner, name string) (str
 }
 
 // Fetch repositories that have a minimum amoutn of stars, issues and contributors.
+// Search filters are not particularly expressive. have to do a lot of brute because
+// of this. Manually filter for repos that have been active in the past year.
+// https://docs.github.com/en/search-github/searching-on-github/searching-for-repositories#search-by-repository-size
 func (s *Scraper) FetchPopularRepositories( // nolint: gocognit // needs to be complex
 	ctx context.Context,
-	numStars int,
-	numIssues int,
-	numContributors int,
-	numLanguages int, // helpful to filter activist or wiki type repositories
-	numberRepos int,
+	minStars int,
+	maxStars int,
+	minIssues int,
+	maxIssues int,
+	minContributors int,
+	maxContributors int,
+	// helpful to filter activist or wiki type repositories
+	minLanguages int,
+	maxLanguages int,
+	minPullRequests int,
+	maxPullRequests int,
+	minCommits int,
+	maxCommits int,
+	numRepos int,
 ) ([]Repository, error) {
-	if numStars < 0 || numberRepos < 0 {
-		return nil, fmt.Errorf("%w: %v, %v", ErrQueryParameters, numStars, numberRepos)
+	if minStars < 0 || numRepos < 0 {
+		return nil, fmt.Errorf("%w: %v, %v", ErrQueryParameters, minStars, numRepos)
 	}
 
 	var q struct {
@@ -704,19 +716,22 @@ func (s *Scraper) FetchPopularRepositories( // nolint: gocognit // needs to be c
 	}
 
 	first := githubQuerySize
-	if numberRepos < first {
-		first = numberRepos
+	if numRepos < first {
+		first = numRepos
 	}
 
 	variables := map[string]interface{}{
-		"first":       githubv4.Int(first),
-		"cursor":      (*githubv4.String)(nil),
-		"searchQuery": githubv4.String(fmt.Sprintf("stars:>%d is:public archived:false mirror:false", numStars)),
+		"first":  githubv4.Int(first),
+		"cursor": (*githubv4.String)(nil),
+		// nolint: lll
+		// doesn't work as qq string
+		"searchQuery": githubv4.String(fmt.Sprintf("stars:%d..%d is:public archived:false mirror:false pushed:>2021-09-23", minStars, maxStars)),
 		"searchType":  githubv4.SearchTypeRepository,
 	}
 
+	skippedRepos := 0
 	var acceptedRepos []Repository
-	for len(acceptedRepos) != numberRepos {
+	for len(acceptedRepos) != numRepos {
 		if err := s.Client.Query(ctx, &q, variables); err != nil {
 			return nil, fmt.Errorf("failed to fetch popular repositories: %w", err)
 		}
@@ -726,10 +741,11 @@ func (s *Scraper) FetchPopularRepositories( // nolint: gocognit // needs to be c
 		// Eg: Contributors.
 		for _, r := range q.Search.Nodes {
 			candidateRepo := Repository{
-				Name:       r.Repository.Name,
-				Url:        r.Repository.Url,
-				Stargazers: r.Repository.Stargazers.TotalCount,
-				Issues:     r.Repository.Issues.TotalCount,
+				Name:         r.Repository.Name,
+				Url:          r.Repository.Url,
+				Stargazers:   r.Repository.Stargazers.TotalCount,
+				Issues:       r.Repository.Issues.TotalCount,
+				PullRequests: r.Repository.PullRequests.TotalCount,
 			}
 
 			languages := []string{}
@@ -766,25 +782,82 @@ func (s *Scraper) FetchPopularRepositories( // nolint: gocognit // needs to be c
 
 			candidateRepo.Contributors = res.LastPage - res.FirstPage + 1
 
-			if candidateRepo.Contributors >= numContributors &&
-				candidateRepo.Issues >= numIssues &&
-				len(candidateRepo.Languages) >= numLanguages {
+			// fetch number of commits as secondary query.
+			var q2 struct {
+				Repository struct {
+					DefaultBranchRef struct {
+						Target struct {
+							Commit struct {
+								History struct {
+									TotalCount int
+								}
+							} `graphql:"... on Commit"`
+						}
+					}
+				} `graphql:"repository(owner: $owner, name: $name)"`
+			}
+
+			variables2 := map[string]interface{}{
+				"owner": githubv4.String(owner),
+				"name":  githubv4.String(name),
+			}
+
+			if err := s.Client.Query(ctx, &q2, variables2); err != nil {
+				return nil, fmt.Errorf("failed to fetch repository commit count: %w", err)
+			}
+
+			candidateRepo.PrimaryBranchCommits = q2.Repository.DefaultBranchRef.Target.Commit.History.TotalCount
+
+			if candidateRepo.Contributors >= minContributors &&
+				candidateRepo.Contributors <= maxContributors &&
+				candidateRepo.Issues >= minIssues &&
+				candidateRepo.Issues <= maxIssues &&
+				len(candidateRepo.Languages) >= minLanguages &&
+				len(candidateRepo.Languages) <= maxLanguages &&
+				candidateRepo.PullRequests >= minPullRequests &&
+				candidateRepo.PullRequests <= maxPullRequests &&
+				candidateRepo.PrimaryBranchCommits >= minCommits &&
+				candidateRepo.PrimaryBranchCommits <= maxCommits {
 				acceptedRepos = append(acceptedRepos, candidateRepo)
-			} else {
-				log.Infof("skipping %s, %d contributors, %d issues",
+				log.Infof("\033[32m ADDED \033[0m %s,\t %d stars, %d contributors, %d issues, %d languages, %d prs, commits %d",
 					candidateRepo.Url,
+					candidateRepo.Stargazers,
 					candidateRepo.Contributors,
-					candidateRepo.Issues)
+					candidateRepo.Issues,
+					len(candidateRepo.Languages),
+					candidateRepo.PullRequests,
+					candidateRepo.PrimaryBranchCommits,
+				)
+			} else {
+				log.Infof("\033[31m SKIPPING \033[0m %s,\t %d stars, %d contributors, %d issues, %d languages, %d prs, commits %d",
+					candidateRepo.Url,
+					candidateRepo.Stargazers,
+					candidateRepo.Contributors,
+					candidateRepo.Issues,
+					len(candidateRepo.Languages),
+					candidateRepo.PullRequests,
+					candidateRepo.PrimaryBranchCommits,
+				)
+				skippedRepos++
 			}
 		}
 
+		// nolint: lll
+		log.Printf("\033[34m collected %d repos so far, skipped %d repos (%d remaining to collect)... \033[0m", len(acceptedRepos), skippedRepos, numRepos-len(acceptedRepos))
+
 		if !q.Search.PageInfo.HasNextPage {
+			if len(acceptedRepos) < numRepos {
+				log.Print("ran out of repos while scraping (out of pages)")
+			} else {
+				log.Print("successfully scraped all repos")
+			}
+
 			break
 		}
 
 		first := githubQuerySize
-		if (numberRepos - len(acceptedRepos)) < first {
-			first = numberRepos - len(acceptedRepos)
+		if (numRepos - len(acceptedRepos)) < first {
+			first = numRepos - len(acceptedRepos)
 		}
 
 		variables["first"] = githubv4.NewInt(githubv4.Int(first))
