@@ -17,11 +17,11 @@ import (
 )
 
 var (
-	ErrCommitEmpty   = errors.New("commit empty")
-	ErrBranchEmpty   = errors.New("branch empty")
-	ErrUnknownLineOp = errors.New("unknown line op")
-	ErrBadTagRefence = errors.New("empty reference, repo or commit for tag")
-	ErrNewCommitNil  = errors.New("commit is nil")
+	ErrCommitEmpty     = errors.New("commit empty")
+	ErrBranchEmpty     = errors.New("branch empty")
+	ErrUnknownLineOp   = errors.New("unknown line op")
+	ErrBadTagReference = errors.New("empty reference, repo or commit for tag")
+	ErrNewCommitNil    = errors.New("commit is nil")
 	// Hash of an empty git tree.
 	// $(printf '' | git hash-object -t tree --stdin).
 	EmptyTreeHash = "4b825dc642cb6eb9a060e54bf8d69288fbee4904"
@@ -250,7 +250,7 @@ type Tag struct {
 
 func NewTag(repo *git.Repository, o *plumbing.Reference, c *object.Commit) (*Tag, error) {
 	if o == nil || c == nil || repo == nil {
-		return nil, fmt.Errorf("%w: %v, %v, %v", ErrBadTagRefence, repo, o, c)
+		return nil, fmt.Errorf("%w: %v, %v, %v", ErrBadTagReference, repo, o, c)
 	}
 
 	commit, err := NewCommit(repo, c)
