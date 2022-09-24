@@ -21,6 +21,7 @@ var (
 	ErrBranchEmpty   = errors.New("branch empty")
 	ErrUnknownLineOp = errors.New("unknown line op")
 	ErrBadTagRefence = errors.New("empty reference, repo or commit for tag")
+	ErrNewCommitNil  = errors.New("commit is nil")
 	// Hash of an empty git tree.
 	// $(printf '' | git hash-object -t tree --stdin).
 	EmptyTreeHash = "4b825dc642cb6eb9a060e54bf8d69288fbee4904"
@@ -125,7 +126,7 @@ type Chunk struct {
 
 func NewCommit(r *git.Repository, c *object.Commit) (*Commit, error) {
 	if c == nil || r == nil {
-		return nil, fmt.Errorf("input for creating commit is nil: %v, %v", c, r) // nolint: goerr113
+		return nil, fmt.Errorf("%w: %v, %v", ErrNewCommitNil, c, r)
 	}
 
 	parentHashes := []Hash{}
