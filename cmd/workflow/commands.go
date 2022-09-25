@@ -104,6 +104,7 @@ func (c *Cmds) runLocalRepository(directory string) error {
 	return nil
 }
 
+// nolint: gocognit
 func (c *Cmds) BatchUrlCommand(cCtx *cli.Context, flags *Flags) error {
 	repositoryJsonPath := cCtx.Args().Get(0)
 	if repositoryJsonPath == "" {
@@ -122,7 +123,7 @@ func (c *Cmds) BatchUrlCommand(cCtx *cli.Context, flags *Flags) error {
 
 	var wg sync.WaitGroup
 	ctx, cancel := context.WithCancel(context.Background())
-	repoUrlChan := make(chan string, runtime.NumCPU())
+	repoUrlChan := make(chan string, len(repositories))
 
 	wg.Add(1)
 	go func() {
@@ -136,54 +137,64 @@ func (c *Cmds) BatchUrlCommand(cCtx *cli.Context, flags *Flags) error {
 	log.Infof("Running batch workflow detection on %d threads...", runtime.NumCPU())
 	for i := 0; i < runtime.NumCPU()-1; i++ {
 		go func() {
-			select {
-			case url := <-repoUrlChan:
-				var auth *githttp.BasicAuth
+			for {
+				select {
+				case url := <-repoUrlChan:
+					var auth *githttp.BasicAuth
 
-				if flags.GithubToken != "" {
-					auth = &githttp.BasicAuth{
-						Username: "non-empty",
-						Password: flags.GithubToken,
+					if flags.GithubToken != "" {
+						auth = &githttp.BasicAuth{
+							Username: "non-empty",
+							Password: flags.GithubToken,
+						}
+					} else {
+						log.Errorf("no github token passed in as flag (required for upgraded api limits): %v", err)
+						wg.Done()
+
+						return
 					}
-				} else {
-					log.Errorf("no github token passed in as flag (required for upgraded api limits): %v", err)
+
+					log.Infof("Cloning repository %s to memory...", url)
+
+					start := time.Now()
+					// nolint: contextcheck
+					repo, err := git.Clone(memory.NewStorage(), nil, &git.CloneOptions{
+						URL:  url,
+						Auth: auth,
+					})
+					if err != nil {
+						log.Errorf("failed to clone repository: %v", err)
+						wg.Done()
+
+						return
+					}
+
+					log.Infof("Finished repository %s to memory (%s)...", url, time.Since(start))
+					if err = c.runRules(repo, url); err != nil {
+						log.Errorf("failed to run rules: %v", err)
+						wg.Done()
+
+						return
+					}
+
 					wg.Done()
+
+				case <-time.After(time.Duration(flags.Timeout) * time.Second):
+					log.Error("Repository timed out, continuing...")
+					wg.Done()
+
+					wg.Done()
+
+				case <-ctx.Done():
+					log.Error("context finished")
 
 					return
 				}
 
-				log.Infof("Cloning repository %s to memory...", url)
-
-				start := time.Now()
-				// nolint: contextcheck
-				repo, err := git.Clone(memory.NewStorage(), nil, &git.CloneOptions{
-					URL:  url,
-					Auth: auth,
-				})
-				if err != nil {
-					log.Errorf("failed to clone repository: %v", err)
-					wg.Done()
-
-					return
+				log.Infof("Repositories left to process: %d", len(repoUrlChan))
+				if len(repoUrlChan) == 0 {
+					break
 				}
-
-				log.Infof("Finished repository %s to memory (%s)...", url, time.Since(start))
-				if err = c.runRules(repo, url); err != nil {
-					log.Errorf("failed to run rules: %v", err)
-					wg.Done()
-
-					return
-				}
-
-				wg.Done()
-			case <-time.After(time.Duration(flags.Timeout) * time.Second):
-				log.Error("repo Timed out, continuing")
-				wg.Done()
-
-				return
-
-			case <-ctx.Done():
-				return
 			}
 		}()
 	}
@@ -222,20 +233,14 @@ func (c *Cmds) runRules(repo *git.Repository, githubURL string) error {
 	log.Infof("Finished running rules for %s/%s (%s)", repoOwner, repoName, time.Since(start))
 
 	accScores := make(map[rule.WorkflowType]float64) // workflow types iota
-	for name, scores := range scoresMap {
+	for _, scores := range scoresMap {
 		accScores[rule.GitHubFlow] += scores.GitHubFlow.Value()
 		accScores[rule.GitFlow] += scores.GitFlow.Value()
 		accScores[rule.GitlabFlow] += scores.GitLabFlow.Value()
 		accScores[rule.OneFlow] += scores.OneFlow.Value()
 		accScores[rule.TrunkBased] += scores.TrunkBased.Value()
-
-		log.Infof("Rule: %s", name)
-		log.Infof("	GitHubFlow: %v", scores.GitHubFlow.Value())
-		log.Infof("	GitFlow: %v", scores.GitFlow.Value())
-		log.Infof("	GitLabFlow: %v", scores.GitLabFlow.Value())
-		log.Infof("	OneFlow: %v", scores.OneFlow.Value())
-		log.Infof("	TrunkBased: %v", scores.TrunkBased.Value())
 	}
+
 	// Detect workflow type.
 	// Slice as might be multiple equal scores.
 	var detectedWorkflow []string
