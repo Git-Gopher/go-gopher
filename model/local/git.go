@@ -369,27 +369,31 @@ func NewGitModel(repo *git.Repository) (*GitModel, error) {
 	var ts []*Tag
 	if err = tagIter.ForEach(func(o *plumbing.Reference) error {
 		if o == nil {
-			return fmt.Errorf("nil tag reference: %w", err)
+			log.Warnf("nil tag reference, skipping...")
+
+			return nil //nolint: nilerr
 		}
 
 		var c *object.Commit
 		c, err = repo.CommitObject(o.Hash())
 		if err != nil {
-			return fmt.Errorf("failed to find head commit from branch: %w", err)
+			log.Warnf("failed to find head commit from branch: %v, skipping...", err)
+
+			return nil //nolint: nilerr
 		}
 
 		var t *Tag
 		t, err = NewTag(repo, o, c)
 		if err != nil {
-			log.Warnf("Unable to create tag: %v", err)
+			log.Warnf("Unable to create tag: %v, skipping...", err)
 
-			return err
+			return nil //nolint: nilerr
 		}
 		ts = append(ts, t)
 
 		return nil
 	}); err != nil {
-		return nil, fmt.Errorf("bad tag iteration: %w", err)
+		return nil, fmt.Errorf("bad tag iteration: %w, skipping...", err)
 	}
 
 	gitModel.Tags = ts
