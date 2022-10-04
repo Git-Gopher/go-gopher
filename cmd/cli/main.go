@@ -187,9 +187,8 @@ func main() {
 				}
 
 				for i, r := range allRepos {
-					// nolint: nestif
 					log.Infof("Scraping repo %d (%d repos remaining...)", i+1, len(allRepos)-(i+1))
-					if strings.HasPrefix(*r.Name, prefix) {
+					if strings.HasPrefix(*r.Name, prefix) { // nolint: nestif
 						var arts *github.ArtifactList
 						arts, _, err = client.Actions.ListArtifacts(ctx.Context, org, *r.Name, nil)
 						if err != nil {
@@ -197,7 +196,11 @@ func main() {
 						}
 
 						for i2, a := range arts.Artifacts {
-							log.Printf("Downloading artifacts %d for %s/%s (%d artifacts remaining)...\n", i2+1, org, *r.Name, len(arts.Artifacts)-(i2+1))
+							log.Printf("Downloading artifacts %d for %s/%s (%d artifacts remaining)...\n",
+								i2+1,
+								org,
+								*r.Name,
+								len(arts.Artifacts)-(i2+1))
 							var url *url.URL
 							url, _, err = client.Actions.DownloadArtifact(ctx.Context, org, *r.Name, *a.ID, true)
 							if err != nil {
@@ -216,6 +219,7 @@ func main() {
 							log.Printf("Unzipping %s...\n", pathZip)
 							if err = utils.Unzip(pathZip, pathJson); err != nil {
 								log.Warnf("failed to unzip log contents: %v", err)
+
 								continue
 							}
 						}
