@@ -186,8 +186,9 @@ func main() {
 					opt.Page = resp.NextPage
 				}
 
-				for _, r := range allRepos {
+				for i, r := range allRepos {
 					// nolint: nestif
+					log.Infof("Scraping repo %d (%d repos remaining...)", i+1, len(allRepos)-(i+1))
 					if strings.HasPrefix(*r.Name, prefix) {
 						var arts *github.ArtifactList
 						arts, _, err = client.Actions.ListArtifacts(ctx.Context, org, *r.Name, nil)
@@ -195,8 +196,8 @@ func main() {
 							log.Fatalf("Could not fetch artifact list: %v", err)
 						}
 
-						for _, a := range arts.Artifacts {
-							log.Printf("Downloading artifacts for %s/%s...\n", org, *r.Name)
+						for i2, a := range arts.Artifacts {
+							log.Printf("Downloading artifacts %d for %s/%s (%d artifacts remaining)...\n", i2+1, org, *r.Name, len(arts.Artifacts)-(i2+1))
 							var url *url.URL
 							url, _, err = client.Actions.DownloadArtifact(ctx.Context, org, *r.Name, *a.ID, true)
 							if err != nil {
@@ -214,7 +215,8 @@ func main() {
 
 							log.Printf("Unzipping %s...\n", pathZip)
 							if err = utils.Unzip(pathZip, pathJson); err != nil {
-								log.Fatalf("failed to unzip log contents: %v", err)
+								log.Warnf("failed to unzip log contents: %v", err)
+								continue
 							}
 						}
 					} else {
