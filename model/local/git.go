@@ -9,7 +9,6 @@ import (
 	"strings"
 	"time"
 
-	"github.com/bluekeyes/go-gitdiff/gitdiff"
 	"github.com/go-git/go-git/v5"
 	"github.com/go-git/go-git/v5/plumbing"
 	"github.com/go-git/go-git/v5/plumbing/object"
@@ -76,8 +75,6 @@ type DiffPoint struct {
 	LinesAdded   int64
 	LinesDeleted int64
 }
-
-type File = gitdiff.File
 
 type Commit struct {
 	// Hash of the commit object.
@@ -358,7 +355,9 @@ func NewGitModel(repo *git.Repository) (*GitModel, error) {
 		var c *object.Commit
 		c, err = repo.CommitObject(o.Hash())
 		if err != nil {
-			return fmt.Errorf("failed to find head commit from branch: %w", err)
+			// if commit for this tag is not found
+			// we can skip it
+			return nil
 		}
 
 		t := NewTag(repo, o, c)

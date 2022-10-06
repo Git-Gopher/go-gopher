@@ -25,7 +25,9 @@ func NewCrissCrossMerged(w *rule.Weights) *rule.Runner {
 
 				_, found, total, _ := d.Result()
 
-				score = float64(found) / float64(total)
+				if total != 0 {
+					score = float64(found) / float64(total)
+				}
 
 				return nil
 			}(); err != nil {

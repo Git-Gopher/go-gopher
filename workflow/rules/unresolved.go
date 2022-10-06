@@ -25,7 +25,9 @@ func NewUnresolved(w *rule.Weights) *rule.Runner {
 
 				violated, _, total, _ := d.Result()
 
-				score = float64(violated) / float64(total)
+				if total != 0 {
+					score = float64(violated) / float64(total)
+				}
 
 				return nil
 			}(); err != nil {

@@ -1,0 +1,86 @@
+[
+  {
+    "url": "https://github.com/davesag/irMobile",
+    "workflow": "GitFlow"
+  },
+  {
+    "url": "https://github.com/PaytmLabs/masala_base",
+    "workflow": "GitFlow"
+  },
+  {
+    "url": "https://github.com/flow-build/diagram-builder",
+    "workflow": "GitHub Flow"
+  },
+  {
+    "url": "https://github.com/WPPlugins/cbqe-edit-flow",
+    "workflow": "GitHub Flow"
+  },
+  {
+    "url": "https://github.com/chicio/RangeUISlider",
+    "workflow": "GitHub Flow"
+  },
+  {
+    "url": "https://github.com/PaytmLabs/masala_base",
+    "workflow": "GitHub Flow"
+  },
+  {
+    "url": "https://github.com/dperuo/northwestern-mutual",
+    "workflow": "GitHub Flow"
+  },
+  {
+    "url": "https://github.com/gurupratap-matharu/survey",
+    "workflow": "GitHub Flow"
+  },
+  {
+    "url": "https://github.com/yeqown/gitlab-flow",
+    "workflow": "GitLab Flow"
+  },
+  {
+    "url": "https://github.com/muma378/moose",
+    "workflow": "GitLab Flow"
+  },
+  {
+    "url": "https://github.com/acritelli/rucksack",
+    "workflow": "OneFlow"
+  },
+  {
+    "url": "https://github.com/filecoin-project/go-fil-markets",
+    "workflow": "OneFlow"
+  },
+  {
+    "url": "https://github.com/cyvive/cyvive",
+    "workflow": "OneFlow"
+  },
+  {
+    "url": "https://github.com/glotzerlab/signac-dashboard",
+    "workflow": "OneFlow"
+  },
+  {
+    "url": "https://github.com/larpix/larpix-control",
+    "workflow": "OneFlow"
+  },
+  {
+    "url": "https://github.com/ofxa/openfx",
+    "workflow": "OneFlow"
+  },
+  {
+    "url": "https://github.com/keidrych/dynamic-k8pi",
+    "workflow": "OneFlow"
+  },
+  {
+    "url": "https://github.com/MissaDavid/wtfsic",
+    "workflow": "Trunk-based"
+  },
+  {
+    "url": "https://github.com/loewen-digital/frontend-scaffold",
+    "workflow": "Trunk-based"
+  },
+  {
+    "url": "https://github.com/Trainect/template-project",
+    "workflow": "Trunk-based"
+  },
+  {
+    "url": "https://github.com/munterfi/eRTG3D",
+    "workflow": "Trunk-based"
+  }
+]

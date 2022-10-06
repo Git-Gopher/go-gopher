@@ -1,0 +1,2776 @@
+[
+  {
+    "name": "jilu",
+    "url": "https://github.com/rustic-games/jilu",
+    "stargazers": 100,
+    "languages": [
+      "Rust"
+    ],
+    "issues": 20,
+    "pullRequests": 8,
+    "contributors": 3,
+    "primaryBranchCommits": 49,
+    "ruleCherryPick": 0.05660377358490566,
+    "ruleCherryPickRelease": 0,
+    "ruleCrissCrossMerged": 0,
+    "ruleFeatureBranching": 0,
+    "rulehotfix": 0,
+    "ruleUnresolved": 0
+  },
+  {
+    "name": "FTPbucket",
+    "url": "https://github.com/Wanchai/FTPbucket",
+    "stargazers": 100,
+    "languages": [
+      "PHP"
+    ],
+    "issues": 23,
+    "pullRequests": 9,
+    "contributors": 7,
+    "primaryBranchCommits": 66,
+    "ruleCherryPick": 0.12121212121212122,
+    "ruleCherryPickRelease": 0,
+    "ruleCrissCrossMerged": 0,
+    "ruleFeatureBranching": 0.5,
+    "rulehotfix": 0.14285714285714285,
+    "ruleUnresolved": 0
+  },
+  {
+    "name": "trello-clone-vue-laravel",
+    "url": "https://github.com/neoighodaro-articles/trello-clone-vue-laravel",
+    "stargazers": 100,
+    "languages": [
+      "PHP",
+      "Vue",
+      "HTML"
+    ],
+    "issues": 12,
+    "pullRequests": 16,
+    "contributors": 6,
+    "primaryBranchCommits": 19,
+    "ruleCherryPick": 0.07407407407407407,
+    "ruleCherryPickRelease": 0,
+    "ruleCrissCrossMerged": 0,
+    "ruleFeatureBranching": 0.4,
+    "rulehotfix": 0,
+    "ruleUnresolved": 0
+  },
+  {
+    "name": "virtuoso-sparql-endpoint-quickstart",
+    "url": "https://github.com/dbpedia/virtuoso-sparql-endpoint-quickstart",
+    "stargazers": 100,
+    "languages": [
+      "Shell",
+      "Dockerfile"
+    ],
+    "issues": 24,
+    "pullRequests": 6,
+    "contributors": 12,
+    "primaryBranchCommits": 95,
+    "ruleCherryPick": 0.07368421052631578,
+    "ruleCherryPickRelease": 0,
+    "ruleCrissCrossMerged": 0,
+    "ruleFeatureBranching": 0,
+    "rulehotfix": 0,
+    "ruleUnresolved": 0
+  },
+  {
+    "name": "TuriBot",
+    "url": "https://github.com/davtur19/TuriBot",
+    "stargazers": 100,
+    "languages": [
+      "PHP"
+    ],
+    "issues": 9,
+    "pullRequests": 7,
+    "contributors": 4,
+    "primaryBranchCommits": 56,
+    "ruleCherryPick": 0.07608695652173914,
+    "ruleCherryPickRelease": 0,
+    "ruleCrissCrossMerged": 0,
+    "ruleFeatureBranching": 0.18181818181818182,
+    "rulehotfix": 0,
+    "ruleUnresolved": 0
+  },
+  {
+    "name": "OpenVX-sample-impl",
+    "url": "https://github.com/KhronosGroup/OpenVX-sample-impl",
+    "stargazers": 100,
+    "languages": [
+      "Makefile",
+      "Python",
+      "CMake",
+      "XSLT",
+      "C",
+      "C++",
+      "Shell"
+    ],
+    "issues": 22,
+    "pullRequests": 28,
+    "contributors": 13,
+    "primaryBranchCommits": 74,
+    "ruleCherryPick": 0.16216216216216217,
+    "ruleCherryPickRelease": 0,
+    "ruleCrissCrossMerged": 0,
+    "ruleFeatureBranching": 0.5,
+    "rulehotfix": 0,
+    "ruleUnresolved": 0
+  },
+  {
+    "name": "xeger",
+    "url": "https://github.com/crdoconnor/xeger",
+    "stargazers": 100,
+    "languages": [
+      "Python"
+    ],
+    "issues": 9,
+    "pullRequests": 11,
+    "contributors": 9,
+    "primaryBranchCommits": 38,
+    "ruleCherryPick": 0.21052631578947367,
+    "ruleCherryPickRelease": 0,
+    "ruleCrissCrossMerged": 0,
+    "ruleFeatureBranching": 0.5555555555555556,
+    "rulehotfix": 0,
+    "ruleUnresolved": 0
+  },
+  {
+    "name": "jupyterplot",
+    "url": "https://github.com/lvwerra/jupyterplot",
+    "stargazers": 100,
+    "languages": [
+      "Jupyter Notebook",
+      "Python",
+      "Makefile"
+    ],
+    "issues": 7,
+    "pullRequests": 9,
+    "contributors": 3,
+    "primaryBranchCommits": 27,
+    "ruleCherryPick": 0.06666666666666667,
+    "ruleCherryPickRelease": 0,
+    "ruleCrissCrossMerged": 0,
+    "ruleFeatureBranching": 0.16666666666666666,
+    "rulehotfix": 0,
+    "ruleUnresolved": 0
+  },
+  {
+    "name": "paletter",
+    "url": "https://github.com/AndreaCirilloAC/paletter",
+    "stargazers": 100,
+    "languages": [
+      "R"
+    ],
+    "issues": 5,
+    "pullRequests": 5,
+    "contributors": 6,
+    "primaryBranchCommits": 53,
+    "ruleCherryPick": 0.05357142857142857,
+    "ruleCherryPickRelease": 0,
+    "ruleCrissCrossMerged": 0,
+    "ruleFeatureBranching": 0.3333333333333333,
+    "rulehotfix": 0,
+    "ruleUnresolved": 0
+  },
+  {
+    "name": "Adafruit-SSD1351-library",
+    "url": "https://github.com/adafruit/Adafruit-SSD1351-library",
+    "stargazers": 100,
+    "languages": [
+      "C++"
+    ],
+    "issues": 17,
+    "pullRequests": 20,
+    "contributors": 13,
+    "primaryBranchCommits": 75,
+    "ruleCherryPick": 0.12643678160919541,
+    "ruleCherryPickRelease": 0,
+    "ruleCrissCrossMerged": 0,
+    "ruleFeatureBranching": 0.5,
+    "rulehotfix": 0,
+    "ruleUnresolved": 0
+  },
+  {
+    "name": "cli-real-favicon",
+    "url": "https://github.com/RealFaviconGenerator/cli-real-favicon",
+    "stargazers": 100,
+    "languages": [
+      "JavaScript",
+      "HTML"
+    ],
+    "issues": 15,
+    "pullRequests": 7,
+    "contributors": 7,
+    "primaryBranchCommits": 26,
+    "ruleCherryPick": 0.20689655172413793,
+    "ruleCherryPickRelease": 0,
+    "ruleCrissCrossMerged": 0,
+    "ruleFeatureBranching": 0.25,
+    "rulehotfix": 0,
+    "ruleUnresolved": 0
+  },
+  {
+    "name": "godot-LDtk-import",
+    "url": "https://github.com/levigilbert/godot-LDtk-import",
+    "stargazers": 100,
+    "languages": [
+      "GDScript"
+    ],
+    "issues": 11,
+    "pullRequests": 13,
+    "contributors": 8,
+    "primaryBranchCommits": 85,
+    "ruleCherryPick": 0.08235294117647059,
+    "ruleCherryPickRelease": 0,
+    "ruleCrissCrossMerged": 0,
+    "ruleFeatureBranching": 0.25,
+    "rulehotfix": 0,
+    "ruleUnresolved": 0
+  },
+  {
+    "name": "api-examples",
+    "url": "https://github.com/OpenFIGI/api-examples",
+    "stargazers": 100,
+    "languages": [
+      "C#",
+      "Shell",
+      "JavaScript",
+      "Python",
+      "C",
+      "C++",
+      "Java",
+      "Dockerfile",
+      "PowerShell"
+    ],
+    "issues": 37,
+    "pullRequests": 15,
+    "contributors": 7,
+    "primaryBranchCommits": 36,
+    "ruleCherryPick": 0.18421052631578946,
+    "ruleCherryPickRelease": 0,
+    "ruleCrissCrossMerged": 0,
+    "ruleFeatureBranching": 0.8,
+    "rulehotfix": 0,
+    "ruleUnresolved": 0
+  },
+  {
+    "name": "entcache",
+    "url": "https://github.com/ariga/entcache",
+    "stargazers": 100,
+    "languages": [
+      "Go"
+    ],
+    "issues": 6,
+    "pullRequests": 17,
+    "contributors": 6,
+    "primaryBranchCommits": 20,
+    "ruleCherryPick": 0,
+    "ruleCherryPickRelease": 0,
+    "ruleCrissCrossMerged": 0,
+    "ruleFeatureBranching": 0,
+    "rulehotfix": 0,
+    "ruleUnresolved": 0
+  },
+  {
+    "name": "vim-codepainter",
+    "url": "https://github.com/lpinilla/vim-codepainter",
+    "stargazers": 100,
+    "languages": [
+      "Vim Script"
+    ],
+    "issues": 20,
+    "pullRequests": 8,
+    "contributors": 5,
+    "primaryBranchCommits": 77,
+    "ruleCherryPick": 0.06493506493506493,
+    "ruleCherryPickRelease": 0,
+    "ruleCrissCrossMerged": 0,
+    "ruleFeatureBranching": 0.375,
+    "rulehotfix": 0,
+    "ruleUnresolved": 0
+  },
+  {
+    "name": "SocialDistancingAI",
+    "url": "https://github.com/aqeelanwar/SocialDistancingAI",
+    "stargazers": 101,
+    "languages": [
+      "Python"
+    ],
+    "issues": 16,
+    "pullRequests": 17,
+    "contributors": 3,
+    "primaryBranchCommits": 9,
+    "ruleCherryPick": 0.21428571428571427,
+    "ruleCherryPickRelease": 0,
+    "ruleCrissCrossMerged": 0,
+    "ruleFeatureBranching": 0,
+    "rulehotfix": 0,
+    "ruleUnresolved": 0
+  },
+  {
+    "name": "totp-cli",
+    "url": "https://github.com/WhyNotHugo/totp-cli",
+    "stargazers": 100,
+    "languages": [
+      "Makefile",
+      "Python",
+      "Shell"
+    ],
+    "issues": 6,
+    "pullRequests": 13,
+    "contributors": 12,
+    "primaryBranchCommits": 64,
+    "ruleCherryPick": 0.109375,
+    "ruleCherryPickRelease": 0,
+    "ruleCrissCrossMerged": 0,
+    "ruleFeatureBranching": 0.46153846153846156,
+    "rulehotfix": 0,
+    "ruleUnresolved": 0
+  },
+  {
+    "name": "VoodooSMBus",
+    "url": "https://github.com/VoodooSMBus/VoodooSMBus",
+    "stargazers": 100,
+    "languages": [
+      "C++",
+      "C"
+    ],
+    "issues": 34,
+    "pullRequests": 32,
+    "contributors": 4,
+    "primaryBranchCommits": 75,
+    "ruleCherryPick": 0.09259259259259259,
+    "ruleCherryPickRelease": 0,
+    "ruleCrissCrossMerged": 0,
+    "ruleFeatureBranching": 0.6923076923076923,
+    "rulehotfix": 0,
+    "ruleUnresolved": 0
+  },
+  {
+    "name": "JNUSTool",
+    "url": "https://github.com/Maschell/JNUSTool",
+    "stargazers": 100,
+    "languages": [
+      "Java"
+    ],
+    "issues": 11,
+    "pullRequests": 5,
+    "contributors": 3,
+    "primaryBranchCommits": 54,
+    "ruleCherryPick": 0.018518518518518517,
+    "ruleCherryPickRelease": 0,
+    "ruleCrissCrossMerged": 0,
+    "ruleFeatureBranching": 0,
+    "rulehotfix": 0,
+    "ruleUnresolved": 0
+  },
+  {
+    "name": "spin-sleep",
+    "url": "https://github.com/alexheretic/spin-sleep",
+    "stargazers": 100,
+    "languages": [
+      "Rust",
+      "Shell"
+    ],
+    "issues": 9,
+    "pullRequests": 7,
+    "contributors": 3,
+    "primaryBranchCommits": 60,
+    "ruleCherryPick": 0,
+    "ruleCherryPickRelease": 0,
+    "ruleCrissCrossMerged": 0,
+    "ruleFeatureBranching": 0,
+    "rulehotfix": 0,
+    "ruleUnresolved": 0
+  },
+  {
+    "name": "laravel-reactions",
+    "url": "https://github.com/qirolab/laravel-reactions",
+    "stargazers": 100,
+    "languages": [
+      "PHP"
+    ],
+    "issues": 5,
+    "pullRequests": 21,
+    "contributors": 3,
+    "primaryBranchCommits": 62,
+    "ruleCherryPick": 0.078125,
+    "ruleCherryPickRelease": 0,
+    "ruleCrissCrossMerged": 0,
+    "ruleFeatureBranching": 0,
+    "rulehotfix": 0,
+    "ruleUnresolved": 0
+  },
+  {
+    "name": "solpp",
+    "url": "https://github.com/merklejerk/solpp",
+    "stargazers": 100,
+    "languages": [
+      "ANTLR",
+      "Shell",
+      "JavaScript",
+      "Solidity"
+    ],
+    "issues": 9,
+    "pullRequests": 14,
+    "contributors": 7,
+    "primaryBranchCommits": 59,
+    "ruleCherryPick": 0.06349206349206349,
+    "ruleCherryPickRelease": 0,
+    "ruleCrissCrossMerged": 0,
+    "ruleFeatureBranching": 0.25,
+    "rulehotfix": 0,
+    "ruleUnresolved": 0
+  },
+  {
+    "name": "radix",
+    "url": "https://github.com/luislavena/radix",
+    "stargazers": 100,
+    "languages": [
+      "Crystal"
+    ],
+    "issues": 13,
+    "pullRequests": 19,
+    "contributors": 5,
+    "primaryBranchCommits": 82,
+    "ruleCherryPick": 0.17073170731707318,
+    "ruleCherryPickRelease": 0,
+    "ruleCrissCrossMerged": 0,
+    "ruleFeatureBranching": 0.23809523809523808,
+    "rulehotfix": 0,
+    "ruleUnresolved": 0
+  },
+  {
+    "name": "falcon-auth",
+    "url": "https://github.com/vertexcover-io/falcon-auth",
+    "stargazers": 100,
+    "languages": [
+      "Python"
+    ],
+    "issues": 16,
+    "pullRequests": 28,
+    "contributors": 11,
+    "primaryBranchCommits": 40,
+    "ruleCherryPick": 0.16666666666666666,
+    "ruleCherryPickRelease": 0,
+    "ruleCrissCrossMerged": 0,
+    "ruleFeatureBranching": 0.5,
+    "rulehotfix": 0,
+    "ruleUnresolved": 0
+  },
+  {
+    "name": "exam-assessments",
+    "url": "https://github.com/Build5Nines/exam-assessments",
+    "stargazers": 100,
+    "languages": [
+      "HTML"
+    ],
+    "issues": 16,
+    "pullRequests": 10,
+    "contributors": 7,
+    "primaryBranchCommits": 41,
+    "ruleCherryPick": 0.04878048780487805,
+    "ruleCherryPickRelease": 0,
+    "ruleCrissCrossMerged": 0,
+    "ruleFeatureBranching": 0,
+    "rulehotfix": 0,
+    "ruleUnresolved": 0
+  },
+  {
+    "name": "xmm7360-usb-modeswitch",
+    "url": "https://github.com/xmm7360/xmm7360-usb-modeswitch",
+    "stargazers": 100,
+    "languages": [
+      "Makefile",
+      "C",
+      "Shell"
+    ],
+    "issues": 26,
+    "pullRequests": 6,
+    "contributors": 8,
+    "primaryBranchCommits": 22,
+    "ruleCherryPick": 0.045454545454545456,
+    "ruleCherryPickRelease": 0,
+    "ruleCrissCrossMerged": 0,
+    "ruleFeatureBranching": 0,
+    "rulehotfix": 0,
+    "ruleUnresolved": 0
+  },
+  {
+    "name": "magic-wormhole-mailbox-server",
+    "url": "https://github.com/magic-wormhole/magic-wormhole-mailbox-server",
+    "stargazers": 100,
+    "languages": [
+      "Python",
+      "Batchfile"
+    ],
+    "issues": 23,
+    "pullRequests": 8,
+    "contributors": 6,
+    "primaryBranchCommits": 84,
+    "ruleCherryPick": 0.011764705882352941,
+    "ruleCherryPickRelease": 0,
+    "ruleCrissCrossMerged": 0,
+    "ruleFeatureBranching": 0.3333333333333333,
+    "rulehotfix": 0,
+    "ruleUnresolved": 0
+  },
+  {
+    "name": "inspec-gcp-cis-benchmark",
+    "url": "https://github.com/GoogleCloudPlatform/inspec-gcp-cis-benchmark",
+    "stargazers": 100,
+    "languages": [
+      "Ruby",
+      "Dockerfile"
+    ],
+    "issues": 30,
+    "pullRequests": 67,
+    "contributors": 14,
+    "primaryBranchCommits": 81,
+    "ruleCherryPick": 0.18823529411764706,
+    "ruleCherryPickRelease": 0,
+    "ruleCrissCrossMerged": 0,
+    "ruleFeatureBranching": 0.20689655172413793,
+    "rulehotfix": 0.125,
+    "ruleUnresolved": 0
+  },
+  {
+    "name": "SunFounder_SensorKit_for_RPi2",
+    "url": "https://github.com/sunfounder/SunFounder_SensorKit_for_RPi2",
+    "stargazers": 100,
+    "languages": [
+      "C",
+      "Makefile",
+      "Shell",
+      "Python"
+    ],
+    "issues": 9,
+    "pullRequests": 8,
+    "contributors": 13,
+    "primaryBranchCommits": 64,
+    "ruleCherryPick": 0.1527777777777778,
+    "ruleCherryPickRelease": 0,
+    "ruleCrissCrossMerged": 0,
+    "ruleFeatureBranching": 0.125,
+    "rulehotfix": 0,
+    "ruleUnresolved": 0
+  },
+  {
+    "name": "docker-wordpress-theme-setup",
+    "url": "https://github.com/davidyeiser/docker-wordpress-theme-setup",
+    "stargazers": 100,
+    "languages": [
+      "PHP",
+      "CSS"
+    ],
+    "issues": 7,
+    "pullRequests": 6,
+    "contributors": 4,
+    "primaryBranchCommits": 11,
+    "ruleCherryPick": 0.18181818181818182,
+    "ruleCherryPickRelease": 0,
+    "ruleCrissCrossMerged": 0,
+    "ruleFeatureBranching": 0,
+    "rulehotfix": 0,
+    "ruleUnresolved": 0
+  },
+  {
+    "name": "caret-pos",
+    "url": "https://github.com/deshiknaves/caret-pos",
+    "stargazers": 100,
+    "languages": [
+      "JavaScript",
+      "HTML",
+      "CSS"
+    ],
+    "issues": 10,
+    "pullRequests": 35,
+    "contributors": 7,
+    "primaryBranchCommits": 98,
+    "ruleCherryPick": 0.07079646017699115,
+    "ruleCherryPickRelease": 0,
+    "ruleCrissCrossMerged": 0,
+    "ruleFeatureBranching": 0.5,
+    "rulehotfix": 0.14285714285714285,
+    "ruleUnresolved": 0
+  },
+  {
+    "name": "shadergarden",
+    "url": "https://github.com/tonarino/shadergarden",
+    "stargazers": 100,
+    "languages": [
+      "Rust",
+      "GLSL"
+    ],
+    "issues": 6,
+    "pullRequests": 5,
+    "contributors": 6,
+    "primaryBranchCommits": 43,
+    "ruleCherryPick": 0.09302325581395349,
+    "ruleCherryPickRelease": 0,
+    "ruleCrissCrossMerged": 0,
+    "ruleFeatureBranching": 0.125,
+    "rulehotfix": 0,
+    "ruleUnresolved": 0
+  },
+  {
+    "name": "Custom-Grid-View",
+    "url": "https://github.com/zsarnett/Custom-Grid-View",
+    "stargazers": 100,
+    "languages": [
+      "JavaScript",
+      "TypeScript"
+    ],
+    "issues": 24,
+    "pullRequests": 9,
+    "contributors": 4,
+    "primaryBranchCommits": 36,
+    "ruleCherryPick": 0.08333333333333333,
+    "ruleCherryPickRelease": 0,
+    "ruleCrissCrossMerged": 0,
+    "ruleFeatureBranching": 0.7777777777777778,
+    "rulehotfix": 0,
+    "ruleUnresolved": 0
+  },
+  {
+    "name": "AutoHotkey-script-Open-Show-Apps",
+    "url": "https://github.com/JuanmaMenendez/AutoHotkey-script-Open-Show-Apps",
+    "stargazers": 100,
+    "languages": [
+      "AutoHotkey"
+    ],
+    "issues": 7,
+    "pullRequests": 6,
+    "contributors": 3,
+    "primaryBranchCommits": 45,
+    "ruleCherryPick": 0.022222222222222223,
+    "ruleCherryPickRelease": 0,
+    "ruleCrissCrossMerged": 0,
+    "ruleFeatureBranching": 0,
+    "rulehotfix": 0.2,
+    "ruleUnresolved": 0
+  },
+  {
+    "name": "vscode-devtoys",
+    "url": "https://github.com/KeJunMao/vscode-devtoys",
+    "stargazers": 100,
+    "languages": [
+      "JavaScript",
+      "TypeScript",
+      "Svelte",
+      "Handlebars",
+      "CSS",
+      "Vue",
+      "Shell"
+    ],
+    "issues": 9,
+    "pullRequests": 7,
+    "contributors": 5,
+    "primaryBranchCommits": 71,
+    "ruleCherryPick": 0.028169014084507043,
+    "ruleCherryPickRelease": 0,
+    "ruleCrissCrossMerged": 0,
+    "ruleFeatureBranching": 0.14285714285714285,
+    "rulehotfix": 0,
+    "ruleUnresolved": 0
+  },
+  {
+    "name": "pip_search",
+    "url": "https://github.com/victorgarric/pip_search",
+    "stargazers": 100,
+    "languages": [
+      "Python",
+      "Makefile"
+    ],
+    "issues": 14,
+    "pullRequests": 17,
+    "contributors": 13,
+    "primaryBranchCommits": 85,
+    "ruleCherryPick": 0.15294117647058825,
+    "ruleCherryPickRelease": 0,
+    "ruleCrissCrossMerged": 0,
+    "ruleFeatureBranching": 0.3333333333333333,
+    "rulehotfix": 0,
+    "ruleUnresolved": 0
+  },
+  {
+    "name": "animate-rails",
+    "url": "https://github.com/camelmasa/animate-rails",
+    "stargazers": 100,
+    "languages": [
+      "Ruby"
+    ],
+    "issues": 8,
+    "pullRequests": 40,
+    "contributors": 10,
+    "primaryBranchCommits": 59,
+    "ruleCherryPick": 0.11864406779661017,
+    "ruleCherryPickRelease": 0,
+    "ruleCrissCrossMerged": 0,
+    "ruleFeatureBranching": 0.4166666666666667,
+    "rulehotfix": 0,
+    "ruleUnresolved": 0
+  },
+  {
+    "name": "btest-opensource",
+    "url": "https://github.com/samm-git/btest-opensource",
+    "stargazers": 100,
+    "languages": [
+      "Perl",
+      "Makefile",
+      "C",
+      "Shell",
+      "M4"
+    ],
+    "issues": 11,
+    "pullRequests": 6,
+    "contributors": 7,
+    "primaryBranchCommits": 58,
+    "ruleCherryPick": 0.06896551724137931,
+    "ruleCherryPickRelease": 0,
+    "ruleCrissCrossMerged": 0,
+    "ruleFeatureBranching": 0.6666666666666666,
+    "rulehotfix": 0,
+    "ruleUnresolved": 0
+  },
+  {
+    "name": "Quad64",
+    "url": "https://github.com/DavidSM64/Quad64",
+    "stargazers": 100,
+    "languages": [
+      "C#"
+    ],
+    "issues": 12,
+    "pullRequests": 16,
+    "contributors": 13,
+    "primaryBranchCommits": 93,
+    "ruleCherryPick": 0.08602150537634409,
+    "ruleCherryPickRelease": 0,
+    "ruleCrissCrossMerged": 0,
+    "ruleFeatureBranching": 0.3125,
+    "rulehotfix": 0.2,
+    "ruleUnresolved": 0
+  },
+  {
+    "name": "react-native-camera-hooks",
+    "url": "https://github.com/reime005/react-native-camera-hooks",
+    "stargazers": 100,
+    "languages": [
+      "JavaScript",
+      "TypeScript",
+      "Java",
+      "Objective-C",
+      "Starlark"
+    ],
+    "issues": 7,
+    "pullRequests": 74,
+    "contributors": 9,
+    "primaryBranchCommits": 77,
+    "ruleCherryPick": 0.08411214953271028,
+    "ruleCherryPickRelease": 0,
+    "ruleCrissCrossMerged": 0,
+    "ruleFeatureBranching": 0.1875,
+    "rulehotfix": 0,
+    "ruleUnresolved": 0
+  },
+  {
+    "name": "markdown-live-preview",
+    "url": "https://github.com/tanabe/markdown-live-preview",
+    "stargazers": 100,
+    "languages": [
+      "CSS",
+      "JavaScript",
+      "HTML",
+      "Shell"
+    ],
+    "issues": 18,
+    "pullRequests": 7,
+    "contributors": 3,
+    "primaryBranchCommits": 52,
+    "ruleCherryPick": null,
+    "ruleCherryPickRelease": null,
+    "ruleCrissCrossMerged": null,
+    "ruleFeatureBranching": null,
+    "rulehotfix": null,
+    "ruleUnresolved": null
+  },
+  {
+    "name": "MySqlSwiftNative",
+    "url": "https://github.com/mcorega/MySqlSwiftNative",
+    "stargazers": 100,
+    "languages": [
+      "Swift",
+      "Makefile"
+    ],
+    "issues": 38,
+    "pullRequests": 8,
+    "contributors": 7,
+    "primaryBranchCommits": 88,
+    "ruleCherryPick": 0.011363636363636364,
+    "ruleCherryPickRelease": 0,
+    "ruleCrissCrossMerged": 0,
+    "ruleFeatureBranching": 0,
+    "rulehotfix": 0,
+    "ruleUnresolved": 0
+  },
+  {
+    "name": "recoil-nexus",
+    "url": "https://github.com/luisanton-io/recoil-nexus",
+    "stargazers": 100,
+    "languages": [
+      "TypeScript"
+    ],
+    "issues": 19,
+    "pullRequests": 6,
+    "contributors": 7,
+    "primaryBranchCommits": 65,
+    "ruleCherryPick": 0.09230769230769231,
+    "ruleCherryPickRelease": 0,
+    "ruleCrissCrossMerged": 0,
+    "ruleFeatureBranching": 0,
+    "rulehotfix": 0.4,
+    "ruleUnresolved": 0
+  },
+  {
+    "name": "spirv-reflect-rs",
+    "url": "https://github.com/gwihlidal/spirv-reflect-rs",
+    "stargazers": 100,
+    "languages": [
+      "Rust"
+    ],
+    "issues": 5,
+    "pullRequests": 14,
+    "contributors": 12,
+    "primaryBranchCommits": 90,
+    "ruleCherryPick": 0.09036144578313253,
+    "ruleCherryPickRelease": 0,
+    "ruleCrissCrossMerged": 0,
+    "ruleFeatureBranching": 0.2727272727272727,
+    "rulehotfix": 0,
+    "ruleUnresolved": 0
+  },
+  {
+    "name": "architectui-react-theme-free",
+    "url": "https://github.com/DashboardPack/architectui-react-theme-free",
+    "stargazers": 100,
+    "languages": [
+      "JavaScript",
+      "HTML",
+      "CSS"
+    ],
+    "issues": 28,
+    "pullRequests": 13,
+    "contributors": 6,
+    "primaryBranchCommits": 26,
+    "ruleCherryPick": 0.46153846153846156,
+    "ruleCherryPickRelease": 0,
+    "ruleCrissCrossMerged": 0,
+    "ruleFeatureBranching": 0.8,
+    "rulehotfix": 0,
+    "ruleUnresolved": 0
+  },
+  {
+    "name": "mcs-api",
+    "url": "https://github.com/kubernetes-sigs/mcs-api",
+    "stargazers": 100,
+    "languages": [
+      "Dockerfile",
+      "Makefile",
+      "Go",
+      "Python",
+      "Shell",
+      "Starlark"
+    ],
+    "issues": 8,
+    "pullRequests": 8,
+    "contributors": 8,
+    "primaryBranchCommits": 30,
+    "ruleCherryPick": 0.06666666666666667,
+    "ruleCherryPickRelease": 0,
+    "ruleCrissCrossMerged": 0,
+    "ruleFeatureBranching": 0.75,
+    "rulehotfix": 0,
+    "ruleUnresolved": 0
+  },
+  {
+    "name": "lsp-editor-adapter",
+    "url": "https://github.com/wylieconlon/lsp-editor-adapter",
+    "stargazers": 100,
+    "languages": [
+      "HTML",
+      "JavaScript",
+      "CSS",
+      "TypeScript"
+    ],
+    "issues": 14,
+    "pullRequests": 55,
+    "contributors": 4,
+    "primaryBranchCommits": 47,
+    "ruleCherryPick": 0.06097560975609756,
+    "ruleCherryPickRelease": 0,
+    "ruleCrissCrossMerged": 0,
+    "ruleFeatureBranching": 0.04,
+    "rulehotfix": 0,
+    "ruleUnresolved": 0
+  },
+  {
+    "name": "APSI",
+    "url": "https://github.com/microsoft/APSI",
+    "stargazers": 100,
+    "languages": [
+      "CMake",
+      "C++",
+      "C",
+      "Assembly",
+      "Shell",
+      "Python"
+    ],
+    "issues": 31,
+    "pullRequests": 7,
+    "contributors": 7,
+    "primaryBranchCommits": 68,
+    "ruleCherryPick": 0.014492753623188406,
+    "ruleCherryPickRelease": 0,
+    "ruleCrissCrossMerged": 0,
+    "ruleFeatureBranching": 0.16666666666666666,
+    "rulehotfix": 0,
+    "ruleUnresolved": 0
+  },
+  {
+    "name": "fluxter",
+    "url": "https://github.com/lexmag/fluxter",
+    "stargazers": 100,
+    "languages": [
+      "Elixir"
+    ],
+    "issues": 14,
+    "pullRequests": 25,
+    "contributors": 5,
+    "primaryBranchCommits": 65,
+    "ruleCherryPick": 0,
+    "ruleCherryPickRelease": 0,
+    "ruleCrissCrossMerged": 0,
+    "ruleFeatureBranching": 0,
+    "rulehotfix": 0.07142857142857142,
+    "ruleUnresolved": 0
+  },
+  {
+    "name": "rowing-monitor",
+    "url": "https://github.com/GoogleChromeLabs/rowing-monitor",
+    "stargazers": 103,
+    "languages": [
+      "JavaScript",
+      "HTML"
+    ],
+    "issues": 7,
+    "pullRequests": 28,
+    "contributors": 5,
+    "primaryBranchCommits": 45,
+    "ruleCherryPick": null,
+    "ruleCherryPickRelease": null,
+    "ruleCrissCrossMerged": null,
+    "ruleFeatureBranching": null,
+    "rulehotfix": null,
+    "ruleUnresolved": null
+  },
+  {
+    "name": "spectomic",
+    "url": "https://github.com/Provisdom/spectomic",
+    "stargazers": 101,
+    "languages": [
+      "Clojure",
+      "Shell"
+    ],
+    "issues": 6,
+    "pullRequests": 13,
+    "contributors": 6,
+    "primaryBranchCommits": 80,
+    "ruleCherryPick": 0.06172839506172839,
+    "ruleCherryPickRelease": 0,
+    "ruleCrissCrossMerged": 0,
+    "ruleFeatureBranching": 0,
+    "rulehotfix": 0,
+    "ruleUnresolved": 0
+  },
+  {
+    "name": "instagram-scraping",
+    "url": "https://github.com/rzlyp/instagram-scraping",
+    "stargazers": 100,
+    "languages": [
+      "JavaScript"
+    ],
+    "issues": 23,
+    "pullRequests": 8,
+    "contributors": 9,
+    "primaryBranchCommits": 56,
+    "ruleCherryPick": 0.08928571428571429,
+    "ruleCherryPickRelease": 0,
+    "ruleCrissCrossMerged": 0,
+    "ruleFeatureBranching": 0.2727272727272727,
+    "rulehotfix": 0,
+    "ruleUnresolved": 0
+  },
+  {
+    "name": "discovery",
+    "url": "https://github.com/thecodingmachine/discovery",
+    "stargazers": 100,
+    "languages": [
+      "Smarty",
+      "PHP",
+      "Shell"
+    ],
+    "issues": 6,
+    "pullRequests": 8,
+    "contributors": 5,
+    "primaryBranchCommits": 83,
+    "ruleCherryPick": 0.0297029702970297,
+    "ruleCherryPickRelease": 0,
+    "ruleCrissCrossMerged": 0,
+    "ruleFeatureBranching": 0.6153846153846154,
+    "rulehotfix": 0,
+    "ruleUnresolved": 0
+  },
+  {
+    "name": "ipfetch",
+    "url": "https://github.com/trakBan/ipfetch",
+    "stargazers": 100,
+    "languages": [
+      "Shell"
+    ],
+    "issues": 11,
+    "pullRequests": 11,
+    "contributors": 5,
+    "primaryBranchCommits": 51,
+    "ruleCherryPick": 0.11764705882352941,
+    "ruleCherryPickRelease": 0,
+    "ruleCrissCrossMerged": 0,
+    "ruleFeatureBranching": 0.6153846153846154,
+    "rulehotfix": 0,
+    "ruleUnresolved": 0
+  },
+  {
+    "name": "fuckigg",
+    "url": "https://github.com/Pheeeeenom/fuckigg",
+    "stargazers": 100,
+    "languages": [
+      "C#"
+    ],
+    "issues": 8,
+    "pullRequests": 8,
+    "contributors": 5,
+    "primaryBranchCommits": 32,
+    "ruleCherryPick": 0.09090909090909091,
+    "ruleCherryPickRelease": 0,
+    "ruleCrissCrossMerged": 0,
+    "ruleFeatureBranching": 0.3333333333333333,
+    "rulehotfix": 0,
+    "ruleUnresolved": 0
+  },
+  {
+    "name": "PREMIUM-DGH-BOT-V3",
+    "url": "https://github.com/Sintya4/PREMIUM-DGH-BOT-V3",
+    "stargazers": 100,
+    "languages": [
+      "JavaScript"
+    ],
+    "issues": 16,
+    "pullRequests": 42,
+    "contributors": 4,
+    "primaryBranchCommits": 46,
+    "ruleCherryPick": 0.0672782874617737,
+    "ruleCherryPickRelease": 0,
+    "ruleCrissCrossMerged": 0,
+    "ruleFeatureBranching": 0,
+    "rulehotfix": 0,
+    "ruleUnresolved": 0
+  },
+  {
+    "name": "kirby-annotator",
+    "url": "https://github.com/sylvainjule/kirby-annotator",
+    "stargazers": 100,
+    "languages": [
+      "JavaScript",
+      "PHP",
+      "Vue",
+      "SCSS"
+    ],
+    "issues": 16,
+    "pullRequests": 5,
+    "contributors": 6,
+    "primaryBranchCommits": 98,
+    "ruleCherryPick": 0.030612244897959183,
+    "ruleCherryPickRelease": 0,
+    "ruleCrissCrossMerged": 0,
+    "ruleFeatureBranching": 0.16666666666666666,
+    "rulehotfix": 0,
+    "ruleUnresolved": 0
+  },
+  {
+    "name": "laravel-favicon-extractor",
+    "url": "https://github.com/stefanbauer/laravel-favicon-extractor",
+    "stargazers": 100,
+    "languages": [
+      "PHP"
+    ],
+    "issues": 6,
+    "pullRequests": 10,
+    "contributors": 8,
+    "primaryBranchCommits": 22,
+    "ruleCherryPick": 0.4090909090909091,
+    "ruleCherryPickRelease": 0,
+    "ruleCrissCrossMerged": 0,
+    "ruleFeatureBranching": 0.07692307692307693,
+    "rulehotfix": 0.07692307692307693,
+    "ruleUnresolved": 0
+  },
+  {
+    "name": "goctl-swagger",
+    "url": "https://github.com/zeromicro/goctl-swagger",
+    "stargazers": 100,
+    "languages": [
+      "Go",
+      "Shell",
+      "JavaScript",
+      "PHP"
+    ],
+    "issues": 35,
+    "pullRequests": 18,
+    "contributors": 14,
+    "primaryBranchCommits": 53,
+    "ruleCherryPick": 0.1320754716981132,
+    "ruleCherryPickRelease": 0,
+    "ruleCrissCrossMerged": 0,
+    "ruleFeatureBranching": 0.45454545454545453,
+    "rulehotfix": 0,
+    "ruleUnresolved": 0
+  },
+  {
+    "name": "redoodle",
+    "url": "https://github.com/palantir/redoodle",
+    "stargazers": 99,
+    "languages": [
+      "CSS",
+      "TypeScript"
+    ],
+    "issues": 8,
+    "pullRequests": 58,
+    "contributors": 12,
+    "primaryBranchCommits": 91,
+    "ruleCherryPick": 0.039603960396039604,
+    "ruleCherryPickRelease": 0,
+    "ruleCrissCrossMerged": 0,
+    "ruleFeatureBranching": 0.7142857142857143,
+    "rulehotfix": 0,
+    "ruleUnresolved": 0
+  },
+  {
+    "name": "react-responsive-picture",
+    "url": "https://github.com/braposo/react-responsive-picture",
+    "stargazers": 100,
+    "languages": [
+      "JavaScript",
+      "TypeScript"
+    ],
+    "issues": 20,
+    "pullRequests": 36,
+    "contributors": 7,
+    "primaryBranchCommits": 98,
+    "ruleCherryPick": 0.05384615384615385,
+    "ruleCherryPickRelease": 0,
+    "ruleCrissCrossMerged": 0,
+    "ruleFeatureBranching": 0.14285714285714285,
+    "rulehotfix": 0,
+    "ruleUnresolved": 0
+  },
+  {
+    "name": "stocker",
+    "url": "https://github.com/jcamiloangarita/stocker",
+    "stargazers": 100,
+    "languages": [
+      "Python",
+      "Jupyter Notebook"
+    ],
+    "issues": 19,
+    "pullRequests": 14,
+    "contributors": 5,
+    "primaryBranchCommits": 60,
+    "ruleCherryPick": 0.06557377049180328,
+    "ruleCherryPickRelease": 0,
+    "ruleCrissCrossMerged": 0,
+    "ruleFeatureBranching": 0.36363636363636365,
+    "rulehotfix": 0.2,
+    "ruleUnresolved": 0
+  },
+  {
+    "name": "pdf_flutter",
+    "url": "https://github.com/erluxman/pdf_flutter",
+    "stargazers": 100,
+    "languages": [
+      "Java",
+      "Ruby",
+      "Objective-C",
+      "Dart"
+    ],
+    "issues": 35,
+    "pullRequests": 13,
+    "contributors": 8,
+    "primaryBranchCommits": 67,
+    "ruleCherryPick": 0.1044776119402985,
+    "ruleCherryPickRelease": 0,
+    "ruleCrissCrossMerged": 0,
+    "ruleFeatureBranching": 0.7272727272727273,
+    "rulehotfix": 0,
+    "ruleUnresolved": 0
+  },
+  {
+    "name": "commonmark-web",
+    "url": "https://github.com/commonmark/commonmark-web",
+    "stargazers": 100,
+    "languages": [
+      "CSS",
+      "HTML",
+      "JavaScript"
+    ],
+    "issues": 20,
+    "pullRequests": 14,
+    "contributors": 12,
+    "primaryBranchCommits": 73,
+    "ruleCherryPick": 0.3150684931506849,
+    "ruleCherryPickRelease": 0,
+    "ruleCrissCrossMerged": 0,
+    "ruleFeatureBranching": 0.23076923076923078,
+    "rulehotfix": 0,
+    "ruleUnresolved": 0
+  },
+  {
+    "name": "pvae",
+    "url": "https://github.com/emilemathieu/pvae",
+    "stargazers": 100,
+    "languages": [
+      "Python"
+    ],
+    "issues": 6,
+    "pullRequests": 8,
+    "contributors": 4,
+    "primaryBranchCommits": 11,
+    "ruleCherryPick": 0.36363636363636365,
+    "ruleCherryPickRelease": 0,
+    "ruleCrissCrossMerged": 0,
+    "ruleFeatureBranching": 0.75,
+    "rulehotfix": 0,
+    "ruleUnresolved": 0
+  },
+  {
+    "name": "laravel-embed",
+    "url": "https://github.com/BenSampo/laravel-embed",
+    "stargazers": 104,
+    "languages": [
+      "PHP",
+      "Blade"
+    ],
+    "issues": 7,
+    "pullRequests": 6,
+    "contributors": 6,
+    "primaryBranchCommits": 50,
+    "ruleCherryPick": 0.1,
+    "ruleCherryPickRelease": 0,
+    "ruleCrissCrossMerged": 0,
+    "ruleFeatureBranching": 0,
+    "rulehotfix": 0,
+    "ruleUnresolved": 0
+  },
+  {
+    "name": "django-admin-menu",
+    "url": "https://github.com/cdrx/django-admin-menu",
+    "stargazers": 100,
+    "languages": [
+      "Python",
+      "HTML",
+      "SCSS",
+      "Makefile"
+    ],
+    "issues": 22,
+    "pullRequests": 14,
+    "contributors": 11,
+    "primaryBranchCommits": 50,
+    "ruleCherryPick": 0.0847457627118644,
+    "ruleCherryPickRelease": 0,
+    "ruleCrissCrossMerged": 0,
+    "ruleFeatureBranching": 0.2,
+    "rulehotfix": 0,
+    "ruleUnresolved": 0
+  },
+  {
+    "name": "u-dicom-viewer",
+    "url": "https://github.com/webnamics/u-dicom-viewer",
+    "stargazers": 100,
+    "languages": [
+      "HTML",
+      "CSS",
+      "JavaScript"
+    ],
+    "issues": 13,
+    "pullRequests": 36,
+    "contributors": 4,
+    "primaryBranchCommits": 28,
+    "ruleCherryPick": 0.07246376811594203,
+    "ruleCherryPickRelease": 0,
+    "ruleCrissCrossMerged": 0,
+    "ruleFeatureBranching": 0,
+    "rulehotfix": 0,
+    "ruleUnresolved": 0
+  },
+  {
+    "name": "alfred-mdn",
+    "url": "https://github.com/klaascuvelier/alfred-mdn",
+    "stargazers": 100,
+    "languages": [
+      "JavaScript"
+    ],
+    "issues": 13,
+    "pullRequests": 11,
+    "contributors": 6,
+    "primaryBranchCommits": 46,
+    "ruleCherryPick": 0.16,
+    "ruleCherryPickRelease": 0,
+    "ruleCrissCrossMerged": 0,
+    "ruleFeatureBranching": 0.36363636363636365,
+    "rulehotfix": 0,
+    "ruleUnresolved": 0
+  },
+  {
+    "name": "BF-it",
+    "url": "https://github.com/elikaski/BF-it",
+    "stargazers": 100,
+    "languages": [
+      "Python",
+      "Makefile",
+      "C++"
+    ],
+    "issues": 35,
+    "pullRequests": 37,
+    "contributors": 7,
+    "primaryBranchCommits": 93,
+    "ruleCherryPick": 0.043010752688172046,
+    "ruleCherryPickRelease": 0,
+    "ruleCrissCrossMerged": 0,
+    "ruleFeatureBranching": 0.24,
+    "rulehotfix": 0,
+    "ruleUnresolved": 0
+  },
+  {
+    "name": "RQDA",
+    "url": "https://github.com/Ronggui/RQDA",
+    "stargazers": 100,
+    "languages": [
+      "R"
+    ],
+    "issues": 41,
+    "pullRequests": 9,
+    "contributors": 4,
+    "primaryBranchCommits": 54,
+    "ruleCherryPick": 0.037037037037037035,
+    "ruleCherryPickRelease": 0,
+    "ruleCrissCrossMerged": 0,
+    "ruleFeatureBranching": 0,
+    "rulehotfix": 0,
+    "ruleUnresolved": 0
+  },
+  {
+    "name": "composer-include-files",
+    "url": "https://github.com/funkjedi/composer-include-files",
+    "stargazers": 100,
+    "languages": [
+      "PHP"
+    ],
+    "issues": 7,
+    "pullRequests": 7,
+    "contributors": 6,
+    "primaryBranchCommits": 12,
+    "ruleCherryPick": 0.16666666666666666,
+    "ruleCherryPickRelease": 0,
+    "ruleCrissCrossMerged": 0,
+    "ruleFeatureBranching": 0.16666666666666666,
+    "rulehotfix": 0,
+    "ruleUnresolved": 0
+  },
+  {
+    "name": "messenger-test",
+    "url": "https://github.com/zenstruck/messenger-test",
+    "stargazers": 100,
+    "languages": [
+      "PHP"
+    ],
+    "issues": 20,
+    "pullRequests": 32,
+    "contributors": 5,
+    "primaryBranchCommits": 76,
+    "ruleCherryPick": 0.05194805194805195,
+    "ruleCherryPickRelease": 0,
+    "ruleCrissCrossMerged": 0,
+    "ruleFeatureBranching": 0.16666666666666666,
+    "rulehotfix": 0,
+    "ruleUnresolved": 0
+  },
+  {
+    "name": "nova-url-field",
+    "url": "https://github.com/inspheric/nova-url-field",
+    "stargazers": 100,
+    "languages": [
+      "Vue",
+      "JavaScript",
+      "PHP"
+    ],
+    "issues": 13,
+    "pullRequests": 25,
+    "contributors": 6,
+    "primaryBranchCommits": 52,
+    "ruleCherryPick": 0.04838709677419355,
+    "ruleCherryPickRelease": 0,
+    "ruleCrissCrossMerged": 0,
+    "ruleFeatureBranching": 0.058823529411764705,
+    "rulehotfix": 0,
+    "ruleUnresolved": 0
+  },
+  {
+    "name": "vuejs-medium-editor",
+    "url": "https://github.com/manuelgeek/vuejs-medium-editor",
+    "stargazers": 100,
+    "languages": [
+      "JavaScript",
+      "HTML",
+      "Vue",
+      "CSS"
+    ],
+    "issues": 17,
+    "pullRequests": 44,
+    "contributors": 4,
+    "primaryBranchCommits": 25,
+    "ruleCherryPick": 0.05555555555555555,
+    "ruleCherryPickRelease": 0,
+    "ruleCrissCrossMerged": 0,
+    "ruleFeatureBranching": 0.6,
+    "rulehotfix": 0.5,
+    "ruleUnresolved": 0
+  },
+  {
+    "name": "ycy-intellij-plugin",
+    "url": "https://github.com/fantasticmao/ycy-intellij-plugin",
+    "stargazers": 100,
+    "languages": [
+      "Java",
+      "Shell"
+    ],
+    "issues": 20,
+    "pullRequests": 12,
+    "contributors": 3,
+    "primaryBranchCommits": 61,
+    "ruleCherryPick": 0.04918032786885246,
+    "ruleCherryPickRelease": 0,
+    "ruleCrissCrossMerged": 0,
+    "ruleFeatureBranching": 0.5833333333333334,
+    "rulehotfix": 0,
+    "ruleUnresolved": 0
+  },
+  {
+    "name": "container-desktop",
+    "url": "https://github.com/container-desktop/container-desktop",
+    "stargazers": 100,
+    "languages": [
+      "Dockerfile",
+      "PowerShell",
+      "Go",
+      "C#",
+      "Shell"
+    ],
+    "issues": 32,
+    "pullRequests": 41,
+    "contributors": 6,
+    "primaryBranchCommits": 54,
+    "ruleCherryPick": 0.024242424242424242,
+    "ruleCherryPickRelease": 0,
+    "ruleCrissCrossMerged": 0,
+    "ruleFeatureBranching": 0,
+    "rulehotfix": 0.09090909090909091,
+    "ruleUnresolved": 0
+  },
+  {
+    "name": "DualShock4-emulator",
+    "url": "https://github.com/r57zone/DualShock4-emulator",
+    "stargazers": 100,
+    "languages": [
+      "C++",
+      "C"
+    ],
+    "issues": 45,
+    "pullRequests": 6,
+    "contributors": 4,
+    "primaryBranchCommits": 66,
+    "ruleCherryPick": 0.045454545454545456,
+    "ruleCherryPickRelease": 0,
+    "ruleCrissCrossMerged": 0,
+    "ruleFeatureBranching": 0,
+    "rulehotfix": 0,
+    "ruleUnresolved": 0
+  },
+  {
+    "name": "firecracker-task-driver",
+    "url": "https://github.com/cneira/firecracker-task-driver",
+    "stargazers": 100,
+    "languages": [
+      "HCL",
+      "Go",
+      "Shell"
+    ],
+    "issues": 13,
+    "pullRequests": 9,
+    "contributors": 7,
+    "primaryBranchCommits": 50,
+    "ruleCherryPick": 0.06,
+    "ruleCherryPickRelease": 0,
+    "ruleCrissCrossMerged": 0,
+    "ruleFeatureBranching": 0.45454545454545453,
+    "rulehotfix": 0,
+    "ruleUnresolved": 0
+  },
+  {
+    "name": "p4vasp",
+    "url": "https://github.com/orest-d/p4vasp",
+    "stargazers": 100,
+    "languages": [
+      "Makefile",
+      "Python",
+      "Shell",
+      "CSS",
+      "C++",
+      "C",
+      "Objective-C"
+    ],
+    "issues": 21,
+    "pullRequests": 5,
+    "contributors": 4,
+    "primaryBranchCommits": 13,
+    "ruleCherryPick": 0.07692307692307693,
+    "ruleCherryPickRelease": 0,
+    "ruleCrissCrossMerged": 0,
+    "ruleFeatureBranching": 0.5,
+    "rulehotfix": 0,
+    "ruleUnresolved": 0
+  },
+  {
+    "name": "ftx-prog",
+    "url": "https://github.com/richardeoin/ftx-prog",
+    "stargazers": 101,
+    "languages": [
+      "C",
+      "Makefile"
+    ],
+    "issues": 11,
+    "pullRequests": 18,
+    "contributors": 11,
+    "primaryBranchCommits": 69,
+    "ruleCherryPick": 0.11594202898550725,
+    "ruleCherryPickRelease": 0,
+    "ruleCrissCrossMerged": 0,
+    "ruleFeatureBranching": 0.5454545454545454,
+    "rulehotfix": 0,
+    "ruleUnresolved": 0
+  },
+  {
+    "name": "gr-mixalot",
+    "url": "https://github.com/unsynchronized/gr-mixalot",
+    "stargazers": 100,
+    "languages": [
+      "Python",
+      "C",
+      "C++",
+      "CMake"
+    ],
+    "issues": 37,
+    "pullRequests": 12,
+    "contributors": 10,
+    "primaryBranchCommits": 93,
+    "ruleCherryPick": null,
+    "ruleCherryPickRelease": null,
+    "ruleCrissCrossMerged": null,
+    "ruleFeatureBranching": null,
+    "rulehotfix": null,
+    "ruleUnresolved": null
+  },
+  {
+    "name": "blockchat",
+    "url": "https://github.com/devslopes/blockchat",
+    "stargazers": 100,
+    "languages": [
+      "JavaScript"
+    ],
+    "issues": 7,
+    "pullRequests": 8,
+    "contributors": 3,
+    "primaryBranchCommits": 45,
+    "ruleCherryPick": 0.020833333333333332,
+    "ruleCherryPickRelease": 0,
+    "ruleCrissCrossMerged": 0,
+    "ruleFeatureBranching": 0.1,
+    "rulehotfix": 0,
+    "ruleUnresolved": 0
+  },
+  {
+    "name": "vue-tabs-with-active-line",
+    "url": "https://github.com/karambafe/vue-tabs-with-active-line",
+    "stargazers": 100,
+    "languages": [
+      "JavaScript",
+      "Vue",
+      "HTML"
+    ],
+    "issues": 6,
+    "pullRequests": 28,
+    "contributors": 5,
+    "primaryBranchCommits": 69,
+    "ruleCherryPick": 0.08108108108108109,
+    "ruleCherryPickRelease": 0,
+    "ruleCrissCrossMerged": 0,
+    "ruleFeatureBranching": 0.15384615384615385,
+    "rulehotfix": 0,
+    "ruleUnresolved": 0
+  },
+  {
+    "name": "camconvs",
+    "url": "https://github.com/jmfacil/camconvs",
+    "stargazers": 100,
+    "languages": [
+      "Python",
+      "Jupyter Notebook"
+    ],
+    "issues": 6,
+    "pullRequests": 18,
+    "contributors": 3,
+    "primaryBranchCommits": 13,
+    "ruleCherryPick": 0.058823529411764705,
+    "ruleCherryPickRelease": 0,
+    "ruleCrissCrossMerged": 0,
+    "ruleFeatureBranching": 0.25,
+    "rulehotfix": 0,
+    "ruleUnresolved": 0
+  },
+  {
+    "name": "protoplex",
+    "url": "https://github.com/SapphicCode/protoplex",
+    "stargazers": 100,
+    "languages": [
+      "Dockerfile",
+      "Go"
+    ],
+    "issues": 6,
+    "pullRequests": 10,
+    "contributors": 3,
+    "primaryBranchCommits": 45,
+    "ruleCherryPick": 0,
+    "ruleCherryPickRelease": 0,
+    "ruleCrissCrossMerged": 0,
+    "ruleFeatureBranching": 0,
+    "rulehotfix": 0.3333333333333333,
+    "ruleUnresolved": 0
+  },
+  {
+    "name": "usb64",
+    "url": "https://github.com/Ryzee119/usb64",
+    "stargazers": 100,
+    "languages": [
+      "C",
+      "C++"
+    ],
+    "issues": 16,
+    "pullRequests": 46,
+    "contributors": 4,
+    "primaryBranchCommits": 80,
+    "ruleCherryPick": 0.40789473684210525,
+    "ruleCherryPickRelease": 0,
+    "ruleCrissCrossMerged": 0,
+    "ruleFeatureBranching": 0,
+    "rulehotfix": 0,
+    "ruleUnresolved": 0
+  },
+  {
+    "name": "simple-tasks",
+    "url": "https://github.com/pplonski/simple-tasks",
+    "stargazers": 100,
+    "languages": [
+      "Python",
+      "Shell",
+      "Dockerfile",
+      "HTML",
+      "JavaScript",
+      "CSS"
+    ],
+    "issues": 12,
+    "pullRequests": 29,
+    "contributors": 3,
+    "primaryBranchCommits": 61,
+    "ruleCherryPick": 0.1650485436893204,
+    "ruleCherryPickRelease": 0,
+    "ruleCrissCrossMerged": 0,
+    "ruleFeatureBranching": 0.05555555555555555,
+    "rulehotfix": 0,
+    "ruleUnresolved": 0
+  },
+  {
+    "name": "ch341eeprom",
+    "url": "https://github.com/command-tab/ch341eeprom",
+    "stargazers": 100,
+    "languages": [
+      "C",
+      "Makefile"
+    ],
+    "issues": 7,
+    "pullRequests": 10,
+    "contributors": 12,
+    "primaryBranchCommits": 66,
+    "ruleCherryPick": 0.045454545454545456,
+    "ruleCherryPickRelease": 0,
+    "ruleCrissCrossMerged": 0,
+    "ruleFeatureBranching": 0.75,
+    "rulehotfix": 0,
+    "ruleUnresolved": 0
+  },
+  {
+    "name": "react-jitsi",
+    "url": "https://github.com/gatteo/react-jitsi",
+    "stargazers": 100,
+    "languages": [
+      "JavaScript",
+      "TypeScript",
+      "HTML",
+      "CSS"
+    ],
+    "issues": 26,
+    "pullRequests": 33,
+    "contributors": 6,
+    "primaryBranchCommits": 27,
+    "ruleCherryPick": 0.10869565217391304,
+    "ruleCherryPickRelease": 0,
+    "ruleCrissCrossMerged": 0,
+    "ruleFeatureBranching": 0.3333333333333333,
+    "rulehotfix": 0,
+    "ruleUnresolved": 0
+  },
+  {
+    "name": "Xamarin-Custom-Controls",
+    "url": "https://github.com/DottorPagliaccius/Xamarin-Custom-Controls",
+    "stargazers": 100,
+    "languages": [
+      "C#"
+    ],
+    "issues": 39,
+    "pullRequests": 5,
+    "contributors": 8,
+    "primaryBranchCommits": 67,
+    "ruleCherryPick": 0.014084507042253521,
+    "ruleCherryPickRelease": 0,
+    "ruleCrissCrossMerged": 0,
+    "ruleFeatureBranching": 0,
+    "rulehotfix": 0,
+    "ruleUnresolved": 0
+  },
+  {
+    "name": "Printama",
+    "url": "https://github.com/anggastudio/Printama",
+    "stargazers": 100,
+    "languages": [
+      "Java"
+    ],
+    "issues": 10,
+    "pullRequests": 6,
+    "contributors": 6,
+    "primaryBranchCommits": 99,
+    "ruleCherryPick": 0.03,
+    "ruleCherryPickRelease": 0,
+    "ruleCrissCrossMerged": 0,
+    "ruleFeatureBranching": 0.3,
+    "rulehotfix": 0,
+    "ruleUnresolved": 0
+  },
+  {
+    "name": "aws-secretsmanager-caching-python",
+    "url": "https://github.com/aws/aws-secretsmanager-caching-python",
+    "stargazers": 100,
+    "languages": [
+      "Python"
+    ],
+    "issues": 13,
+    "pullRequests": 17,
+    "contributors": 6,
+    "primaryBranchCommits": 51,
+    "ruleCherryPick": 0.2549019607843137,
+    "ruleCherryPickRelease": 0,
+    "ruleCrissCrossMerged": 0,
+    "ruleFeatureBranching": 0.5714285714285714,
+    "rulehotfix": 0,
+    "ruleUnresolved": 0
+  },
+  {
+    "name": "vscode-google-translate",
+    "url": "https://github.com/funkyremi/vscode-google-translate",
+    "stargazers": 100,
+    "languages": [
+      "JavaScript",
+      "TypeScript"
+    ],
+    "issues": 62,
+    "pullRequests": 24,
+    "contributors": 11,
+    "primaryBranchCommits": 98,
+    "ruleCherryPick": 0.10576923076923077,
+    "ruleCherryPickRelease": 0,
+    "ruleCrissCrossMerged": 0,
+    "ruleFeatureBranching": 0.26666666666666666,
+    "rulehotfix": 0,
+    "ruleUnresolved": 0
+  },
+  {
+    "name": "issues-translate-action",
+    "url": "https://github.com/usthe/issues-translate-action",
+    "stargazers": 100,
+    "languages": [
+      "TypeScript",
+      "JavaScript"
+    ],
+    "issues": 31,
+    "pullRequests": 39,
+    "contributors": 3,
+    "primaryBranchCommits": 65,
+    "ruleCherryPick": 0.0449438202247191,
+    "ruleCherryPickRelease": 0,
+    "ruleCrissCrossMerged": 0,
+    "ruleFeatureBranching": 0,
+    "rulehotfix": 0,
+    "ruleUnresolved": 0
+  },
+  {
+    "name": "meteor-reactive-aggregate",
+    "url": "https://github.com/JcBernack/meteor-reactive-aggregate",
+    "stargazers": 100,
+    "languages": [
+      "JavaScript"
+    ],
+    "issues": 45,
+    "pullRequests": 13,
+    "contributors": 10,
+    "primaryBranchCommits": 27,
+    "ruleCherryPick": 0.18518518518518517,
+    "ruleCherryPickRelease": 0,
+    "ruleCrissCrossMerged": 0,
+    "ruleFeatureBranching": 0.5,
+    "rulehotfix": 0,
+    "ruleUnresolved": 0
+  },
+  {
+    "name": "vue-element-admin-ts",
+    "url": "https://github.com/cklwblove/vue-element-admin-ts",
+    "stargazers": 103,
+    "languages": [
+      "JavaScript",
+      "TypeScript",
+      "Shell",
+      "HTML",
+      "Vue",
+      "CSS",
+      "Less"
+    ],
+    "issues": 6,
+    "pullRequests": 34,
+    "contributors": 3,
+    "primaryBranchCommits": 98,
+    "ruleCherryPick": 0.05982905982905983,
+    "ruleCherryPickRelease": 0,
+    "ruleCrissCrossMerged": 0,
+    "ruleFeatureBranching": 0.7272727272727273,
+    "rulehotfix": 0,
+    "ruleUnresolved": 0
+  },
+  {
+    "name": "svelte-tailwind-snowpack",
+    "url": "https://github.com/agneym/svelte-tailwind-snowpack",
+    "stargazers": 100,
+    "languages": [
+      "JavaScript",
+      "HTML",
+      "Svelte"
+    ],
+    "issues": 6,
+    "pullRequests": 22,
+    "contributors": 7,
+    "primaryBranchCommits": 61,
+    "ruleCherryPick": 0.3114754098360656,
+    "ruleCherryPickRelease": 0,
+    "ruleCrissCrossMerged": 0,
+    "ruleFeatureBranching": 0.8181818181818182,
+    "rulehotfix": 0,
+    "ruleUnresolved": 0
+  },
+  {
+    "name": "angular2-ladda",
+    "url": "https://github.com/moff/angular2-ladda",
+    "stargazers": 100,
+    "languages": [
+      "TypeScript",
+      "HTML",
+      "CSS"
+    ],
+    "issues": 45,
+    "pullRequests": 34,
+    "contributors": 9,
+    "primaryBranchCommits": 84,
+    "ruleCherryPick": 0.011627906976744186,
+    "ruleCherryPickRelease": 0,
+    "ruleCrissCrossMerged": 0,
+    "ruleFeatureBranching": 0,
+    "rulehotfix": 0,
+    "ruleUnresolved": 0
+  },
+  {
+    "name": "vue-sku",
+    "url": "https://github.com/rossroma/vue-sku",
+    "stargazers": 100,
+    "languages": [
+      "JavaScript",
+      "HTML",
+      "Vue"
+    ],
+    "issues": 6,
+    "pullRequests": 23,
+    "contributors": 3,
+    "primaryBranchCommits": 19,
+    "ruleCherryPick": 0.05405405405405406,
+    "ruleCherryPickRelease": 0,
+    "ruleCrissCrossMerged": 0,
+    "ruleFeatureBranching": 0,
+    "rulehotfix": 0,
+    "ruleUnresolved": 0
+  },
+  {
+    "name": "vuegraf",
+    "url": "https://github.com/jertel/vuegraf",
+    "stargazers": 100,
+    "languages": [
+      "Dockerfile",
+      "Python",
+      "Shell"
+    ],
+    "issues": 20,
+    "pullRequests": 10,
+    "contributors": 7,
+    "primaryBranchCommits": 95,
+    "ruleCherryPick": 0.05263157894736842,
+    "ruleCherryPickRelease": 0,
+    "ruleCrissCrossMerged": 0,
+    "ruleFeatureBranching": 0.2857142857142857,
+    "rulehotfix": 0,
+    "ruleUnresolved": 0
+  },
+  {
+    "name": "twilio-video-react-hooks",
+    "url": "https://github.com/philnash/twilio-video-react-hooks",
+    "stargazers": 100,
+    "languages": [
+      "HTML",
+      "JavaScript",
+      "CSS",
+      "Shell"
+    ],
+    "issues": 45,
+    "pullRequests": 31,
+    "contributors": 4,
+    "primaryBranchCommits": 77,
+    "ruleCherryPick": 0.3333333333333333,
+    "ruleCherryPickRelease": 0,
+    "ruleCrissCrossMerged": 0,
+    "ruleFeatureBranching": 0.8275862068965517,
+    "rulehotfix": 0,
+    "ruleUnresolved": 0
+  },
+  {
+    "name": "FAMSA",
+    "url": "https://github.com/refresh-bio/FAMSA",
+    "stargazers": 100,
+    "languages": [
+      "C++",
+      "C",
+      "Makefile",
+      "Shell"
+    ],
+    "issues": 25,
+    "pullRequests": 10,
+    "contributors": 5,
+    "primaryBranchCommits": 78,
+    "ruleCherryPick": 0.033707865168539325,
+    "ruleCherryPickRelease": 0,
+    "ruleCrissCrossMerged": 0,
+    "ruleFeatureBranching": 0.018867924528301886,
+    "rulehotfix": 0.06666666666666667,
+    "ruleUnresolved": 0
+  },
+  {
+    "name": "python-eq3bt",
+    "url": "https://github.com/rytilahti/python-eq3bt",
+    "stargazers": 100,
+    "languages": [
+      "Python"
+    ],
+    "issues": 35,
+    "pullRequests": 26,
+    "contributors": 14,
+    "primaryBranchCommits": 75,
+    "ruleCherryPick": 0.013333333333333334,
+    "ruleCherryPickRelease": 0,
+    "ruleCrissCrossMerged": 0,
+    "ruleFeatureBranching": 0,
+    "rulehotfix": 0,
+    "ruleUnresolved": 0
+  },
+  {
+    "name": "gsynth",
+    "url": "https://github.com/xuyiqing/gsynth",
+    "stargazers": 100,
+    "languages": [
+      "R",
+      "C++"
+    ],
+    "issues": 75,
+    "pullRequests": 6,
+    "contributors": 6,
+    "primaryBranchCommits": 94,
+    "ruleCherryPick": 0.05319148936170213,
+    "ruleCherryPickRelease": 0,
+    "ruleCrissCrossMerged": 0,
+    "ruleFeatureBranching": 0,
+    "rulehotfix": 0,
+    "ruleUnresolved": 0
+  },
+  {
+    "name": "docker-push-ssh",
+    "url": "https://github.com/brthor/docker-push-ssh",
+    "stargazers": 100,
+    "languages": [
+      "Python",
+      "Shell"
+    ],
+    "issues": 5,
+    "pullRequests": 13,
+    "contributors": 4,
+    "primaryBranchCommits": 24,
+    "ruleCherryPick": 0.2,
+    "ruleCherryPickRelease": 0,
+    "ruleCrissCrossMerged": 0,
+    "ruleFeatureBranching": 0,
+    "rulehotfix": 0,
+    "ruleUnresolved": 0
+  },
+  {
+    "name": "github-action",
+    "url": "https://github.com/dokku/github-action",
+    "stargazers": 100,
+    "languages": [
+      "Dockerfile",
+      "Shell"
+    ],
+    "issues": 16,
+    "pullRequests": 14,
+    "contributors": 5,
+    "primaryBranchCommits": 96,
+    "ruleCherryPick": 0.10416666666666667,
+    "ruleCherryPickRelease": 0,
+    "ruleCrissCrossMerged": 0,
+    "ruleFeatureBranching": 0.7,
+    "rulehotfix": 0,
+    "ruleUnresolved": 0
+  },
+  {
+    "name": "VueFeedbackReaction",
+    "url": "https://github.com/IvanSotelo/VueFeedbackReaction",
+    "stargazers": 100,
+    "languages": [
+      "JavaScript",
+      "HTML",
+      "Vue",
+      "Stylus"
+    ],
+    "issues": 9,
+    "pullRequests": 22,
+    "contributors": 6,
+    "primaryBranchCommits": 70,
+    "ruleCherryPick": 0.1643835616438356,
+    "ruleCherryPickRelease": 0,
+    "ruleCrissCrossMerged": 0,
+    "ruleFeatureBranching": 0.7894736842105263,
+    "rulehotfix": 0,
+    "ruleUnresolved": 0
+  },
+  {
+    "name": "easyVmaf",
+    "url": "https://github.com/gdavila/easyVmaf",
+    "stargazers": 100,
+    "languages": [
+      "Python",
+      "Dockerfile"
+    ],
+    "issues": 17,
+    "pullRequests": 8,
+    "contributors": 5,
+    "primaryBranchCommits": 94,
+    "ruleCherryPick": 0.08421052631578947,
+    "ruleCherryPickRelease": 0,
+    "ruleCrissCrossMerged": 0,
+    "ruleFeatureBranching": 0.375,
+    "rulehotfix": 0,
+    "ruleUnresolved": 0
+  },
+  {
+    "name": "obsidian_ia",
+    "url": "https://github.com/rcvd/obsidian_ia",
+    "stargazers": 100,
+    "languages": [
+      "CSS"
+    ],
+    "issues": 12,
+    "pullRequests": 10,
+    "contributors": 8,
+    "primaryBranchCommits": 66,
+    "ruleCherryPick": 0.06060606060606061,
+    "ruleCherryPickRelease": 0,
+    "ruleCrissCrossMerged": 0,
+    "ruleFeatureBranching": 0.5555555555555556,
+    "rulehotfix": 0,
+    "ruleUnresolved": 0
+  },
+  {
+    "name": "daikin_residential",
+    "url": "https://github.com/rospogrigio/daikin_residential",
+    "stargazers": 100,
+    "languages": [
+      "Python"
+    ],
+    "issues": 62,
+    "pullRequests": 27,
+    "contributors": 5,
+    "primaryBranchCommits": 78,
+    "ruleCherryPick": 0.08433734939759036,
+    "ruleCherryPickRelease": 0,
+    "ruleCrissCrossMerged": 0,
+    "ruleFeatureBranching": 0.23333333333333334,
+    "rulehotfix": 0.07692307692307693,
+    "ruleUnresolved": 0
+  },
+  {
+    "name": "daikin_residential",
+    "url": "https://github.com/rospogrigio/daikin_residential",
+    "stargazers": 100,
+    "languages": [
+      "Python"
+    ],
+    "issues": 62,
+    "pullRequests": 27,
+    "contributors": 5,
+    "primaryBranchCommits": 78,
+    "ruleCherryPick": 0.08433734939759036,
+    "ruleCherryPickRelease": 0,
+    "ruleCrissCrossMerged": 0,
+    "ruleFeatureBranching": 0.23333333333333334,
+    "rulehotfix": 0.07692307692307693,
+    "ruleUnresolved": 0
+  },
+  {
+    "name": "go-athena",
+    "url": "https://github.com/segmentio/go-athena",
+    "stargazers": 103,
+    "languages": [
+      "Go"
+    ],
+    "issues": 9,
+    "pullRequests": 25,
+    "contributors": 8,
+    "primaryBranchCommits": 23,
+    "ruleCherryPick": 0,
+    "ruleCherryPickRelease": 0,
+    "ruleCrissCrossMerged": 0,
+    "ruleFeatureBranching": 0,
+    "rulehotfix": 0,
+    "ruleUnresolved": 0
+  },
+  {
+    "name": "element-ui-el-table-draggable",
+    "url": "https://github.com/WakuwakuP/element-ui-el-table-draggable",
+    "stargazers": 100,
+    "languages": [
+      "JavaScript",
+      "Vue"
+    ],
+    "issues": 18,
+    "pullRequests": 23,
+    "contributors": 7,
+    "primaryBranchCommits": 93,
+    "ruleCherryPick": 0.16666666666666666,
+    "ruleCherryPickRelease": 0,
+    "ruleCrissCrossMerged": 0,
+    "ruleFeatureBranching": 0.5882352941176471,
+    "rulehotfix": 0,
+    "ruleUnresolved": 0
+  },
+  {
+    "name": "django-heroku-memcacheify",
+    "url": "https://github.com/rdegges/django-heroku-memcacheify",
+    "stargazers": 100,
+    "languages": [
+      "Python"
+    ],
+    "issues": 11,
+    "pullRequests": 14,
+    "contributors": 12,
+    "primaryBranchCommits": 78,
+    "ruleCherryPick": 0.12658227848101267,
+    "ruleCherryPickRelease": 0,
+    "ruleCrissCrossMerged": 0,
+    "ruleFeatureBranching": 0.4666666666666667,
+    "rulehotfix": 0,
+    "ruleUnresolved": 0
+  },
+  {
+    "name": "KLineChartSample",
+    "url": "https://github.com/liihuu/KLineChartSample",
+    "stargazers": 100,
+    "languages": [
+      "HTML",
+      "JavaScript",
+      "CSS",
+      "Vue",
+      "TypeScript",
+      "Less",
+      "SCSS"
+    ],
+    "issues": 6,
+    "pullRequests": 30,
+    "contributors": 4,
+    "primaryBranchCommits": 49,
+    "ruleCherryPick": 0.061224489795918366,
+    "ruleCherryPickRelease": 0,
+    "ruleCrissCrossMerged": 0,
+    "ruleFeatureBranching": 0.5,
+    "rulehotfix": 0,
+    "ruleUnresolved": 0
+  },
+  {
+    "name": "KLineChartSample",
+    "url": "https://github.com/liihuu/KLineChartSample",
+    "stargazers": 100,
+    "languages": [
+      "HTML",
+      "JavaScript",
+      "CSS",
+      "Vue",
+      "TypeScript",
+      "Less",
+      "SCSS"
+    ],
+    "issues": 6,
+    "pullRequests": 30,
+    "contributors": 4,
+    "primaryBranchCommits": 49,
+    "ruleCherryPick": 0.061224489795918366,
+    "ruleCherryPickRelease": 0,
+    "ruleCrissCrossMerged": 0,
+    "ruleFeatureBranching": 0.5,
+    "rulehotfix": 0,
+    "ruleUnresolved": 0
+  },
+  {
+    "name": "picgo-plugin-pic-migrater",
+    "url": "https://github.com/PicGo/picgo-plugin-pic-migrater",
+    "stargazers": 100,
+    "languages": [
+      "TypeScript",
+      "Python",
+      "JavaScript"
+    ],
+    "issues": 34,
+    "pullRequests": 19,
+    "contributors": 5,
+    "primaryBranchCommits": 34,
+    "ruleCherryPick": 0,
+    "ruleCherryPickRelease": 0,
+    "ruleCrissCrossMerged": 0,
+    "ruleFeatureBranching": 0,
+    "rulehotfix": 0,
+    "ruleUnresolved": 0
+  },
+  {
+    "name": "league-connect",
+    "url": "https://github.com/matsjla/league-connect",
+    "stargazers": 100,
+    "languages": [
+      "JavaScript",
+      "TypeScript"
+    ],
+    "issues": 38,
+    "pullRequests": 51,
+    "contributors": 10,
+    "primaryBranchCommits": 58,
+    "ruleCherryPick": 0.012048192771084338,
+    "ruleCherryPickRelease": 0,
+    "ruleCrissCrossMerged": 0,
+    "ruleFeatureBranching": 0,
+    "rulehotfix": 0.3333333333333333,
+    "ruleUnresolved": 0
+  },
+  {
+    "name": "hover.nvim",
+    "url": "https://github.com/lewis6991/hover.nvim",
+    "stargazers": 100,
+    "languages": [
+      "Lua"
+    ],
+    "issues": 7,
+    "pullRequests": 8,
+    "contributors": 6,
+    "primaryBranchCommits": 37,
+    "ruleCherryPick": 0.02631578947368421,
+    "ruleCherryPickRelease": 0,
+    "ruleCrissCrossMerged": 0,
+    "ruleFeatureBranching": 0.1,
+    "rulehotfix": 0,
+    "ruleUnresolved": 0
+  },
+  {
+    "name": "closure-table",
+    "url": "https://github.com/jiaxincui/closure-table",
+    "stargazers": 100,
+    "languages": [
+      "PHP"
+    ],
+    "issues": 12,
+    "pullRequests": 13,
+    "contributors": 6,
+    "primaryBranchCommits": 56,
+    "ruleCherryPick": 0.125,
+    "ruleCherryPickRelease": 0,
+    "ruleCrissCrossMerged": 0,
+    "ruleFeatureBranching": 0.3,
+    "rulehotfix": 0.3333333333333333,
+    "ruleUnresolved": 0
+  },
+  {
+    "name": "draggable_home",
+    "url": "https://github.com/DevsOnFlutter/draggable_home",
+    "stargazers": 100,
+    "languages": [
+      "Dart",
+      "Kotlin",
+      "Swift",
+      "Objective-C",
+      "CMake",
+      "C++",
+      "C"
+    ],
+    "issues": 7,
+    "pullRequests": 10,
+    "contributors": 6,
+    "primaryBranchCommits": 55,
+    "ruleCherryPick": null,
+    "ruleCherryPickRelease": null,
+    "ruleCrissCrossMerged": null,
+    "ruleFeatureBranching": null,
+    "rulehotfix": null,
+    "ruleUnresolved": null
+  },
+  {
+    "name": "triangular-arbitrage2",
+    "url": "https://github.com/zlq4863947/triangular-arbitrage2",
+    "stargazers": 100,
+    "languages": [
+      "JavaScript",
+      "TypeScript"
+    ],
+    "issues": 5,
+    "pullRequests": 5,
+    "contributors": 3,
+    "primaryBranchCommits": 74,
+    "ruleCherryPick": 0.05405405405405406,
+    "ruleCherryPickRelease": 0,
+    "ruleCrissCrossMerged": 0,
+    "ruleFeatureBranching": 0,
+    "rulehotfix": 0,
+    "ruleUnresolved": 0
+  },
+  {
+    "name": "swap-ui",
+    "url": "https://github.com/project-serum/swap-ui",
+    "stargazers": 100,
+    "languages": [
+      "HTML",
+      "CSS",
+      "TypeScript",
+      "JavaScript"
+    ],
+    "issues": 45,
+    "pullRequests": 57,
+    "contributors": 4,
+    "primaryBranchCommits": 86,
+    "ruleCherryPick": 0,
+    "ruleCherryPickRelease": 0,
+    "ruleCrissCrossMerged": 0,
+    "ruleFeatureBranching": 0,
+    "rulehotfix": 0,
+    "ruleUnresolved": 0
+  },
+  {
+    "name": "quetre",
+    "url": "https://github.com/zyachel/quetre",
+    "stargazers": 100,
+    "languages": [
+      "Shell",
+      "JavaScript",
+      "Pug",
+      "SCSS"
+    ],
+    "issues": 34,
+    "pullRequests": 34,
+    "contributors": 11,
+    "primaryBranchCommits": 82,
+    "ruleCherryPick": 0.012195121951219513,
+    "ruleCherryPickRelease": 0,
+    "ruleCrissCrossMerged": 0,
+    "ruleFeatureBranching": 0.034482758620689655,
+    "rulehotfix": 0,
+    "ruleUnresolved": 0
+  },
+  {
+    "name": "VideoSort",
+    "url": "https://github.com/nzbget/VideoSort",
+    "stargazers": 100,
+    "languages": [
+      "Python"
+    ],
+    "issues": 55,
+    "pullRequests": 18,
+    "contributors": 9,
+    "primaryBranchCommits": 41,
+    "ruleCherryPick": 0.04878048780487805,
+    "ruleCherryPickRelease": 0,
+    "ruleCrissCrossMerged": 0,
+    "ruleFeatureBranching": 0.043478260869565216,
+    "rulehotfix": 0,
+    "ruleUnresolved": 0
+  },
+  {
+    "name": "PSFolderSize",
+    "url": "https://github.com/gngrninja/PSFolderSize",
+    "stargazers": 100,
+    "languages": [
+      "PowerShell"
+    ],
+    "issues": 19,
+    "pullRequests": 13,
+    "contributors": 5,
+    "primaryBranchCommits": 92,
+    "ruleCherryPick": 0.13978494623655913,
+    "ruleCherryPickRelease": 0,
+    "ruleCrissCrossMerged": 0,
+    "ruleFeatureBranching": 0.2857142857142857,
+    "rulehotfix": 0,
+    "ruleUnresolved": 0
+  },
+  {
+    "name": "kubernetes-diff-logger",
+    "url": "https://github.com/grafana/kubernetes-diff-logger",
+    "stargazers": 99,
+    "languages": [
+      "Go",
+      "Shell",
+      "Dockerfile",
+      "Makefile"
+    ],
+    "issues": 5,
+    "pullRequests": 17,
+    "contributors": 8,
+    "primaryBranchCommits": 63,
+    "ruleCherryPick": 0.19047619047619047,
+    "ruleCherryPickRelease": 0,
+    "ruleCrissCrossMerged": 0,
+    "ruleFeatureBranching": 0.9333333333333333,
+    "rulehotfix": 0,
+    "ruleUnresolved": 0
+  },
+  {
+    "name": "ruby-parseconfig",
+    "url": "https://github.com/datafolklabs/ruby-parseconfig",
+    "stargazers": 99,
+    "languages": [
+      "Ruby",
+      "Shell",
+      "Makefile",
+      "Vim Script"
+    ],
+    "issues": 22,
+    "pullRequests": 17,
+    "contributors": 15,
+    "primaryBranchCommits": 69,
+    "ruleCherryPick": 0.16901408450704225,
+    "ruleCherryPickRelease": 0,
+    "ruleCrissCrossMerged": 0,
+    "ruleFeatureBranching": 0.375,
+    "rulehotfix": 0,
+    "ruleUnresolved": 0
+  },
+  {
+    "name": "njson",
+    "url": "https://github.com/m7shapan/njson",
+    "stargazers": 99,
+    "languages": [
+      "Go"
+    ],
+    "issues": 6,
+    "pullRequests": 7,
+    "contributors": 6,
+    "primaryBranchCommits": 31,
+    "ruleCherryPick": 0.0967741935483871,
+    "ruleCherryPickRelease": 0,
+    "ruleCrissCrossMerged": 0,
+    "ruleFeatureBranching": 0.42857142857142855,
+    "rulehotfix": 0.14285714285714285,
+    "ruleUnresolved": 0
+  },
+  {
+    "name": "docker-h5ai",
+    "url": "https://github.com/awesometic/docker-h5ai",
+    "stargazers": 99,
+    "languages": [
+      "Dockerfile",
+      "PHP",
+      "Shell"
+    ],
+    "issues": 12,
+    "pullRequests": 11,
+    "contributors": 6,
+    "primaryBranchCommits": 76,
+    "ruleCherryPick": 0.15789473684210525,
+    "ruleCherryPickRelease": 0,
+    "ruleCrissCrossMerged": 0,
+    "ruleFeatureBranching": 0.7272727272727273,
+    "rulehotfix": 0,
+    "ruleUnresolved": 0
+  },
+  {
+    "name": "efiboots",
+    "url": "https://github.com/Elinvention/efiboots",
+    "stargazers": 99,
+    "languages": [
+      "Python",
+      "Nix"
+    ],
+    "issues": 26,
+    "pullRequests": 10,
+    "contributors": 11,
+    "primaryBranchCommits": 81,
+    "ruleCherryPick": 0.08641975308641975,
+    "ruleCherryPickRelease": 0,
+    "ruleCrissCrossMerged": 0,
+    "ruleFeatureBranching": 0.2727272727272727,
+    "rulehotfix": 0,
+    "ruleUnresolved": 0
+  },
+  {
+    "name": "behavior-tree",
+    "url": "https://github.com/Idered/behavior-tree",
+    "stargazers": 99,
+    "languages": [
+      "TypeScript",
+      "JavaScript",
+      "CSS"
+    ],
+    "issues": 6,
+    "pullRequests": 19,
+    "contributors": 3,
+    "primaryBranchCommits": 31,
+    "ruleCherryPick": 0.10869565217391304,
+    "ruleCherryPickRelease": 0,
+    "ruleCrissCrossMerged": 0,
+    "ruleFeatureBranching": 0,
+    "rulehotfix": 0,
+    "ruleUnresolved": 0
+  },
+  {
+    "name": "graphql-client",
+    "url": "https://github.com/softonic/graphql-client",
+    "stargazers": 99,
+    "languages": [
+      "PHP",
+      "Makefile"
+    ],
+    "issues": 17,
+    "pullRequests": 46,
+    "contributors": 9,
+    "primaryBranchCommits": 22,
+    "ruleCherryPick": 0.09090909090909091,
+    "ruleCherryPickRelease": 0,
+    "ruleCrissCrossMerged": 0,
+    "ruleFeatureBranching": 0.05555555555555555,
+    "rulehotfix": 0,
+    "ruleUnresolved": 0
+  },
+  {
+    "name": "Minecraft-ArmorStand",
+    "url": "https://github.com/haselkern/Minecraft-ArmorStand",
+    "stargazers": 99,
+    "languages": [
+      "HTML",
+      "CSS",
+      "JavaScript"
+    ],
+    "issues": 28,
+    "pullRequests": 17,
+    "contributors": 8,
+    "primaryBranchCommits": 92,
+    "ruleCherryPick": 0.04424778761061947,
+    "ruleCherryPickRelease": 0,
+    "ruleCrissCrossMerged": 0,
+    "ruleFeatureBranching": 0.3,
+    "rulehotfix": 0,
+    "ruleUnresolved": 0
+  },
+  {
+    "name": "Invite-Manager",
+    "url": "https://github.com/TheShadowGamer/Invite-Manager",
+    "stargazers": 99,
+    "languages": [
+      "JavaScript",
+      "Shell"
+    ],
+    "issues": 12,
+    "pullRequests": 8,
+    "contributors": 3,
+    "primaryBranchCommits": 24,
+    "ruleCherryPick": 0,
+    "ruleCherryPickRelease": 0,
+    "ruleCrissCrossMerged": 0,
+    "ruleFeatureBranching": 0,
+    "rulehotfix": 0,
+    "ruleUnresolved": 0
+  },
+  {
+    "name": "smug",
+    "url": "https://github.com/drewc/smug",
+    "stargazers": 99,
+    "languages": [
+      "Common Lisp"
+    ],
+    "issues": 6,
+    "pullRequests": 7,
+    "contributors": 6,
+    "primaryBranchCommits": 24,
+    "ruleCherryPick": 0.10714285714285714,
+    "ruleCherryPickRelease": 0,
+    "ruleCrissCrossMerged": 0,
+    "ruleFeatureBranching": 0.25,
+    "rulehotfix": 0,
+    "ruleUnresolved": 0
+  },
+  {
+    "name": "kubernetes-diff-logger",
+    "url": "https://github.com/grafana/kubernetes-diff-logger",
+    "stargazers": 99,
+    "languages": [
+      "Go",
+      "Shell",
+      "Dockerfile",
+      "Makefile"
+    ],
+    "issues": 5,
+    "pullRequests": 17,
+    "contributors": 8,
+    "primaryBranchCommits": 63,
+    "ruleCherryPick": 0.19047619047619047,
+    "ruleCherryPickRelease": 0,
+    "ruleCrissCrossMerged": 0,
+    "ruleFeatureBranching": 0.9333333333333333,
+    "rulehotfix": 0,
+    "ruleUnresolved": 0
+  },
+  {
+    "name": "ruby-parseconfig",
+    "url": "https://github.com/datafolklabs/ruby-parseconfig",
+    "stargazers": 99,
+    "languages": [
+      "Ruby",
+      "Shell",
+      "Makefile",
+      "Vim Script"
+    ],
+    "issues": 22,
+    "pullRequests": 17,
+    "contributors": 15,
+    "primaryBranchCommits": 69,
+    "ruleCherryPick": 0.16901408450704225,
+    "ruleCherryPickRelease": 0,
+    "ruleCrissCrossMerged": 0,
+    "ruleFeatureBranching": 0.375,
+    "rulehotfix": 0,
+    "ruleUnresolved": 0
+  },
+  {
+    "name": "njson",
+    "url": "https://github.com/m7shapan/njson",
+    "stargazers": 99,
+    "languages": [
+      "Go"
+    ],
+    "issues": 6,
+    "pullRequests": 7,
+    "contributors": 6,
+    "primaryBranchCommits": 31,
+    "ruleCherryPick": 0.0967741935483871,
+    "ruleCherryPickRelease": 0,
+    "ruleCrissCrossMerged": 0,
+    "ruleFeatureBranching": 0.42857142857142855,
+    "rulehotfix": 0.14285714285714285,
+    "ruleUnresolved": 0
+  },
+  {
+    "name": "Minecraft-ArmorStand",
+    "url": "https://github.com/haselkern/Minecraft-ArmorStand",
+    "stargazers": 99,
+    "languages": [
+      "HTML",
+      "CSS",
+      "JavaScript"
+    ],
+    "issues": 28,
+    "pullRequests": 17,
+    "contributors": 8,
+    "primaryBranchCommits": 92,
+    "ruleCherryPick": 0.04424778761061947,
+    "ruleCherryPickRelease": 0,
+    "ruleCrissCrossMerged": 0,
+    "ruleFeatureBranching": 0.3,
+    "rulehotfix": 0,
+    "ruleUnresolved": 0
+  },
+  {
+    "name": "csso-cli",
+    "url": "https://github.com/css/csso-cli",
+    "stargazers": 99,
+    "languages": [
+      "JavaScript",
+      "CSS"
+    ],
+    "issues": 12,
+    "pullRequests": 15,
+    "contributors": 7,
+    "primaryBranchCommits": 61,
+    "ruleCherryPick": 0.03278688524590164,
+    "ruleCherryPickRelease": 0,
+    "ruleCrissCrossMerged": 0,
+    "ruleFeatureBranching": 0.058823529411764705,
+    "rulehotfix": 0,
+    "ruleUnresolved": 0
+  }
+]

@@ -25,14 +25,16 @@ func NewCherryPickRelease(w *rule.Weights) *rule.Runner {
 
 				_, found, total, _ := d.Result()
 
-				score = float64(found) / float64(total)
+				if total != 0 {
+					score = float64(found) / float64(total)
+				}
 
 				return nil
 			}(); err != nil {
 				// do nothing
 			}
 
-			return "CherryPickRelease", w.NewScores(rule.NewScore(score))
+			return "Cherry Pick Release", w.NewScores(rule.NewScore(score))
 		},
 	)
 

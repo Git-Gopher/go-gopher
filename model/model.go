@@ -50,23 +50,32 @@ func FetchEnrichedModel(repo *git.Repository, repoOwner, repoName string) (*enri
 	// if the main branch isn't the dev branch, we need to find the dev branch
 	if devBranch != nil && gitModel.MainGraph.BranchName != *devBranch {
 		enrichedModel.ReleaseGraph = gitModel.MainGraph // the main branch is the release branch
-		var headCommit local.Hash
+		var headCommit *local.Hash
 		for _, branch := range gitModel.Branches {
 			// remote branch name has origin/ as prefix
 			if branch.Name == *devBranch {
-				headCommit = branch.Head.Hash
+				h := branch.Head.Hash
+				headCommit = &h
 
 				break
 			}
 		}
 
-		refCommit, err := repo.CommitObject(plumbing.NewHash(headCommit.HexString()))
-		if err != nil {
-			return nil, fmt.Errorf("failed to get commit object: %w", err)
-		}
+		if headCommit != nil {
+			refCommit, err := repo.CommitObject(plumbing.NewHash(headCommit.HexString()))
 
-		enrichedModel.MainGraph = local.FetchBranchGraph(refCommit)
-		enrichedModel.MainGraph.BranchName = *devBranch
+			log.Infof("devBranch: %s", *devBranch)
+			log.Infof("refCommit: %s", headCommit.HexString())
+
+			if err != nil {
+				return nil, fmt.Errorf("failed to get commit object: %w", err)
+			}
+
+			enrichedModel.MainGraph = local.FetchBranchGraph(refCommit)
+			enrichedModel.MainGraph.BranchName = *devBranch
+		} else {
+			enrichedModel.ReleaseGraph = nil
+		}
 	}
 
 	// if the default branch is not release branch, try find release branch
@@ -83,6 +92,10 @@ func FetchEnrichedModel(repo *git.Repository, repoOwner, repoName string) (*enri
 			revHash, err2 := repo.ResolveRevision(plumbing.Revision(t.Name()))
 			if err != nil {
 				return fmt.Errorf("failed to resolve revision: %w", err2)
+			}
+
+			if revHash == nil {
+				return nil
 			}
 
 			revHashMap[revHash.String()] = struct{}{}

@@ -1,0 +1,212 @@
+[
+  {
+    "url": "https://github.com/davesag/irMobile",
+    "workflow": "GitFlow",
+    "ruleCherryPick": 0.4639423076923077,
+    "ruleCherryPickRelease": 0,
+    "ruleCrissCrossMerged": 0,
+    "ruleFeatureBranching": 0.6206896551724138,
+    "rulehotfix": 0,
+    "ruleUnresolved": 0
+  },
+  {
+    "url": "https://github.com/PaytmLabs/masala_base",
+    "workflow": "GitFlow",
+    "ruleCherryPick": 0.03125,
+    "ruleCherryPickRelease": 0,
+    "ruleCrissCrossMerged": 0,
+    "ruleFeatureBranching": 0,
+    "rulehotfix": 0,
+    "ruleUnresolved": 0
+  },
+  {
+    "url": "https://github.com/flow-build/diagram-builder",
+    "workflow": "GitHub Flow",
+    "ruleCherryPick": 0.0784313725490196,
+    "ruleCherryPickRelease": 0,
+    "ruleCrissCrossMerged": 0,
+    "ruleFeatureBranching": 0.5,
+    "rulehotfix": 0,
+    "ruleUnresolved": 0
+  },
+  {
+    "url": "https://github.com/WPPlugins/cbqe-edit-flow",
+    "workflow": "GitHub Flow",
+    "ruleCherryPick": 0,
+    "ruleCherryPickRelease": 0,
+    "ruleCrissCrossMerged": 0,
+    "ruleFeatureBranching": 0,
+    "rulehotfix": 0,
+    "ruleUnresolved": 0
+  },
+  {
+    "url": "https://github.com/chicio/RangeUISlider",
+    "workflow": "GitHub Flow",
+    "ruleCherryPick": 0.013054830287206266,
+    "ruleCherryPickRelease": 0,
+    "ruleCrissCrossMerged": 0,
+    "ruleFeatureBranching": 0.06097560975609756,
+    "rulehotfix": 0,
+    "ruleUnresolved": 0
+  },
+  {
+    "url": "https://github.com/PaytmLabs/masala_base",
+    "workflow": "GitHub Flow",
+    "ruleCherryPick": 0.03125,
+    "ruleCherryPickRelease": 0,
+    "ruleCrissCrossMerged": 0,
+    "ruleFeatureBranching": 0,
+    "rulehotfix": 0,
+    "ruleUnresolved": 0
+  },
+  {
+    "url": "https://github.com/dperuo/northwestern-mutual",
+    "workflow": "GitHub Flow",
+    "ruleCherryPick": 0,
+    "ruleCherryPickRelease": 0,
+    "ruleCrissCrossMerged": 0,
+    "ruleFeatureBranching": 0,
+    "rulehotfix": 0,
+    "ruleUnresolved": 0
+  },
+  {
+    "url": "https://github.com/gurupratap-matharu/survey",
+    "workflow": "GitHub Flow",
+    "ruleCherryPick": 0,
+    "ruleCherryPickRelease": 0,
+    "ruleCrissCrossMerged": 0,
+    "ruleFeatureBranching": 0,
+    "rulehotfix": 0,
+    "ruleUnresolved": 0
+  },
+  {
+    "url": "https://github.com/yeqown/gitlab-flow",
+    "workflow": "GitLab Flow",
+    "ruleCherryPick": 0.05714285714285714,
+    "ruleCherryPickRelease": 0,
+    "ruleCrissCrossMerged": 0,
+    "ruleFeatureBranching": 0.15384615384615385,
+    "rulehotfix": 0.08333333333333333,
+    "ruleUnresolved": 0
+  },
+  {
+    "url": "https://github.com/muma378/moose",
+    "workflow": "GitLab Flow",
+    "ruleCherryPick": 0.05221932114882506,
+    "ruleCherryPickRelease": 0,
+    "ruleCrissCrossMerged": 0,
+    "ruleFeatureBranching": 0.7555555555555555,
+    "rulehotfix": 0,
+    "ruleUnresolved": 0
+  },
+  {
+    "url": "https://github.com/acritelli/rucksack",
+    "workflow": "OneFlow",
+    "ruleCherryPick": 0,
+    "ruleCherryPickRelease": 0,
+    "ruleCrissCrossMerged": 0,
+    "ruleFeatureBranching": 0.75,
+    "rulehotfix": 0,
+    "ruleUnresolved": 0
+  },
+  {
+    "url": "https://github.com/filecoin-project/go-fil-markets",
+    "workflow": "OneFlow",
+    "ruleCherryPick": 0.1254125412541254,
+    "ruleCherryPickRelease": 0,
+    "ruleCrissCrossMerged": 0,
+    "ruleFeatureBranching": 0.13043478260869565,
+    "rulehotfix": 0.10909090909090909,
+    "ruleUnresolved": 0
+  },
+  {
+    "url": "https://github.com/cyvive/cyvive",
+    "workflow": "OneFlow",
+    "ruleCherryPick": 0,
+    "ruleCherryPickRelease": 0,
+    "ruleCrissCrossMerged": 0,
+    "ruleFeatureBranching": 0,
+    "rulehotfix": 0,
+    "ruleUnresolved": 0
+  },
+  {
+    "url": "https://github.com/glotzerlab/signac-dashboard",
+    "workflow": "OneFlow",
+    "ruleCherryPick": 0.059813084112149535,
+    "ruleCherryPickRelease": 0,
+    "ruleCrissCrossMerged": 0,
+    "ruleFeatureBranching": 0.4642857142857143,
+    "rulehotfix": 0,
+    "ruleUnresolved": 0
+  },
+  {
+    "url": "https://github.com/larpix/larpix-control",
+    "workflow": "OneFlow",
+    "ruleCherryPick": 0.047841306884480746,
+    "ruleCherryPickRelease": 0,
+    "ruleCrissCrossMerged": 0,
+    "ruleFeatureBranching": 0.44660194174757284,
+    "rulehotfix": 0.10526315789473684,
+    "ruleUnresolved": 0
+  },
+  {
+    "url": "https://github.com/ofxa/openfx",
+    "workflow": "OneFlow",
+    "ruleCherryPick": 0.04375,
+    "ruleCherryPickRelease": 0,
+    "ruleCrissCrossMerged": 0,
+    "ruleFeatureBranching": 0.7586206896551724,
+    "rulehotfix": 0,
+    "ruleUnresolved": 0
+  },
+  {
+    "url": "https://github.com/keidrych/dynamic-k8pi",
+    "workflow": "OneFlow",
+    "ruleCherryPick": 0.0975609756097561,
+    "ruleCherryPickRelease": 0,
+    "ruleCrissCrossMerged": 0,
+    "ruleFeatureBranching": 0.1111111111111111,
+    "rulehotfix": 0,
+    "ruleUnresolved": 0
+  },
+  {
+    "url": "https://github.com/MissaDavid/wtfsic",
+    "workflow": "Trunk-based",
+    "ruleCherryPick": 0.025,
+    "ruleCherryPickRelease": 0,
+    "ruleCrissCrossMerged": 0,
+    "ruleFeatureBranching": 0,
+    "rulehotfix": 0,
+    "ruleUnresolved": 0
+  },
+  {
+    "url": "https://github.com/loewen-digital/frontend-scaffold",
+    "workflow": "Trunk-based",
+    "ruleCherryPick": 0,
+    "ruleCherryPickRelease": 0,
+    "ruleCrissCrossMerged": 0,
+    "ruleFeatureBranching": 0,
+    "rulehotfix": 0,
+    "ruleUnresolved": 0
+  },
+  {
+    "url": "https://github.com/Trainect/template-project",
+    "workflow": "Trunk-based",
+    "ruleCherryPick": 0,
+    "ruleCherryPickRelease": 0,
+    "ruleCrissCrossMerged": 0,
+    "ruleFeatureBranching": 0,
+    "rulehotfix": 0,
+    "ruleUnresolved": 0
+  },
+  {
+    "url": "https://github.com/munterfi/eRTG3D",
+    "workflow": "Trunk-based",
+    "ruleCherryPick": 0.0625,
+    "ruleCherryPickRelease": 0,
+    "ruleCrissCrossMerged": 0,
+    "ruleFeatureBranching": 0.6666666666666666,
+    "rulehotfix": 0,
+    "ruleUnresolved": 0
+  }
+]

@@ -48,7 +48,6 @@ var rulesConfig = []*rule.Runner{
 	rules.NewCherryPickRelease(rule.NewDefaultWeights()),
 	rules.NewCherryPick(rule.NewDefaultWeights()),
 	rules.NewCrissCrossMerged(rule.NewDefaultWeights()),
-	rules.NewEmptyCommit(rule.NewDefaultWeights()),
 	rules.NewFeatureBranching(rule.NewDefaultWeights()),
 	rules.NewHotfix(rule.NewDefaultWeights()),
 	rules.NewUnresolved(rule.NewDefaultWeights()),
@@ -58,7 +57,6 @@ var rulesConfig = []*rule.Runner{
 	// ```go
 	// rules.NewExample(rule.NewDefaultWeights()),
 	// ```
-	rules.NewExample(rule.NewDefaultWeights()),
 }
 
 func Detect(ctx rule.RuleCtx) map[string]*rule.Scores {

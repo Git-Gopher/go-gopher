@@ -4,11 +4,11 @@ go 1.18
 
 require (
 	github.com/adrg/strutil v0.3.0
-	github.com/bluekeyes/go-gitdiff v0.6.1
 	github.com/bwmarrin/discordgo v0.25.0
 	github.com/go-git/go-billy/v5 v5.3.1
 	github.com/go-git/go-git/v5 v5.4.2
 	github.com/google/go-github/v45 v45.2.0
+	github.com/google/go-github/v47 v47.0.0
 	github.com/joho/godotenv v1.4.0
 	github.com/montanaflynn/stats v0.6.6
 	github.com/scorpionknifes/go-pcre v0.0.0-20210805092536-77486363b797
@@ -25,7 +25,6 @@ require (
 require (
 	github.com/cloudflare/circl v1.1.0 // indirect
 	github.com/fsnotify/fsnotify v1.5.4 // indirect
-	github.com/google/go-github/v47 v47.0.0 // indirect
 	github.com/gorilla/websocket v1.4.2 // indirect
 	github.com/hashicorp/hcl v1.0.0 // indirect
 	github.com/magiconair/properties v1.8.6 // indirect
