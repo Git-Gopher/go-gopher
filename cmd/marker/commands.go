@@ -10,6 +10,7 @@ import (
 	"path/filepath"
 	"runtime"
 	"sync"
+	"time"
 
 	"github.com/Git-Gopher/go-gopher/assess"
 	"github.com/Git-Gopher/go-gopher/assess/markers/analysis"
@@ -195,11 +196,17 @@ func (c *Cmds) runMarker(repo *git.Repository, githubURL string, lookupPath stri
 	o := LoadOptions(log.StandardLogger())
 	analyzers := assess.LoadAnalyzer(o)
 
+	cutoff, err := time.Parse("2006-01-02 15:04:05 -0700 MST", o.CutoffDate)
+	if err != nil {
+		return fmt.Errorf("failed to parse cutoff date %w", err)
+	}
+
 	candidates := assess.RunMarker(
 		analysis.MarkerCtx{
 			Model:        enrichedModel,
 			Contribution: analysis.NewContribution(*enrichedModel),
 			Author:       authors,
+			CutoffDate:   cutoff,
 		},
 		analyzers,
 	)

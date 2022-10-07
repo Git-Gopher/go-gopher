@@ -1,6 +1,8 @@
 package analysis
 
 import (
+	"time"
+
 	"github.com/Git-Gopher/go-gopher/assess/options"
 	"github.com/Git-Gopher/go-gopher/detector"
 	"github.com/Git-Gopher/go-gopher/model/enriched"
@@ -27,6 +29,7 @@ type MarkerCtx struct {
 	LoginWhiteList []string
 	Upis           map[string]string
 	Fullnames      map[string]string
+	CutoffDate     time.Time
 }
 
 type MarkerRun func(MarkerCtx) (string, []Mark)
@@ -49,6 +52,7 @@ func DetectorMarker(
 		_, _, _, violations := d.Result()
 
 		violations = violation.FilterByLogin(violations, nil, m.LoginWhiteList)
+		violations = violation.FilterByDate(violations, m.CutoffDate)
 
 		for _, v := range violations {
 			login := ""

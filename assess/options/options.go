@@ -4,6 +4,7 @@ type Options struct {
 	optionsDir string // The directory containing the options.
 	Run        Run
 
+	CutoffDate       string `mapstructure:"cutoff-date"` // viper doesn't support time.Time, parse manual for now
 	DefaultAlgorithm string `mapstructure:"default-algorithm"`
 	OutputDir        string `mapstructure:"output-dir"`
 	OutputRepoFolder bool   `mapstructure:"output-repo-folder"`

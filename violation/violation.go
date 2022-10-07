@@ -7,6 +7,7 @@ import (
 
 	"github.com/Git-Gopher/go-gopher/markup"
 	"github.com/Git-Gopher/go-gopher/utils"
+	log "github.com/sirupsen/logrus"
 )
 
 type Severity int
@@ -158,6 +159,20 @@ func FilterByLogin(violations []Violation, users utils.Authors, filter []string)
 
 		if _, ok := loginMap[login]; !ok {
 			filtered = append(filtered, v)
+		}
+	}
+
+	return filtered
+}
+
+// Filter all logins occurring after a certain date.
+func FilterByDate(violations []Violation, cutoff time.Time) []Violation {
+	filtered := []Violation{}
+	for _, v := range violations {
+		if v.Time().Before(cutoff) {
+			filtered = append(filtered, v)
+		} else {
+			log.Info("skipping violation")
 		}
 	}
 
