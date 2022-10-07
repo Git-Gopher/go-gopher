@@ -24,9 +24,6 @@ type Authors interface {
 	Add(username string, email string) error
 	Check(email string) bool
 	FindUserName(email string) (username *string, err error)
-	FindUPI(email string) (upi *string, err error)
-	// full name as "first last"
-	FindFullName(email string) (fullname *string, err error)
 	Details(username string) ([]string, error)
 }
 
@@ -64,30 +61,6 @@ func (a *authors) FindUserName(email string) (*string, error) {
 	defer a.mutex.RUnlock()
 
 	v, ok := a.usernames[email]
-	if !ok {
-		return nil, ErrAuthorNotFound
-	}
-
-	return &v, nil
-}
-
-func (a *authors) FindUPI(email string) (*string, error) {
-	a.mutex.RLock()
-	defer a.mutex.RUnlock()
-
-	v, ok := a.upis[email]
-	if !ok {
-		return nil, ErrAuthorNotFound
-	}
-
-	return &v, nil
-}
-
-func (a *authors) FindFullName(email string) (*string, error) {
-	a.mutex.RLock()
-	defer a.mutex.RUnlock()
-
-	v, ok := a.fullnames[email]
 	if !ok {
 		return nil, ErrAuthorNotFound
 	}
