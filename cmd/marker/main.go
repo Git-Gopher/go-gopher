@@ -76,6 +76,11 @@ func main() {
 			DefaultText: ".env",
 			Usage:       "Environment file location. Default: .env",
 		},
+		&cli.StringFlag{
+			Name:        "lookup-path",
+			DefaultText: "./data/se206-2022-beta-students.csv",
+			Usage:       "student lookup csv file location. Default: ./data/se206-2022-beta-students.csv",
+		},
 	}
 
 	if err := app.Run(os.Args); err != nil {

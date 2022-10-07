@@ -411,7 +411,7 @@ func PrintSummary(authors utils.Authors, v, c, t int, vs []violation.Violation) 
 		if l, err := v.Login(); err == nil {
 			login = l
 		} else if email, err := v.Email(); err == nil {
-			l, err := authors.Find(email)
+			l, err := authors.FindUserName(email)
 			if err != nil {
 				continue
 			}
@@ -496,7 +496,7 @@ func markdownTable(md *markup.Markdown, violations []violation.Violation, tableH
 			if l, err := v.Login(); err == nil {
 				login = l
 			} else if email, err := v.Email(); err == nil {
-				l, err := authors.Find(email)
+				l, err := authors.FindUserName(email)
 				if err != nil {
 					login = UnknownLogin
 				} else {

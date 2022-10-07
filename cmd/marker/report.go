@@ -11,9 +11,10 @@ import (
 	"github.com/Git-Gopher/go-gopher/assess/options"
 	"github.com/Git-Gopher/go-gopher/markup"
 	"github.com/gomarkdown/markdown"
+	log "github.com/sirupsen/logrus"
 )
 
-func IndividualReports(options *options.Options, repoName string, candidates []assess.Candidate) error {
+func IndividualReports(options *options.Options, repoName string, candidates []assess.Candidate, upiLookup map[string]string, fullnameLookup map[string]string) error {
 	if len(candidates) == 0 {
 		return fmt.Errorf("no candidates") //nolint: goerr113
 	}
@@ -24,6 +25,9 @@ func IndividualReports(options *options.Options, repoName string, candidates []a
 	}
 
 	for _, candidate := range candidates {
+		//upi := upiLookup[candidate.Username]
+		//fn := fullnameLookup[candidate.Username]
+
 		rows := make([][]string, len(candidate.Grades))
 		for i, grade := range candidate.Grades {
 			rows[i] = []string{
@@ -60,6 +64,8 @@ func IndividualReports(options *options.Options, repoName string, candidates []a
 		if err := writeFile(filename, output); err != nil {
 			return fmt.Errorf("failed to write file for %s: %w", filename, err)
 		}
+
+		log.Infof("Wrote report %s", filename)
 	}
 
 	return nil

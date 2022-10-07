@@ -25,6 +25,8 @@ type MarkerCtx struct {
 	Contribution   *contribution
 	Author         utils.Authors
 	LoginWhiteList []string
+	Upis           map[string]string
+	Fullnames      map[string]string
 }
 
 type MarkerRun func(MarkerCtx) (string, []Mark)
@@ -53,7 +55,7 @@ func DetectorMarker(
 			if l, err := v.Login(); err == nil {
 				login = l
 			} else if email, err := v.Email(); err == nil {
-				l, err := m.Author.Find(email)
+				l, err := m.Author.FindUserName(email)
 				if err != nil {
 					continue
 				}
