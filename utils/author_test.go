@@ -62,7 +62,7 @@ func Test_authors_Find(t *testing.T) {
 				usernames: tt.fields.data,
 				mutex:     sync.RWMutex{},
 			}
-			gotEmail, err := a.Find(tt.args.name)
+			gotEmail, err := a.FindUserName(tt.args.name)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("authors.Check() error = %v, wantErr %v", err, tt.wantErr)
 

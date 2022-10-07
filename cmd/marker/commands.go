@@ -216,9 +216,9 @@ func (c *Cmds) runMarker(repo *git.Repository, githubURL string, lookupPath stri
 }
 
 // Fetch login => (fullname, upi) lookup.
+// nolint
 func fetchLookup(lookupPath string) (upis map[string]string, fullnames map[string]string) {
-
-	f, err := os.Open(lookupPath)
+	f, err := os.Open(filepath.Clean(lookupPath))
 	if err != nil {
 		log.Fatal(err)
 	}

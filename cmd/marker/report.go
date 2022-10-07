@@ -14,7 +14,13 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-func IndividualReports(options *options.Options, repoName string, candidates []assess.Candidate, upiLookup map[string]string, fullnameLookup map[string]string) error {
+func IndividualReports(
+	options *options.Options,
+	repoName string,
+	candidates []assess.Candidate,
+	upiLookup map[string]string,
+	fullnameLookup map[string]string, // nolint: unparam
+) error {
 	if len(candidates) == 0 {
 		return fmt.Errorf("no candidates") //nolint: goerr113
 	}
@@ -25,8 +31,11 @@ func IndividualReports(options *options.Options, repoName string, candidates []a
 	}
 
 	for _, candidate := range candidates {
-		//upi := upiLookup[candidate.Username]
-		//fn := fullnameLookup[candidate.Username]
+		upi, ok := upiLookup[candidate.Username]
+		if !ok {
+			log.Warnf("Could not find upi for username %s, falling back to this username for filename", candidate.Username)
+			upi = candidate.Username
+		}
 
 		rows := make([][]string, len(candidate.Grades))
 		for i, grade := range candidate.Grades {
@@ -40,7 +49,7 @@ func IndividualReports(options *options.Options, repoName string, candidates []a
 
 		header := []string{"Marker", "Violation", "Contribution", "Grade"}
 
-		md := markup.CreateMarkdown(fillTemplate(options.HeaderTemplate, candidate.Username, repoName)).
+		md := markup.CreateMarkdown(fillTemplate(options.HeaderTemplate, upi, repoName)).
 			Header("Marked by git-gopher", 2).
 			Table(header, rows)
 
@@ -51,7 +60,7 @@ func IndividualReports(options *options.Options, repoName string, candidates []a
 
 		output := markdown.ToHTML([]byte(md.Render()), nil, nil)
 
-		filename := fillTemplate(options.FilenameTemplate, candidate.Username, repoName) + ".html"
+		filename := fillTemplate(options.FilenameTemplate, upi, repoName) + ".html"
 		if len(options.OutputDir) != 0 {
 			if _, err := os.Stat(options.OutputDir); errors.Is(err, os.ErrNotExist) {
 				if err2 := os.MkdirAll(options.OutputDir, os.ModePerm); err2 != nil {
