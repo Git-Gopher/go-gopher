@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"sort"
 	"strings"
 
 	"github.com/Git-Gopher/go-gopher/assess"
@@ -97,10 +98,12 @@ func MarkerReport(candidates []assess.Candidate, lookupPath string) error {
 	upis, _ := fetchLookup(lookupPath)
 	averageGrade := make(map[string]float64)
 	noGrades := make(map[string]int)
+	totalContributions := make(map[string]int)
 	for _, c := range candidates {
 		for _, g := range c.Grades {
 			averageGrade[g.Name] += float64(g.Grade)
 			noGrades[g.Name]++
+			totalContributions[g.Name] = g.TotalContributions
 		}
 	}
 
@@ -127,6 +130,7 @@ func MarkerReport(candidates []assess.Candidate, lookupPath string) error {
 		"Grade Category",
 		"Average Grade (/3)",
 		"Average Grade (%)",
+		"Total Contributions",
 	})
 	for k, v := range averageGrade {
 		gradeTable = append(gradeTable,
@@ -134,6 +138,7 @@ func MarkerReport(candidates []assess.Candidate, lookupPath string) error {
 				k,
 				fmt.Sprintf("%2.2f", v),
 				fmt.Sprintf("%2.2f", (v/3.0)*100),
+				fmt.Sprintf("%d", totalContributions[k]),
 			})
 	}
 
@@ -167,25 +172,51 @@ func MarkerReport(candidates []assess.Candidate, lookupPath string) error {
 
 	// Candidate table.
 	var candidateTable [][]string //nolint: prealloc
-	candidateTable = append(candidateTable,
-		[]string{
-			"UPI",
-			fmt.Sprintf("OverallGrade (/%d)", len(averageGrade)*3),
-			"OverallGrade (%)",
-		})
+
+	sortedGrades := candidates[0].Grades
+	sort.Slice(sortedGrades, func(i, j int) bool {
+		return sortedGrades[i].Name < sortedGrades[j].Name
+	})
+
+	headers := []string{
+		"UPI",
+		"Username",
+		"Repository",
+	}
+	for _, g := range sortedGrades {
+		headers = append(headers, g.Name+" (Violation)")
+		headers = append(headers, g.Name+" (Contribution)")
+	}
+	headers = append(headers,
+		fmt.Sprintf("OverallGrade (/%d)", len(averageGrade)*3),
+		"OverallGrade (%)")
+
+	candidateTable = append(candidateTable, headers)
 
 	for _, c := range candidates {
 		var row []string
 		upi, ok := upis[c.Username]
 		if !ok {
-			log.Infof("Could not find UPI for login %s, falling back to login instead...", c.Username)
-			upi = c.Username
+			upi = ""
 		}
 		row = append(row, upi)
+
+		row = append(row, c.Username)
+
+		row = append(row, c.RepoName)
 
 		var overallGrade float64
 		for _, g := range c.Grades {
 			overallGrade += float64(g.Grade)
+		}
+
+		sortedGrades := c.Grades
+		sort.Slice(sortedGrades, func(i, j int) bool {
+			return sortedGrades[i].Name < sortedGrades[j].Name
+		})
+		for _, g := range sortedGrades {
+			row = append(row, fmt.Sprintf("%d", g.Violation))
+			row = append(row, fmt.Sprintf("%d", g.Contribution))
 		}
 
 		row = append(row, fmt.Sprintf("%2.2f", overallGrade))

@@ -2,6 +2,7 @@ package detector
 
 import (
 	"fmt"
+	"sync"
 
 	"github.com/Git-Gopher/go-gopher/cache"
 	"github.com/Git-Gopher/go-gopher/model/enriched"
@@ -14,8 +15,15 @@ import (
 var (
 	ErrNotImplemented = fmt.Errorf("not implemented")
 
-	commonMemo *common
+	commonLocalCache = commonCache{
+		cache: make(map[string]*common),
+	}
 )
+
+type commonCache struct {
+	cache map[string]*common
+	sync.RWMutex
+}
 
 // common - common variables that are shared with all detectors.
 type common struct {
@@ -77,7 +85,12 @@ func (c *common) IsCurrentBranch(branchName string) bool {
 
 // Create a common object from the enriched model.
 func NewCommon(em *enriched.EnrichedModel) (*common, error) {
-	if commonMemo == nil {
+	commonLocalCache.RLock()
+	defer commonLocalCache.RUnlock()
+
+	key := fmt.Sprintf("%s/%s", em.Owner, em.Name)
+
+	if _, ok := commonLocalCache.cache[key]; !ok {
 		var mergingCommits []local.Hash
 		currentPR, err := em.FindCurrentPR()
 		if err != nil {
@@ -89,15 +102,17 @@ func NewCommon(em *enriched.EnrichedModel) (*common, error) {
 			}
 		}
 
-		commonMemo = &common{
+		commonLocalCache.Lock()
+		commonLocalCache.cache[key] = &common{
 			owner:          em.Owner,
 			repo:           em.Name,
 			PR:             currentPR,
 			mergingCommits: mergingCommits,
 		}
+		commonLocalCache.Unlock()
 	}
 
-	return commonMemo, nil
+	return commonLocalCache.cache[key], nil
 }
 
 type Detector interface {

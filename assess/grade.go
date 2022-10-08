@@ -7,6 +7,7 @@ import (
 )
 
 type Candidate struct {
+	RepoName string  `json:"repoName"`
 	Username string  `json:"username"`
 	Grades   []Grade `json:"grades"`
 	Total    int     `json:"total"`
@@ -19,6 +20,8 @@ type Grade struct {
 	Grade int `json:"grade"`
 	// Contributions to this category of grading.
 	Contribution int `json:"contribution"`
+	// Total Contributions to this category
+	TotalContributions int `json:"totalContributions"`
 	// Number of violations that exist for this grading category.
 	Violation int `json:"violation"`
 	// Details of the grading category.
@@ -48,6 +51,7 @@ func RunMarker(m analysis.MarkerCtx, markers []*analysis.Analyzer) []Candidate {
 			if _, ok := candiateMap[username]; !ok {
 				candiateMap[username] = &Candidate{
 					Username: username,
+					RepoName: m.Model.Name,
 					Grades:   []Grade{},
 					Total:    0,
 				}
@@ -61,6 +65,10 @@ func RunMarker(m analysis.MarkerCtx, markers []*analysis.Analyzer) []Candidate {
 
 		for username := range candiateMap {
 			contribution := contributionMap[username]
+			totalContributions := 0
+			for _, c := range contributionMap {
+				totalContributions += c
+			}
 
 			var grade analysis.Mark
 			var ok bool
@@ -70,11 +78,12 @@ func RunMarker(m analysis.MarkerCtx, markers []*analysis.Analyzer) []Candidate {
 					candiateMap[username].Grades = append(
 						candiateMap[username].Grades,
 						Grade{
-							Name:         name,
-							Grade:        0,
-							Contribution: contribution,
-							Violation:    0,
-							Details:      "Not enough contribution in this category.",
+							Name:               name,
+							Grade:              0,
+							Contribution:       contribution,
+							TotalContributions: totalContributions,
+							Violation:          0,
+							Details:            "Not enough contribution in this category.",
 						},
 					)
 
@@ -84,11 +93,12 @@ func RunMarker(m analysis.MarkerCtx, markers []*analysis.Analyzer) []Candidate {
 				candiateMap[username].Grades = append(
 					candiateMap[username].Grades,
 					Grade{
-						Name:         name,
-						Grade:        3,
-						Contribution: contribution,
-						Violation:    0,
-						Details:      "",
+						Name:               name,
+						Grade:              3,
+						Contribution:       contribution,
+						TotalContributions: totalContributions,
+						Violation:          0,
+						Details:            "",
 					},
 				)
 				candiateMap[username].Total += 3
@@ -105,11 +115,12 @@ func RunMarker(m analysis.MarkerCtx, markers []*analysis.Analyzer) []Candidate {
 			candiateMap[username].Grades = append(
 				candiateMap[username].Grades,
 				Grade{
-					Name:         name,
-					Grade:        grade.Grade.Grade,
-					Contribution: grade.Total,
-					Violation:    len(grade.Violations),
-					Details:      detailsSb.String(),
+					Name:               name,
+					Grade:              grade.Grade.Grade,
+					Contribution:       grade.Total,
+					TotalContributions: totalContributions,
+					Violation:          len(grade.Violations),
+					Details:            detailsSb.String(),
 				},
 			)
 
