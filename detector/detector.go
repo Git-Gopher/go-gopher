@@ -85,12 +85,11 @@ func (c *common) IsCurrentBranch(branchName string) bool {
 
 // Create a common object from the enriched model.
 func NewCommon(em *enriched.EnrichedModel) (*common, error) {
-	commonLocalCache.RLock()
-	defer commonLocalCache.RUnlock()
-
 	key := fmt.Sprintf("%s/%s", em.Owner, em.Name)
 
-	if _, ok := commonLocalCache.cache[key]; !ok {
+	commonLocalCache.RLock()
+	if _, ok := commonLocalCache.cache[key]; !ok { //nolint:nestif
+		commonLocalCache.RUnlock()
 		var mergingCommits []local.Hash
 		currentPR, err := em.FindCurrentPR()
 		if err != nil {
@@ -103,14 +102,19 @@ func NewCommon(em *enriched.EnrichedModel) (*common, error) {
 		}
 
 		commonLocalCache.Lock()
-		commonLocalCache.cache[key] = &common{
-			owner:          em.Owner,
-			repo:           em.Name,
-			PR:             currentPR,
-			mergingCommits: mergingCommits,
+		if _, ok := commonLocalCache.cache[key]; !ok {
+			commonLocalCache.cache[key] = &common{
+				owner:          em.Owner,
+				repo:           em.Name,
+				PR:             currentPR,
+				mergingCommits: mergingCommits,
+			}
 		}
 		commonLocalCache.Unlock()
 	}
+
+	commonLocalCache.RLock()
+	defer commonLocalCache.RUnlock()
 
 	return commonLocalCache.cache[key], nil
 }
