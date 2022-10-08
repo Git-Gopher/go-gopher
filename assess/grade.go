@@ -33,7 +33,7 @@ func RunMarker(m analysis.MarkerCtx, markers []*analysis.Analyzer) []Candidate {
 		}
 
 		for email, contribution := range m.Contribution.CommitCountMap {
-			usernamePointer, err := m.Author.Find(email)
+			usernamePointer, err := m.Author.FindUserName(email)
 			if err != nil {
 				continue
 			}

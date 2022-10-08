@@ -11,9 +11,16 @@ import (
 	"github.com/Git-Gopher/go-gopher/assess/options"
 	"github.com/Git-Gopher/go-gopher/markup"
 	"github.com/gomarkdown/markdown"
+	log "github.com/sirupsen/logrus"
 )
 
-func IndividualReports(options *options.Options, repoName string, candidates []assess.Candidate) error {
+func IndividualReports(
+	options *options.Options,
+	repoName string,
+	candidates []assess.Candidate,
+	upiLookup map[string]string,
+	fullnameLookup map[string]string, // nolint: unparam
+) error {
 	if len(candidates) == 0 {
 		return fmt.Errorf("no candidates") //nolint: goerr113
 	}
@@ -24,6 +31,12 @@ func IndividualReports(options *options.Options, repoName string, candidates []a
 	}
 
 	for _, candidate := range candidates {
+		upi, ok := upiLookup[candidate.Username]
+		if !ok {
+			log.Warnf("Could not find upi for username %s, falling back to this username for filename", candidate.Username)
+			upi = candidate.Username
+		}
+
 		rows := make([][]string, len(candidate.Grades))
 		for i, grade := range candidate.Grades {
 			rows[i] = []string{
@@ -36,7 +49,7 @@ func IndividualReports(options *options.Options, repoName string, candidates []a
 
 		header := []string{"Marker", "Violation", "Contribution", "Grade"}
 
-		md := markup.CreateMarkdown(fillTemplate(options.HeaderTemplate, candidate.Username, repoName)).
+		md := markup.CreateMarkdown(fillTemplate(options.HeaderTemplate, upi, repoName)).
 			Header("Marked by git-gopher", 2).
 			Table(header, rows)
 
@@ -47,7 +60,7 @@ func IndividualReports(options *options.Options, repoName string, candidates []a
 
 		output := markdown.ToHTML([]byte(md.Render()), nil, nil)
 
-		filename := fillTemplate(options.FilenameTemplate, candidate.Username, repoName) + ".html"
+		filename := fillTemplate(options.FilenameTemplate, upi, repoName) + ".html"
 		if len(options.OutputDir) != 0 {
 			if _, err := os.Stat(options.OutputDir); errors.Is(err, os.ErrNotExist) {
 				if err2 := os.MkdirAll(options.OutputDir, os.ModePerm); err2 != nil {
@@ -60,6 +73,8 @@ func IndividualReports(options *options.Options, repoName string, candidates []a
 		if err := writeFile(filename, output); err != nil {
 			return fmt.Errorf("failed to write file for %s: %w", filename, err)
 		}
+
+		log.Infof("Wrote report %s", filename)
 	}
 
 	return nil

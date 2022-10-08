@@ -7,6 +7,7 @@ import (
 
 	"github.com/Git-Gopher/go-gopher/markup"
 	"github.com/Git-Gopher/go-gopher/utils"
+	log "github.com/sirupsen/logrus"
 )
 
 type Severity int
@@ -49,7 +50,7 @@ func (d *display) Display(authors utils.Authors) string {
 	if login, err := d.v.Login(); err == nil {
 		authorLink = markup.Author(login).Markdown()
 	} else if email, err := d.v.Email(); err == nil {
-		login, err := authors.Find(email)
+		login, err := authors.FindUserName(email)
 		if login != nil && err == nil {
 			authorLink = markup.Author(*login).Markdown()
 		}
@@ -146,7 +147,7 @@ func FilterByLogin(violations []Violation, users utils.Authors, filter []string)
 		if l, err := v.Login(); err == nil {
 			login = l
 		} else if email, err := v.Email(); users != nil && err == nil {
-			if l, err := users.Find(email); err == nil {
+			if l, err := users.FindUserName(email); err == nil {
 				login = *l
 			}
 		} else {
@@ -158,6 +159,20 @@ func FilterByLogin(violations []Violation, users utils.Authors, filter []string)
 
 		if _, ok := loginMap[login]; !ok {
 			filtered = append(filtered, v)
+		}
+	}
+
+	return filtered
+}
+
+// Filter all logins occurring after a certain date.
+func FilterByDate(violations []Violation, cutoff time.Time) []Violation {
+	filtered := []Violation{}
+	for _, v := range violations {
+		if v.Time().Before(cutoff) {
+			filtered = append(filtered, v)
+		} else {
+			log.Info("skipping violation")
 		}
 	}
 

@@ -14,20 +14,24 @@ var (
 
 func NewAuthors() *authors {
 	return &authors{
-		data: make(map[string]string),
+		usernames: make(map[string]string),
+		upis:      make(map[string]string),
+		fullnames: make(map[string]string),
 	}
 }
 
 type Authors interface {
 	Add(username string, email string) error
 	Check(email string) bool
-	Find(email string) (username *string, err error)
+	FindUserName(email string) (username *string, err error)
 	Details(username string) ([]string, error)
 }
 
 type authors struct {
-	data  map[string]string // email => username
-	mutex sync.RWMutex
+	usernames map[string]string // email => username
+	upis      map[string]string // email => upi
+	fullnames map[string]string // email => fullname
+	mutex     sync.RWMutex
 }
 
 func (a *authors) Add(username string, email string) error {
@@ -38,7 +42,7 @@ func (a *authors) Add(username string, email string) error {
 		return ErrAuthorCannotBeEmpty
 	}
 
-	a.data[email] = username
+	a.usernames[email] = username
 
 	return nil
 }
@@ -47,16 +51,16 @@ func (a *authors) Check(email string) bool {
 	a.mutex.RLock()
 	defer a.mutex.RUnlock()
 
-	_, ok := a.data[email]
+	_, ok := a.usernames[email]
 
 	return ok
 }
 
-func (a *authors) Find(email string) (*string, error) {
+func (a *authors) FindUserName(email string) (*string, error) {
 	a.mutex.RLock()
 	defer a.mutex.RUnlock()
 
-	v, ok := a.data[email]
+	v, ok := a.usernames[email]
 	if !ok {
 		return nil, ErrAuthorNotFound
 	}
@@ -69,7 +73,7 @@ func (a *authors) Details(username string) ([]string, error) {
 	defer a.mutex.RUnlock()
 
 	emails := make([]string, 0)
-	for email, v := range a.data {
+	for email, v := range a.usernames {
 		if v == username {
 			emails = append(emails, email)
 		}
