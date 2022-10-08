@@ -22,7 +22,7 @@ var (
 
 type commonCache struct {
 	cache map[string]*common
-	sync.RWMutex
+	sync.Mutex
 }
 
 // common - common variables that are shared with all detectors.
@@ -87,9 +87,10 @@ func (c *common) IsCurrentBranch(branchName string) bool {
 func NewCommon(em *enriched.EnrichedModel) (*common, error) {
 	key := fmt.Sprintf("%s/%s", em.Owner, em.Name)
 
-	commonLocalCache.RLock()
+	commonLocalCache.Lock()
+	defer commonLocalCache.Unlock()
+
 	if _, ok := commonLocalCache.cache[key]; !ok { //nolint:nestif
-		commonLocalCache.RUnlock()
 		var mergingCommits []local.Hash
 		currentPR, err := em.FindCurrentPR()
 		if err != nil {
@@ -101,20 +102,13 @@ func NewCommon(em *enriched.EnrichedModel) (*common, error) {
 			}
 		}
 
-		commonLocalCache.Lock()
-		if _, ok := commonLocalCache.cache[key]; !ok {
-			commonLocalCache.cache[key] = &common{
-				owner:          em.Owner,
-				repo:           em.Name,
-				PR:             currentPR,
-				mergingCommits: mergingCommits,
-			}
+		commonLocalCache.cache[key] = &common{
+			owner:          em.Owner,
+			repo:           em.Name,
+			PR:             currentPR,
+			mergingCommits: mergingCommits,
 		}
-		commonLocalCache.Unlock()
 	}
-
-	commonLocalCache.RLock()
-	defer commonLocalCache.RUnlock()
 
 	return commonLocalCache.cache[key], nil
 }
