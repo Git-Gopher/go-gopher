@@ -216,17 +216,17 @@ func fetch(githubURL string) (*Repository, error) {
 	for name, scores := range scoresMap {
 		switch name {
 		case "Cherry Pick":
-			r.CherryPick = ptr(scores.GitFlow().Value())
+			r.CherryPick = ptr(scores.GitFlow.Value())
 		case "Cherry Pick Release":
-			r.CherryPickRelease = ptr(scores.GitFlow().Value())
+			r.CherryPickRelease = ptr(scores.GitFlow.Value())
 		case "Criss Cross Merged":
-			r.CrissCrossMerged = ptr(scores.GitFlow().Value())
+			r.CrissCrossMerged = ptr(scores.GitFlow.Value())
 		case "Feature Branching":
-			r.FeatureBranching = ptr(scores.GitFlow().Value())
+			r.FeatureBranching = ptr(scores.GitFlow.Value())
 		case "Hotfix":
-			r.Hotfix = ptr(scores.GitFlow().Value())
+			r.Hotfix = ptr(scores.GitFlow.Value())
 		case "Unresolved":
-			r.Unresolved = ptr(scores.GitFlow().Value())
+			r.Unresolved = ptr(scores.GitFlow.Value())
 		}
 	}
 
