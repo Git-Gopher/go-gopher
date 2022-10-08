@@ -141,14 +141,16 @@ func (c *Cmds) FolderLocalCommand(cCtx *cli.Context, flags *Flags) error {
 
 	for i := 0; i < runtime.NumCPU()-1; i++ {
 		go func() {
-			select {
-			case repo := <-repoChan:
-				if err := c.runLocalRepository(repo, flags.LookupPath); err != nil {
-					log.Errorf("failed to run local repository: %v", err)
+			for {
+				select {
+				case repo := <-repoChan:
+					if err2 := c.runLocalRepository(repo, flags.LookupPath); err2 != nil {
+						log.Errorf("failed to run local repository: %v", err2)
+					}
+					wg.Done()
+				case <-ctx.Done():
+					return
 				}
-				wg.Done()
-			case <-ctx.Done():
-				return
 			}
 		}()
 	}
