@@ -14,6 +14,7 @@ import (
 
 //nolint:gocognit
 func FetchEnrichedModel(repo *git.Repository, repoOwner, repoName string) (*enriched.EnrichedModel, error) {
+	log.Infof("Beginning to scrape repository %s", repoName)
 	// scraping remote GitHub repository.
 	start := time.Now()
 

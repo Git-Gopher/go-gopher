@@ -13,11 +13,16 @@ type Candidate struct {
 }
 
 type Grade struct {
-	Name         string `json:"name"`
-	Grade        int    `json:"grade"`
-	Contribution int    `json:"contribution"`
-	Violation    int    `json:"violation"`
-	Details      string `json:"details"`
+	// Name of the category of grade.
+	Name string `json:"name"`
+	// Grade out of three.
+	Grade int `json:"grade"`
+	// Contributions to this category of grading.
+	Contribution int `json:"contribution"`
+	// Number of violations that exist for this grading category.
+	Violation int `json:"violation"`
+	// Details of the grading category.
+	Details string `json:"details"`
 }
 
 func RunMarker(m analysis.MarkerCtx, markers []*analysis.Analyzer) []Candidate {
@@ -60,7 +65,7 @@ func RunMarker(m analysis.MarkerCtx, markers []*analysis.Analyzer) []Candidate {
 			var grade analysis.Mark
 			var ok bool
 			if grade, ok = gradeMap[username]; !ok {
-				// TODO less contribution
+				// TODO: less contribution
 				if contribution < 5 {
 					candiateMap[username].Grades = append(
 						candiateMap[username].Grades,
@@ -118,4 +123,26 @@ func RunMarker(m analysis.MarkerCtx, markers []*analysis.Analyzer) []Candidate {
 	}
 
 	return candiates
+}
+
+// Remove bot usernames.
+func RemoveBots(cs []Candidate) []Candidate {
+	blacklist := []string{"github-classroom[bot]"}
+
+	rs := make([]Candidate, 0)
+	for _, c := range cs {
+		bad := false
+		for _, b := range blacklist {
+			if c.Username == b {
+				bad = true
+
+				break
+			}
+		}
+		if !bad {
+			rs = append(rs, c)
+		}
+	}
+
+	return rs
 }

@@ -16,6 +16,7 @@ prof/
 # artifacts
 **/repositories.json
 output/
+**/*-reports.html
 **/*.zip 
 **/*.html
 /log-*.json

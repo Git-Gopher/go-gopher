@@ -96,9 +96,12 @@ tidy:
 
 clean:
 	go clean
+	find . -name 'cache.json' -delete
 	find . -name 'log-*.json' -delete
 	find . -name '*.csv' -delete
-	rm -rf output
+	find . -name '*-reports.html' -delete
+	rm -rf output || true
+	rm -rf bin || true
 
 
 .PHONY: go-releaser-release-dry-run

@@ -41,6 +41,9 @@ type Commands interface {
 
 type Cmds struct{}
 
+// XXX: Don't know how many candidates there will be but there should be less than 1000 total for this buffer to work.
+var candidateChan = make(chan []assess.Candidate, 500)
+
 func (c *Cmds) SingleUrlCommand(cCtx *cli.Context, flags *Flags) error {
 	githubURL := cCtx.Args().Get(0)
 	if githubURL == "" {
@@ -82,6 +85,7 @@ func (c *Cmds) SingleLocalCommand(cCtx *cli.Context, flags *Flags) error {
 
 func (c *Cmds) runLocalRepository(directory string, lookupPath string) error {
 	// Open repository locally.
+	log.Printf("Running local repo at %s", directory)
 	repo, err := git.PlainOpen(directory)
 	if err != nil {
 		return fmt.Errorf("failed to open repository: %w", err)
@@ -152,6 +156,27 @@ func (c *Cmds) FolderLocalCommand(cCtx *cli.Context, flags *Flags) error {
 	wg.Wait()
 	cancel()
 
+	cs := make([]assess.Candidate, 0)
+	for len(candidateChan) > 0 { // All routines will have existed at this point. Buffer won't change
+		select {
+		case c, ok := <-candidateChan:
+			if ok {
+				cs = append(cs, c...)
+			} else {
+				log.Print("failed to fetch candidate list from channel")
+				os.Exit(1)
+			}
+		default:
+			log.Print("no candidates in channel")
+		}
+	}
+
+	cs = assess.RemoveBots(cs)
+	log.Print("Generating marker report")
+	if err = MarkerReport(cs); err != nil {
+		return fmt.Errorf("failed to generate marker report: %w", err)
+	}
+
 	log.Printf("# Done %s #\n", directory)
 
 	return nil
@@ -211,10 +236,9 @@ func (c *Cmds) runMarker(repo *git.Repository, githubURL string, lookupPath stri
 		analyzers,
 	)
 
-	for _, candidate := range candidates {
-		log.Printf("#### @%s ####\n", candidate.Username)
-	}
+	candidateChan <- candidates
 
+	log.Printf("Generating user reports for repository %s", repoName)
 	if err := IndividualReports(o, repoName, candidates, upis, fullnames); err != nil {
 		return fmt.Errorf("failed to generate individual reports: %w", err)
 	}
