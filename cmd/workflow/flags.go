@@ -1,7 +1,7 @@
 package main
 
 import (
-	"fmt"
+	"errors"
 	"os"
 
 	"github.com/Git-Gopher/go-gopher/utils"
@@ -10,17 +10,22 @@ import (
 	"github.com/urfave/cli/v2"
 )
 
-var errGitHubToken = fmt.Errorf("missing GitHub token, use --token or GITHUB_TOKEN")
+var (
+	errGitHubToken = errors.New("missing GitHub token, use --token or GITHUB_TOKEN")
+	errTimeout     = errors.New("invalid timeout value")
+)
 
 type Flags struct {
 	GithubToken string
 	EnvDir      string
+	Timeout     int
 }
 
 func NewFlags() *Flags {
 	return &Flags{
 		GithubToken: "",
 		EnvDir:      ".env",
+		Timeout:     3 * 60, // 3 minutes
 	}
 }
 
@@ -49,6 +54,15 @@ func LoadFlags(command ActionWithFlagFunc) cli.ActionFunc {
 		}
 
 		_ = os.Setenv("GITHUB_TOKEN", flags.GithubToken)
+
+		switch timeout := cCtx.Int("timeout"); {
+		case timeout == 0:
+			flags.Timeout = 3 * 60 // 3 minutes
+		case timeout < 0:
+			return errTimeout
+		default:
+			flags.Timeout = timeout
+		}
 
 		return command(cCtx, flags)
 	}

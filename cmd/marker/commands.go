@@ -2,12 +2,15 @@ package main
 
 import (
 	"context"
+	"encoding/csv"
 	"errors"
 	"fmt"
 	"io/fs"
+	"os"
 	"path/filepath"
 	"runtime"
 	"sync"
+	"time"
 
 	"github.com/Git-Gopher/go-gopher/assess"
 	"github.com/Git-Gopher/go-gopher/assess/markers/analysis"
@@ -61,7 +64,7 @@ func (c *Cmds) SingleUrlCommand(cCtx *cli.Context, flags *Flags) error {
 		return fmt.Errorf("failed to clone repository: %w", err)
 	}
 
-	if err = c.runMarker(repo, githubURL); err != nil {
+	if err = c.runMarker(repo, githubURL, flags.LookupPath); err != nil {
 		return err
 	}
 
@@ -74,10 +77,10 @@ func (c *Cmds) SingleLocalCommand(cCtx *cli.Context, flags *Flags) error {
 		return errLocalDir
 	}
 
-	return c.runLocalRepository(directory)
+	return c.runLocalRepository(directory, flags.LookupPath)
 }
 
-func (c *Cmds) runLocalRepository(directory string) error {
+func (c *Cmds) runLocalRepository(directory string, lookupPath string) error {
 	// Open repository locally.
 	repo, err := git.PlainOpen(directory)
 	if err != nil {
@@ -89,7 +92,7 @@ func (c *Cmds) runLocalRepository(directory string) error {
 		return fmt.Errorf("failed to get url: %w", err)
 	}
 
-	if err = c.runMarker(repo, githubURL); err != nil {
+	if err = c.runMarker(repo, githubURL, lookupPath); err != nil {
 		return err
 	}
 
@@ -136,7 +139,7 @@ func (c *Cmds) FolderLocalCommand(cCtx *cli.Context, flags *Flags) error {
 		go func() {
 			select {
 			case repo := <-repoChan:
-				if err := c.runLocalRepository(repo); err != nil {
+				if err := c.runLocalRepository(repo, flags.LookupPath); err != nil {
 					log.Errorf("failed to run local repository: %v", err)
 				}
 				wg.Done()
@@ -171,7 +174,7 @@ func (c *Cmds) GenerateConfigCommand(cCtx *cli.Context, flags *Flags) error {
 	return nil
 }
 
-func (c *Cmds) runMarker(repo *git.Repository, githubURL string) error {
+func (c *Cmds) runMarker(repo *git.Repository, githubURL string, lookupPath string) error {
 	// Get the repositoryName.
 	repoOwner, repoName, err := utils.OwnerNameFromUrl(githubURL)
 	if err != nil {
@@ -187,15 +190,23 @@ func (c *Cmds) runMarker(repo *git.Repository, githubURL string) error {
 	// Populate authors from enrichedModel.
 	authors := enriched.PopulateAuthors(enrichedModel)
 
+	// Fetch lookup.
+	upis, fullnames := fetchLookup(lookupPath)
 	// Read marker configs
 	o := LoadOptions(log.StandardLogger())
 	analyzers := assess.LoadAnalyzer(o)
+
+	cutoff, err := time.Parse("2006-01-02 15:04:05 -0700 MST", o.CutoffDate)
+	if err != nil {
+		return fmt.Errorf("failed to parse cutoff date %w", err)
+	}
 
 	candidates := assess.RunMarker(
 		analysis.MarkerCtx{
 			Model:        enrichedModel,
 			Contribution: analysis.NewContribution(*enrichedModel),
 			Author:       authors,
+			CutoffDate:   cutoff,
 		},
 		analyzers,
 	)
@@ -204,9 +215,43 @@ func (c *Cmds) runMarker(repo *git.Repository, githubURL string) error {
 		log.Printf("#### @%s ####\n", candidate.Username)
 	}
 
-	if err := IndividualReports(o, repoName, candidates); err != nil {
+	if err := IndividualReports(o, repoName, candidates, upis, fullnames); err != nil {
 		return fmt.Errorf("failed to generate individual reports: %w", err)
 	}
 
 	return nil
+}
+
+// Fetch login => (fullname, upi) lookup.
+// nolint
+func fetchLookup(lookupPath string) (upis map[string]string, fullnames map[string]string) {
+	f, err := os.Open(filepath.Clean(lookupPath))
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	defer f.Close()
+
+	// read csv values using csv.Reader
+	reader := csv.NewReader(f)
+	data, err := reader.ReadAll()
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	upis = make(map[string]string)
+	fullnames = make(map[string]string)
+
+	for _, v := range data {
+		// unsafe, too bad!
+		login := v[2]
+
+		upi := v[3]
+		fullname := v[4] + v[5]
+
+		upis[login] = upi
+		fullnames[login] = fullname
+	}
+
+	return upis, fullnames
 }

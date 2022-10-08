@@ -2,11 +2,12 @@
 
 default-algorithm: basic-algorithm # basic-algorithm or threshold-algorithm
 
+cutoff-date: 2022-09-27 11:00:00 +0000 UTC # cut off date for violations to occur
 output-dir: ./reports             # output directory
 output-repo-folder: false         # false = output into same folder, true = output to a folder the same name as repo
 
 filename-template: "{{.Username}}_individual_report"  # filename template e.g. "{{.Repository}}_{{.Username}}_individual_report"
-header-template: "{{.Username}} Test Report"          # header template e.g. "{{.Repository}} {{.Username}} Test Report"
+header-template: "{{.Username}} Report"          # header template e.g. "{{.Repository}} {{.Username}} Test Report"
 
 markers-settings:
   commit:

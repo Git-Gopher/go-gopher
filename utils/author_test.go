@@ -28,8 +28,8 @@ func Test_authors_Add(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			a := &authors{
-				data:  tt.fields.data,
-				mutex: sync.RWMutex{},
+				usernames: tt.fields.data,
+				mutex:     sync.RWMutex{},
 			}
 			if err := a.Add(tt.args.email, tt.args.name); (err != nil) != tt.wantErr {
 				t.Errorf("authors.Add() error = %v, wantErr %v", err, tt.wantErr)
@@ -59,10 +59,10 @@ func Test_authors_Find(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			a := &authors{
-				data:  tt.fields.data,
-				mutex: sync.RWMutex{},
+				usernames: tt.fields.data,
+				mutex:     sync.RWMutex{},
 			}
-			gotEmail, err := a.Find(tt.args.name)
+			gotEmail, err := a.FindUserName(tt.args.name)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("authors.Check() error = %v, wantErr %v", err, tt.wantErr)
 
@@ -98,8 +98,8 @@ func Test_authors_Details(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			a := &authors{
-				data:  tt.fields.data,
-				mutex: sync.RWMutex{},
+				usernames: tt.fields.data,
+				mutex:     sync.RWMutex{},
 			}
 			got, err := a.Details(tt.args.username)
 			if (err != nil) != tt.wantErr {
@@ -134,8 +134,8 @@ func Test_authors_Check(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			a := &authors{
-				data:  tt.fields.data,
-				mutex: sync.RWMutex{},
+				usernames: tt.fields.data,
+				mutex:     sync.RWMutex{},
 			}
 			if got := a.Check(tt.args.email); got != tt.want {
 				t.Errorf("authors.Check() = %v, want %v", got, tt.want)

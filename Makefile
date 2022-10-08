@@ -20,11 +20,13 @@ build:
 ifeq ($(OS),Windows_NT)
 	@go build ${LDFLAGS_RELEASE} -o ${BINARY_DIR}/go-gopher-cli.exe ./cmd/cli && \
 	go build ${LDFLAGS_RELEASE} -o ${BINARY_DIR}/go-gopher-marker.exe ./cmd/marker && \
-	go build ${LDFLAGS_RELEASE} -o ${BINARY_DIR}/go-gopher-github.exe ./cmd/github-action
+	go build ${LDFLAGS_RELEASE} -o ${BINARY_DIR}/go-gopher-github.exe ./cmd/github-action && \
+	go build ${LDFLAGS_RELEASE} -o ${BINARY_DIR}/go-gopher-workflow.exe ./cmd/workflow
 else
 	@go build ${LDFLAGS_RELEASE} -o ${BINARY_DIR}/go-gopher-cli ./cmd/cli && \
 	go build ${LDFLAGS_RELEASE} -o ${BINARY_DIR}/go-gopher-marker ./cmd/marker && \
-	go build ${LDFLAGS_RELEASE} -o ${BINARY_DIR}/go-gopher-github-action ./cmd/github-action
+	go build ${LDFLAGS_RELEASE} -o ${BINARY_DIR}/go-gopher-github-action ./cmd/github-action && \
+	go build ${LDFLAGS_RELEASE} -o ${BINARY_DIR}/go-gopher-workflow ./cmd/workflow
 endif
 
 release:
@@ -32,11 +34,13 @@ release:
 ifeq ($(OS),Windows_NT)
 	@go build ${LDFLAGS_RELEASE} -o ${BINARY_DIR}/go-gopher-cli.exe ./cmd/cli && \
 	go build ${LDFLAGS_RELEASE} -o ${BINARY_DIR}/go-gopher-marker.exe ./cmd/marker && \
-	go build ${LDFLAGS_RELEASE} -o ${BINARY_DIR}/go-gopher-github.exe ./cmd/github-action
+	go build ${LDFLAGS_RELEASE} -o ${BINARY_DIR}/go-gopher-github.exe ./cmd/github-action && \
+	go build ${LDFLAGS_RELEASE} -o ${BINARY_DIR}/go-gopher-workflow.exe ./cmd/workflow
 else
 	@go build ${LDFLAGS_RELEASE} -o ${BINARY_DIR}/go-gopher-cli ./cmd/cli && \
 	go build ${LDFLAGS_RELEASE} -o ${BINARY_DIR}/go-gopher-marker ./cmd/marker && \
-	go build ${LDFLAGS_RELEASE} -o ${BINARY_DIR}/go-gopher-github-action ./cmd/github-action
+	go build ${LDFLAGS_RELEASE} -o ${BINARY_DIR}/go-gopher-github-action ./cmd/github-action && \
+	go build ${LDFLAGS_RELEASE} -o ${BINARY_DIR}/go-gopher-workflow ./cmd/workflow
 endif
 
 release-windows:
@@ -46,7 +50,8 @@ release-windows:
 	echo Building $$GOOS-$$GOARCH && \
 	go build ${LDFLAGS_RELEASE} -o ${BINARY_DIR}/go-gopher-cli-$$GOOS-$$GOARCH.exe ./cmd/cli && \
 	go build ${LDFLAGS_RELEASE} -o ${BINARY_DIR}/go-gopher-marker-$$GOOS-$$GOARCH.exe ./cmd/marker && \
-	go build ${LDFLAGS_RELEASE} -o ${BINARY_DIR}/go-gopher-github-action-$$GOOS-$$GOARCH.exe ./cmd/github-action
+	go build ${LDFLAGS_RELEASE} -o ${BINARY_DIR}/go-gopher-github-action-$$GOOS-$$GOARCH.exe ./cmd/github-action && \
+	go build ${LDFLAGS_RELEASE} -o ${BINARY_DIR}/go-gopher-workflow-$$GOOS-$$GOARCH.exe ./cmd/workflow
 
 release-macos:
 	@export GOOS=darwin && \
@@ -55,7 +60,8 @@ release-macos:
 	echo Building $$GOOS-$$GOARCH && \
 	go build ${LDFLAGS_RELEASE} -o ${BINARY_DIR}/go-gopher-cli-$$GOOS-$$GOARCH.exe ./cmd/cli && \
 	go build ${LDFLAGS_RELEASE} -o ${BINARY_DIR}/go-gopher-marker-$$GOOS-$$GOARCH.exe ./cmd/marker && \
-	go build ${LDFLAGS_RELEASE} -o ${BINARY_DIR}/go-gopher-github-action-$$GOOS-$$GOARCH.exe ./cmd/github-action
+	go build ${LDFLAGS_RELEASE} -o ${BINARY_DIR}/go-gopher-github-action-$$GOOS-$$GOARCH.exe ./cmd/github-action && \
+	go build ${LDFLAGS_RELEASE} -o ${BINARY_DIR}/go-gopher-workflow-$$GOOS-$$GOARCH.exe ./cmd/workflow
 
 
 release-linux:
@@ -65,10 +71,12 @@ release-linux:
 	echo Building $$GOOS-$$GOARCH && \
 	go build ${LDFLAGS_RELEASE} -o ${BINARY_DIR}/go-gopher-cli-$$GOOS-$$GOARCH.exe ./cmd/cli && \
 	go build ${LDFLAGS_RELEASE} -o ${BINARY_DIR}/go-gopher-marker-$$GOOS-$$GOARCH.exe ./cmd/marker && \
-	go build ${LDFLAGS_RELEASE} -o ${BINARY_DIR}/go-gopher-github-action-$$GOOS-$$GOARCH.exe ./cmd/github-action
+	go build ${LDFLAGS_RELEASE} -o ${BINARY_DIR}/go-gopher-github-action-$$GOOS-$$GOARCH.exe ./cmd/github-action && \
+	go build ${LDFLAGS_RELEASE} -o ${BINARY_DIR}/go-gopher-workflow-$$GOOS-$$GOARCH.exe ./cmd/workflow
+
 
 install: build
-	cp bin/go-gopher /usr/local/bin
+	cp bin/go-gopher ~/.local/bin
 
 lint:
 	golangci-lint run

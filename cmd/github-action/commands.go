@@ -89,8 +89,10 @@ func actionCommand(cCtx *cli.Context) error {
 
 	workflow.PrintSummary(authors, violated, count, total, violations)
 
-	summary := workflow.MarkdownSummary(authors, violations)
-	markup.Outputs("pr_summary", summary)
+	if !cCtx.Bool("disable-pr-comment") {
+		summary := workflow.MarkdownSummary(authors, violations)
+		markup.Outputs("pr_summary", summary)
+	}
 
 	fn, err := ghwf.WriteLog(*enrichedModel, cfg)
 	if err != nil {

@@ -3,6 +3,29 @@ package rule
 // Weight - weight of the rule, can be negative or positive.
 type Weight float64
 
+type WorkflowType int
+
+const (
+	// Supported workflow types.
+	// XXX: Ordering matters.
+	GitHubFlow WorkflowType = iota
+	GitFlow
+	GitlabFlow
+	OneFlow
+	TrunkBased
+)
+
+// WorkflowType string lookup.
+func (wt WorkflowType) String() string {
+	return [...]string{
+		"GitHubFlow",
+		"GitFlow",
+		"GitlabFlow",
+		"OneFlow",
+		"Trunkbased",
+	}[wt]
+}
+
 func (w *Weight) Value() float64 {
 	return float64(*w)
 }
@@ -24,11 +47,11 @@ type Weights struct {
 
 func (w *Weights) NewScores(v *Score) *Scores {
 	return &Scores{
-		gitHubFlow: v.Weight(w.GitHubFlow),
-		gitFlow:    v.Weight(w.GitFlow),
-		gitLabFlow: v.Weight(w.GitLabFlow),
-		oneFlow:    v.Weight(w.OneFlow),
-		trunkBased: v.Weight(w.TrunkBased),
+		GitHubFlow: v.Weight(w.GitHubFlow),
+		GitFlow:    v.Weight(w.GitFlow),
+		GitLabFlow: v.Weight(w.GitLabFlow),
+		OneFlow:    v.Weight(w.OneFlow),
+		TrunkBased: v.Weight(w.TrunkBased),
 	}
 }
 
@@ -65,31 +88,11 @@ func NewScore(score float64) *Score {
 
 // Scores - scores for each workflow.
 type Scores struct {
-	gitHubFlow *Score
-	gitFlow    *Score
-	gitLabFlow *Score
-	oneFlow    *Score
-	trunkBased *Score
-}
-
-func (s *Scores) GitHubFlow() *Score {
-	return s.gitHubFlow
-}
-
-func (s *Scores) GitFlow() *Score {
-	return s.gitFlow
-}
-
-func (s *Scores) GitLabFlow() *Score {
-	return s.gitLabFlow
-}
-
-func (s *Scores) OneFlow() *Score {
-	return s.oneFlow
-}
-
-func (s *Scores) TrunkBased() *Score {
-	return s.trunkBased
+	GitHubFlow *Score `json:"githubFlow,omitempty"`
+	GitFlow    *Score `json:"gitFlow,omitempty"`
+	GitLabFlow *Score `json:"gitlabFlow,omitempty"`
+	OneFlow    *Score `json:"oneFlow,omitempty"`
+	TrunkBased *Score `json:"trunkBased,omitempty"`
 }
 
 // Runner - rule runner.

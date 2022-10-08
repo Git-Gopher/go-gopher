@@ -222,16 +222,16 @@ func BinaryDetect() (string, CommitDetect) {
 
 func EmptyCommitDetect() (string, CommitDetect) {
 	return "EmptyCommitDetect", func(c *common, commit *local.Commit) (bool, []violation.Violation, error) {
-		isEmpty := true
+		addition, deletion := 0, 0
+		hasBinary := false
 		for _, d := range commit.DiffToParents {
-			if d.Addition != "" || d.Deletion != "" && d.Equal != "" {
-				isEmpty = false
-
-				break
-			}
+			addition += len(d.Addition)
+			deletion += len(d.Deletion)
+			hasBinary = hasBinary || d.IsBinary
 		}
 
 		vs := []violation.Violation{}
+		isEmpty := addition == 0 && deletion == 0 && !hasBinary
 		if isEmpty {
 			vs = append(vs, violation.NewEmptyCommitViolation(
 				markup.Commit{

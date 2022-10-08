@@ -2,6 +2,11 @@
 
 go-gopher is a git workflow analysis tool to check cohesion to popular git workflows
 
+## Cloning
+
+This repository acts as a monorepo for development and data analysis. Results data is tracked as a submodule which powers the [jupiter-notebooks](./notebooks), however it is non-essential for usage of the tool.
+If you requrie this data clone with the `recurse-submodules` flag.
+
 ## Running
 
 1. Ensure that the project [environment](#environment) file is filled out

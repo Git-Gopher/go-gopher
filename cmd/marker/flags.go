@@ -1,6 +1,7 @@
 package main
 
 import (
+	"errors"
 	"fmt"
 	"os"
 
@@ -10,12 +11,17 @@ import (
 	"github.com/urfave/cli/v2"
 )
 
-var errGitHubToken = fmt.Errorf("missing GitHub token, use --token or GITHUB_TOKEN")
+var (
+	defaultLookupPath = "./data/se206-2022-beta-students.csv"
+	errGitHubToken    = fmt.Errorf("missing GitHub token, use --token or GITHUB_TOKEN")
+	errLookupPath     = fmt.Errorf("missing upi and name lookup path, use --lookup-path")
+)
 
 type Flags struct {
 	GithubToken string
 	OptionsDir  string
 	EnvDir      string
+	LookupPath  string
 }
 
 func NewFlags() *Flags {
@@ -23,6 +29,7 @@ func NewFlags() *Flags {
 		GithubToken: "",
 		OptionsDir:  "options.yml",
 		EnvDir:      ".env",
+		LookupPath:  defaultLookupPath,
 	}
 }
 
@@ -55,6 +62,16 @@ func LoadFlags(command ActionWithFlagFunc) cli.ActionFunc {
 		}
 
 		_ = os.Setenv("GITHUB_TOKEN", flags.GithubToken)
+
+		if cCtx.String("lookup-path") == "" {
+			if _, err := os.Stat(defaultLookupPath); errors.Is(err, os.ErrNotExist) {
+				return errLookupPath
+			} else {
+				log.Infof("using default name csv translation path %s", defaultLookupPath)
+			}
+		} else {
+			flags.LookupPath = cCtx.String("lookup-path")
+		}
 
 		return command(cCtx, flags)
 	}

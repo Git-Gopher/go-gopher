@@ -12,12 +12,15 @@ import (
 	"github.com/go-git/go-git/v5"
 	"github.com/go-git/go-git/v5/plumbing"
 	"github.com/go-git/go-git/v5/plumbing/object"
+	log "github.com/sirupsen/logrus"
 )
 
 var (
-	ErrCommitEmpty   = errors.New("commit empty")
-	ErrBranchEmpty   = errors.New("branch empty")
-	ErrUnknownLineOp = errors.New("unknown line op")
+	ErrCommitEmpty     = errors.New("commit empty")
+	ErrBranchEmpty     = errors.New("branch empty")
+	ErrUnknownLineOp   = errors.New("unknown line op")
+	ErrBadTagReference = errors.New("empty reference, repo or commit for tag")
+	ErrNewCommitNil    = errors.New("commit is nil")
 	// Hash of an empty git tree.
 	// $(printf '' | git hash-object -t tree --stdin).
 	EmptyTreeHash = "4b825dc642cb6eb9a060e54bf8d69288fbee4904"
@@ -118,63 +121,54 @@ type Chunk struct {
 	Type Operation
 }
 
-func NewCommit(r *git.Repository, c *object.Commit) *Commit {
+func NewCommit(r *git.Repository, c *object.Commit) (*Commit, error) {
 	if c == nil || r == nil {
-		return nil
+		return nil, fmt.Errorf("%w: %v, %v", ErrNewCommitNil, c, r)
 	}
 
-	parentHashes := make([]Hash, len(c.ParentHashes))
-	for i, hash := range c.ParentHashes {
-		parentHashes[i] = Hash(hash)
+	parentHashes := []Hash{}
+	// Root commit has empty commit tree as parent. This also include orphan commits.
+	if len(c.ParentHashes) == 0 {
+		h, err := hex.DecodeString(EmptyTreeHash)
+		if err != nil {
+			return nil, fmt.Errorf("unable to decode emptytreehash to a byte hash: %s, %w", EmptyTreeHash, err)
+		}
+
+		var arr [20]byte
+		copy(arr[:], h[:20])
+		parentHashes = append(parentHashes, Hash(arr))
+	} else {
+		for _, hash := range c.ParentHashes {
+			parentHashes = append(parentHashes, Hash(hash))
+		}
 	}
 
 	var diffs []Diff
-	if len(parentHashes) == 0 { //nolint: nestif
-		iter, err := r.TreeObjects()
+	commitTree, err := c.Tree()
+	if err != nil {
+		return nil, fmt.Errorf("cannot fetch commit tree: %w", err)
+	}
+
+	parentTree := &object.Tree{}
+	var patch *object.Patch
+	if c.NumParents() != 0 { // nolint: nestif
+		var parent *object.Commit
+		parent, err = c.Parents().Next()
 		if err != nil {
-			return nil
+			return nil, fmt.Errorf("cannot fetch commit parents: %w", err)
 		}
-		if err := iter.ForEach(func(o *object.Tree) error {
-			changes, err := o.Diff(&object.Tree{Hash: plumbing.NewHash(EmptyTreeHash)})
-			if err != nil {
-				return fmt.Errorf("failed to fetch tree root diff: %w", err)
-			}
-
-			patch, err := changes.Patch()
-			if err != nil {
-				return fmt.Errorf("failed to fetch root patch: %w", err)
-			}
-
-			diff, err := FetchDiffs(patch)
-			if err != nil {
-				return fmt.Errorf("failed to fetch root diff: %w", err)
-			}
-			diffs = append(diffs, diff...)
-
-			return err
-		}); err != nil {
-			return nil
+		parentTree, err = parent.Tree()
+		if err != nil {
+			return nil, fmt.Errorf("cannot fetch commit parent tree: %w", err)
+		}
+		patch, err = parentTree.Patch(commitTree)
+		if err != nil {
+			return nil, fmt.Errorf("cannot fetch commit patch: %w", err)
 		}
 	} else {
-		err := c.Parents().ForEach(
-			func(p *object.Commit) error {
-				var diff []Diff
-				var patch *object.Patch
-				patch, err := p.Patch(c)
-				if err != nil {
-					return fmt.Errorf("failed to fetch patch: %w", err)
-				}
-
-				diff, err = FetchDiffs(patch)
-				if err != nil {
-					return fmt.Errorf("failed to fetch diff: %w", err)
-				}
-				diffs = append(diffs, diff...)
-
-				return nil
-			})
+		patch, err = parentTree.Patch(commitTree)
 		if err != nil {
-			return nil
+			return nil, fmt.Errorf("cannot fetch commit patch: %w", err)
 		}
 	}
 
@@ -194,6 +188,14 @@ func NewCommit(r *git.Repository, c *object.Commit) *Commit {
 	p := fmt.Sprintf("%x", h.Sum(nil))
 	patchID = &p
 
+	// diffs
+	diff, err := FetchDiffs(patch)
+	if err != nil {
+		return nil, fmt.Errorf("cannot commit diffs: %w", err)
+	}
+
+	diffs = append(diffs, diff...)
+
 	return &Commit{
 		Hash:          Hash(c.Hash),
 		Author:        *NewSignature(&c.Author),
@@ -203,7 +205,7 @@ func NewCommit(r *git.Repository, c *object.Commit) *Commit {
 		ParentHashes:  parentHashes,
 		DiffToParents: diffs,
 		PatchID:       patchID,
-	}
+	}, nil
 }
 
 // TODO: Might be useful to add some of these to the Branch struct.
@@ -225,9 +227,13 @@ func NewBranch(repo *git.Repository, o *plumbing.Reference, c *object.Commit) *B
 	if o == nil {
 		return nil
 	}
+	commit, err := NewCommit(repo, c)
+	if err != nil {
+		log.Warnf("unable to find commit for branch: %v", err)
+	}
 
 	return &Branch{
-		Head: *NewCommit(repo, c),
+		Head: *commit,
 		Name: strings.Replace(o.Name().Short(), "origin/", "", 1),
 	}
 }
@@ -239,15 +245,20 @@ type Tag struct {
 	Head Commit
 }
 
-func NewTag(repo *git.Repository, o *plumbing.Reference, c *object.Commit) *Tag {
-	if o == nil {
-		return nil
+func NewTag(repo *git.Repository, o *plumbing.Reference, c *object.Commit) (*Tag, error) {
+	if o == nil || c == nil || repo == nil {
+		return nil, fmt.Errorf("%w: %v, %v, %v", ErrBadTagReference, repo, o, c)
+	}
+
+	commit, err := NewCommit(repo, c)
+	if err != nil {
+		return nil, fmt.Errorf("unable to find commit for tag: %w", err)
 	}
 
 	return &Tag{
 		Name: o.Name().Short(),
-		Head: *NewCommit(repo, c),
-	}
+		Head: *commit,
+	}, nil
 }
 
 type GitModel struct {
@@ -274,7 +285,13 @@ func NewGitModel(repo *git.Repository) (*GitModel, error) {
 		if c == nil {
 			return fmt.Errorf("NewGitModel commit: %w", ErrCommitEmpty)
 		}
-		commit := NewCommit(repo, c)
+
+		var commit *Commit
+		commit, err = NewCommit(repo, c)
+		if err != nil {
+			return fmt.Errorf("unable to find commit while creating git model: %w", err)
+		}
+
 		gitModel.Commits = append(gitModel.Commits, *commit)
 		gitModel.Committer = append(gitModel.Committer, Committer{
 			CommitId: string(c.Hash[:]),
@@ -349,7 +366,9 @@ func NewGitModel(repo *git.Repository) (*GitModel, error) {
 	var ts []*Tag
 	if err = tagIter.ForEach(func(o *plumbing.Reference) error {
 		if o == nil {
-			return fmt.Errorf("nil tag reference: %w", err)
+			log.Warnf("nil tag reference, skipping...")
+
+			return nil //nolint: nilerr
 		}
 
 		var c *object.Commit
@@ -357,15 +376,23 @@ func NewGitModel(repo *git.Repository) (*GitModel, error) {
 		if err != nil {
 			// if commit for this tag is not found
 			// we can skip it
-			return nil
+			log.Warnf("failed to find head commit from branch: %v, skipping...", err)
+
+			return nil //nolint: nilerr
 		}
 
-		t := NewTag(repo, o, c)
+		var t *Tag
+		t, err = NewTag(repo, o, c)
+		if err != nil {
+			log.Warnf("Unable to create tag: %v, skipping...", err)
+
+			return nil //nolint: nilerr
+		}
 		ts = append(ts, t)
 
 		return nil
 	}); err != nil {
-		return nil, fmt.Errorf("bad tag iteration: %w", err)
+		return nil, fmt.Errorf("bad tag iteration: %w, skipping...", err)
 	}
 
 	gitModel.Tags = ts
