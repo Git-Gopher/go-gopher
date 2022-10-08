@@ -10,7 +10,7 @@ jobs:
       - name: checkout code
         uses: actions/checkout@v2
         with:
-          submodules: 'true'
+          submodules: false
       - run: git fetch --prune --unshallow
       - name: setup dependencies
         uses: actions/setup-go@v2
