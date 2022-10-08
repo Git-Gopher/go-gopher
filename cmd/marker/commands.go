@@ -175,7 +175,7 @@ func (c *Cmds) FolderLocalCommand(cCtx *cli.Context, flags *Flags) error {
 
 	cs = assess.RemoveBots(cs)
 	log.Print("Generating marker report")
-	if err = MarkerReport(cs); err != nil {
+	if err = MarkerReport(cs, flags.LookupPath); err != nil {
 		return fmt.Errorf("failed to generate marker report: %w", err)
 	}
 

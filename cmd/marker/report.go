@@ -92,8 +92,9 @@ func IndividualReports(
 
 // Report for the marker so that they can glean an overview of grading for the course.
 // Can then adjust marker as needed.
-func MarkerReport(candidates []assess.Candidate) error {
+func MarkerReport(candidates []assess.Candidate, lookupPath string) error {
 	// Average grade per grade category and overall average grade across categories.
+	upis, _ := fetchLookup(lookupPath)
 	averageGrade := make(map[string]float64)
 	noGrades := make(map[string]int)
 	for _, c := range candidates {
@@ -168,14 +169,19 @@ func MarkerReport(candidates []assess.Candidate) error {
 	var candidateTable [][]string //nolint: prealloc
 	candidateTable = append(candidateTable,
 		[]string{
-			"Username",
+			"UPI",
 			fmt.Sprintf("OverallGrade (/%d)", len(averageGrade)*3),
 			"OverallGrade (%)",
 		})
 
 	for _, c := range candidates {
 		var row []string
-		row = append(row, c.Username)
+		upi, ok := upis[c.Username]
+		if !ok {
+			log.Infof("Could not find UPI for login %s, falling back to login instead...", c.Username)
+			upi = c.Username
+		}
+		row = append(row, upi)
 
 		var overallGrade float64
 		for _, g := range c.Grades {
