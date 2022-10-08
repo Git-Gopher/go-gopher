@@ -26,14 +26,9 @@ func NewExample(w *rule.Weights) *rule.Runner {
 
 				_, found, total, _ := d.Result()
 
-<<<<<<< HEAD
-				if total != 0 {
-					score = float64(found) / float64(total)
-=======
 				score = float64(found) / float64(total)
 				if math.IsNaN(score) {
 					score = 0
->>>>>>> main
 				}
 
 				return nil
