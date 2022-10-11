@@ -189,18 +189,28 @@ func main() {
 				for i, r := range allRepos {
 					log.Infof("Scraping repo %d (%d repos remaining...)", i+1, len(allRepos)-(i+1))
 					if strings.HasPrefix(*r.Name, prefix) { // nolint: nestif
-						var arts *github.ArtifactList
-						arts, _, err = client.Actions.ListArtifacts(ctx.Context, org, *r.Name, nil)
-						if err != nil {
-							log.Fatalf("Could not fetch artifact list: %v", err)
+						var allArts []*github.Artifact
+						for {
+							// nolint: govet
+							arts, resp, err := client.Actions.ListArtifacts(ctx.Context, org, *r.Name, &github.ListOptions{
+								PerPage: 100,
+							})
+							if err != nil {
+								log.Fatalf("Could not fetch artifact list: %v", err)
+							}
+							allArts = append(allArts, arts.Artifacts...)
+							if resp.NextPage == 0 {
+								break
+							}
+							opt.Page = resp.NextPage
 						}
 
-						for i2, a := range arts.Artifacts {
+						for i2, a := range allArts {
 							log.Printf("Downloading artifacts %d for %s/%s (%d artifacts remaining)...\n",
 								i2+1,
 								org,
 								*r.Name,
-								len(arts.Artifacts)-(i2+1))
+								len(allArts)-(i2+1))
 							var url *url.URL
 							url, _, err = client.Actions.DownloadArtifact(ctx.Context, org, *r.Name, *a.ID, true)
 							if err != nil {
