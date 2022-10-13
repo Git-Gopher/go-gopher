@@ -13,14 +13,13 @@ func NewGeneral(settings *options.GeneralSettings) *analysis.Analyzer {
 		generalName,
 		"General marker",
 		func(m analysis.MarkerCtx) (string, []analysis.Mark) {
-			// TODO: Force push types
-			// forcePush := detector.NewCommitCacheDetector(detector.ForcePushDetect())
 			unresolved := detector.NewCommitDetector(detector.UnresolvedDetect())
+			featureBranch := detector.NewFeatureBranchDetector("FeatureBranchDetector")
 
 			g := options.GetGradingAlgorithm(settings.GradingAlgorithm, settings.ThresholdSettings)
 
 			return "General", analysis.DetectorMarker(m,
-				[]detector.Detector{unresolved},
+				[]detector.Detector{unresolved, featureBranch},
 				m.Contribution.CommitCountMap,
 				1, g)
 		},

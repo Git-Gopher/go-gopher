@@ -35,16 +35,14 @@ func (m Manager) GetMarkerAnalyzer(name string) *analysis.Analyzer {
 
 func (m Manager) GetAllSupportedMarkers() []*analysis.Analyzer {
 	var (
-		commitOpt        *options.CommitSettings
-		commitMessageOpt *options.CommitMessageSetting
-		branchingOpt     *options.BranchingSettings
-		pullRequestOpt   *options.PullRequestSettings
-		generalOpt       *options.GeneralSettings
+		commitOpt      *options.CommitSettings
+		branchingOpt   *options.BranchingSettings
+		pullRequestOpt *options.PullRequestSettings
+		generalOpt     *options.GeneralSettings
 	)
 
 	if m.opt != nil {
 		commitOpt = &m.opt.MarkersSettings.Commit
-		commitMessageOpt = &m.opt.MarkersSettings.CommitMessage
 		branchingOpt = &m.opt.MarkersSettings.Branching
 		pullRequestOpt = &m.opt.MarkersSettings.PullRequest
 		generalOpt = &m.opt.MarkersSettings.General
@@ -52,7 +50,6 @@ func (m Manager) GetAllSupportedMarkers() []*analysis.Analyzer {
 
 	analyzers := []*analysis.Analyzer{
 		markers.NewCommit(commitOpt),
-		markers.NewCommitMessage(commitMessageOpt),
 		markers.NewBranching(branchingOpt),
 		markers.NewPullRequest(pullRequestOpt),
 		markers.NewGeneral(generalOpt),
@@ -63,11 +60,10 @@ func (m Manager) GetAllSupportedMarkers() []*analysis.Analyzer {
 
 func (m Manager) EnabledByDefault(name string) bool {
 	enabledByDefault := map[string]bool{
-		markers.NewCommit(nil).Name():        true,
-		markers.NewCommitMessage(nil).Name(): true,
-		markers.NewBranching(nil).Name():     true,
-		markers.NewPullRequest(nil).Name():   true,
-		markers.NewGeneral(nil).Name():       true,
+		markers.NewCommit(nil).Name():      true,
+		markers.NewBranching(nil).Name():   true,
+		markers.NewPullRequest(nil).Name(): true,
+		markers.NewGeneral(nil).Name():     true,
 	}
 
 	return enabledByDefault[name]

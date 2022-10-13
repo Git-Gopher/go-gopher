@@ -15,12 +15,11 @@ func NewPullRequest(settings *options.PullRequestSettings) *analysis.Analyzer {
 		func(m analysis.MarkerCtx) (string, []analysis.Mark) {
 			approved := detector.NewPullRequestDetector(detector.PullRequestApprovalDetector())
 			resolved := detector.NewPullRequestDetector(detector.PullRequestReviewThreadDetector())
-			issue := detector.NewPullRequestDetector(detector.PullRequestIssueDetector())
 
 			g := options.GetGradingAlgorithm(settings.GradingAlgorithm, settings.ThresholdSettings)
 
 			return "PullRequest", analysis.DetectorMarker(m,
-				[]detector.Detector{approved, resolved, issue},
+				[]detector.Detector{approved, resolved},
 				m.Contribution.CommitCountMap,
 				3, g)
 		},

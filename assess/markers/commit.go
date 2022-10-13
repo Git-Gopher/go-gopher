@@ -13,15 +13,13 @@ func NewCommit(settings *options.CommitSettings) *analysis.Analyzer {
 		commitName,
 		"Commit marker",
 		func(m analysis.MarkerCtx) (string, []analysis.Mark) {
-			atomicity := detector.NewCommitDistanceDetector(detector.DiffDistanceCalculation())
-			binaries := detector.NewCommitDetector(detector.BinaryDetect())
-			empty := detector.NewCommitDetector(detector.EmptyCommitDetect())
+			short := detector.NewCommitDetector(detector.ShortCommitMessageDetect())
 
 			g := options.GetGradingAlgorithm(settings.GradingAlgorithm, settings.ThresholdSettings)
 
 			return "Commit", analysis.DetectorMarker(
 				m,
-				[]detector.Detector{atomicity, binaries, empty},
+				[]detector.Detector{short},
 				m.Contribution.CommitCountMap,
 				3, g)
 		},

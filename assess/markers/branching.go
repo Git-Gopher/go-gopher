@@ -14,13 +14,12 @@ func NewBranching(settings *options.BranchingSettings) *analysis.Analyzer {
 		"Branching marker",
 		func(m analysis.MarkerCtx) (string, []analysis.Mark) {
 			stale := detector.NewBranchDetector(detector.StaleBranchDetect())
-			consistent := detector.NewBranchCompareDetector(detector.BranchNameConsistencyDetect())
 			feature := detector.NewFeatureBranchDetector("FeatureBranchDetector")
 
 			g := options.GetGradingAlgorithm(settings.GradingAlgorithm, settings.ThresholdSettings)
 
 			return "Branching", analysis.DetectorMarker(m,
-				[]detector.Detector{consistent, stale, feature},
+				[]detector.Detector{stale, feature},
 				m.Contribution.CommitCountMap,
 				3, g)
 		},
