@@ -162,7 +162,7 @@ func (em *EnrichedModel) FindCurrentPR() (*remote.PullRequest, error) {
 		return nil, ErrFindPullRequest
 	}
 
-	log.Print("Current PR: %d", targetPr.Number)
+	log.Infof("Current PR: %d", targetPr.Number)
 
 	return targetPr, nil
 }
