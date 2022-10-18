@@ -1,6 +1,7 @@
 package enriched
 
 import (
+	"encoding/hex"
 	"errors"
 	"fmt"
 	"os"
@@ -217,14 +218,25 @@ func (em *EnrichedModel) FindMergingCommits(pr *remote.PullRequest) ([]local.Has
 		return nil, fmt.Errorf("error folding commits: %w", err)
 	}
 
-	log.Infof("sourceCommitHashes: %v\n", sourceCommitHashes)
-	log.Infof("targetCommitHashes: %v\n", targetCommitHashes)
+	log.Infof("sourceCommitHashes")
+	for h := range sourceCommitHashes {
+		log.Print(hex.EncodeToString(h.ToByte()))
+	}
+	log.Infof("targetCommitHashes")
+	for h := range targetCommitHashes {
+		log.Print(hex.EncodeToString(h.ToByte()))
+	}
 
 	// Find commits that are in the source but not the target.
 	for k := range sourceCommitHashes {
 		if _, ok := targetCommitHashes[k]; !ok {
 			mergingCommitHashes = append(mergingCommitHashes, k)
 		}
+	}
+
+	log.Infof("mergingCommitHashes")
+	for _, v := range mergingCommitHashes {
+		log.Print(hex.EncodeToString(v.ToByte()))
 	}
 
 	return mergingCommitHashes, nil
