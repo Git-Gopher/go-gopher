@@ -6,21 +6,22 @@ import (
 	"github.com/Git-Gopher/go-gopher/detector"
 )
 
-const generalName = "general"
+const commitMessageName = "commit-message"
 
-func NewGeneral(settings *options.GeneralSettings) *analysis.Analyzer {
+func NewCommitMessage(settings *options.CommitMessageSetting) *analysis.Analyzer {
 	analyzer := analysis.NewAnalyzer(
-		generalName,
-		"General marker",
+		commitMessageName,
+		"Commit Message marker",
 		func(m analysis.MarkerCtx) (string, []analysis.Mark) {
-			unresolved := detector.NewCommitDetector(detector.UnresolvedDetect())
+			diff := detector.NewCommitDetector(detector.DiffMatchesMessageDetect())
+			short := detector.NewCommitDetector(detector.ShortCommitMessageDetect())
 
 			g := options.GetGradingAlgorithm(settings.GradingAlgorithm, settings.ThresholdSettings)
 
-			return "General", analysis.DetectorMarker(m,
-				[]detector.Detector{unresolved},
+			return "CommitMessage", analysis.DetectorMarker(m,
+				[]detector.Detector{diff, short},
 				m.Contribution.CommitCountMap,
-				1, g)
+				2, g)
 		},
 	)
 
